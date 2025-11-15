@@ -257,13 +257,15 @@
             background: transparent;
             border: none;
             border-radius: 0;
+            position: relative;
+            overflow: hidden;
         }
 
         .welcome-content {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             gap: 24px;
+            position: relative;
         }
 
         .welcome-left {
@@ -271,6 +273,8 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
+            position: relative;
+            z-index: 2;
         }
 
         .welcome-text-content h3 {
@@ -335,16 +339,17 @@
         }
 
         .welcome-illustration {
-            flex-shrink: 0;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
+            position: absolute;
+            right: -10px;
+            bottom: 0;
+            z-index: 1;
         }
 
         .welcome-illustration img {
-            max-height: 300px;
+            max-height: 220px;
             width: auto;
             display: block;
+            opacity: 1;
         }
 
         /* Fade animation for text */
@@ -692,7 +697,7 @@
 
             /* make illustration touch right screen edge */
             .welcome-section {
-                margin-right: -16px; /* cancels content-body right padding */
+                margin-right: 0; /* cancels content-body right padding */
             }
 
             .attendance-ring {
