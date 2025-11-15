@@ -221,7 +221,7 @@
             gap: 14px;
             justify-content: space-between;
             flex-wrap: nowrap;
-            margin-bottom: 12px;
+            margin-bottom: 10px; /* closer to hero */
         }
 
         .action-btn {
@@ -250,22 +250,17 @@
             }
         }
 
-        /* WELCOME SECTION – text + ring LEFT, illustration RIGHT */
+        /* HERO / WELCOME AREA – blended with background */
         .welcome-section {
-            padding: 2px 0;
-            margin-bottom: 35px;
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            position: relative;
-            overflow: hidden;
+            margin: 6px -16px 28px;  /* negative right so image can touch edge */
+            padding: 0 16px 4px;
         }
 
         .welcome-content {
             display: flex;
             align-items: center;
-            gap: 24px;
-            position: relative;
+            justify-content: space-between;
+            gap: 16px;
         }
 
         .welcome-left {
@@ -273,15 +268,13 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
-            position: relative;
-            z-index: 2;
         }
 
         .welcome-text-content h3 {
             font-size: 24px;
             font-weight: 600;
             color: #2d3436;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .welcome-text-content p {
@@ -339,20 +332,16 @@
         }
 
         .welcome-illustration {
-            position: absolute;
-            right: -28px;
-            bottom: 0;
-            z-index: 1;
+            flex-shrink: 0;
         }
 
         .welcome-illustration img {
-            max-height: 300px;
+            max-height: 260px;   /* 🔧 change this to resize illustration */
             width: auto;
             display: block;
-            opacity: 1;
         }
 
-        /* Fade animation for text */
+        /* Fade animation for text when buttons clicked */
         .fade-text {
             opacity: 0;
             transition: opacity 0.35s ease;
@@ -685,19 +674,13 @@
                 grid-template-columns: 1fr;
             }
 
-            /* keep side-by-side on mobile */
             .welcome-content {
                 flex-direction: row;
-                text-align: left;
+                align-items: center;
             }
 
-            .welcome-left {
-                align-items: flex-start;
-            }
-
-            /* make illustration touch right screen edge */
-            .welcome-section {
-                margin-right: 0; /* cancels content-body right padding */
+            .welcome-illustration img {
+                max-height: 240px;
             }
 
             .attendance-ring {
@@ -809,7 +792,7 @@
             </button>
         </div>
 
-        <!-- WELCOME SECTION: text + ring left, illustration right -->
+        <!-- HERO / WELCOME – blends with background -->
         <div class="welcome-section">
             <div class="welcome-content">
                 <div class="welcome-left">
@@ -831,8 +814,8 @@
                 </div>
 
                 <div class="welcome-illustration">
-                    <!-- change src if your file path is different -->
-                    <img src="Image/Illustration.png" alt="Student illustration">
+                    <!-- change src path to your PNG -->
+                    <img src="images/student-illustration.png" alt="Student illustration">
                 </div>
             </div>
         </div>
