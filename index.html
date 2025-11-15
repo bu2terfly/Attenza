@@ -222,7 +222,7 @@
             gap: 14px;
             justify-content: space-between;
             flex-wrap: nowrap;
-            margin-bottom: 10px; /* closer to hero */
+            margin-bottom: 10px; /* distance to hero */
         }
 
         .action-btn {
@@ -251,25 +251,28 @@
             }
         }
 
-        /* HERO / WELCOME AREA – blended with background */
+        /* 🎨 HERO / WELCOME AREA – illustration as background on right */
         .welcome-section {
-            margin: 6px 0 28px;  /* negative right so image can touch edge */
-            padding: 0;
+            margin: 4px -16px 28px;  /* remove side padding so bg can touch edge */
+            padding: 16px 16px 20px;
+            background-color: #f5f3ef;
+            /* 🔴 CHANGE THIS PATH TO YOUR PNG FILE */
+            background-image: url("Image/Illustration.png");
+            background-repeat: no-repeat;
+            background-position: right bottom;
+            background-size: auto 300px; /* height of illustration */
         }
 
         .welcome-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            padding: 0 16px;
+            gap: 20px;
         }
 
-        .welcome-left {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
+        .welcome-text-content {
+            max-width: 60%; /* text + ring area on left */
         }
 
         .welcome-text-content h3 {
@@ -289,7 +292,7 @@
             position: relative;
             width: 140px;
             height: 140px;
-            flex-shrink: 0;
+            margin-top: 14px;
         }
 
         .ring-svg {
@@ -331,17 +334,6 @@
             font-size: 12px;
             color: #8e8e93;
             font-weight: 500;
-        }
-
-        .welcome-illustration {
-            flex-shrink: 0;
-            margin-right: -16px;
-        }
-
-        .welcome-illustration img {
-            max-height: 300px;   /* 🔧 change this to resize illustration */
-            width: auto;
-            display: block;
         }
 
         /* Fade animation for text when buttons clicked */
@@ -677,13 +669,8 @@
                 grid-template-columns: 1fr;
             }
 
-            .welcome-content {
-                flex-direction: row;
-                align-items: center;
-            }
-
-            .welcome-illustration img {
-                max-height: 300px;
+            .welcome-section {
+                background-size: auto 230px; /* slightly smaller on mobile */
             }
 
             .attendance-ring {
@@ -795,14 +782,12 @@
             </button>
         </div>
 
-        <!-- HERO / WELCOME – blends with background -->
+        <!-- HERO / WELCOME – illustration as background on right -->
         <div class="welcome-section">
             <div class="welcome-content">
-                <div class="welcome-left">
-                    <div class="welcome-text-content">
-                        <h3 id="welcomeTitle">Hello, User!</h3>
-                        <p id="welcomeSubtitle">Great progress! Keep maintaining your attendance streak.</p>
-                    </div>
+                <div class="welcome-text-content">
+                    <h3 id="welcomeTitle">Hello, User!</h3>
+                    <p id="welcomeSubtitle">Great progress! Keep maintaining your attendance streak.</p>
 
                     <div class="attendance-ring">
                         <svg class="ring-svg" viewBox="0 0 160 160">
@@ -814,11 +799,6 @@
                             <span class="percentage-label">Overall</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="welcome-illustration">
-                    <!-- change src path to your PNG -->
-                    <img src="Image/Illustration.png" alt="Student illustration">
                 </div>
             </div>
         </div>
