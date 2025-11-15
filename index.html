@@ -47,13 +47,13 @@
             gap: 16px; /* distance between menu and ATTENZA text */
         }
 
-        /* 🔳 MENU + SEARCH BUTTON BASE STYLE */
+        /* MENU + SEARCH BUTTON BASE STYLE */
         .menu-btn,
         .search-btn {
-            width: 44px;          /* button size – change later if you want */
+            width: 44px;
             height: 44px;
-            background: #2d3561;  /* black box */
-            border-radius: 17px;  /* rounded corners */
+            background: #2d3561;
+            border-radius: 17px;
             border: none;
             display: flex;
             justify-content: center;
@@ -69,26 +69,26 @@
             transform: translateY(-1px);
         }
 
-        /* 🍔 MENU ICON: 3 WHITE LINES */
+        /* MENU ICON: 3 WHITE LINES */
         .menu-lines {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 16px; /* total height of the stack of lines */
+            height: 16px;
         }
 
         .menu-lines span {
-            width: 22px;       /* line length */
-            height: 2px;       /* line thickness */
+            width: 22px;
+            height: 2px;
             background: #ffffff;
             border-radius: 2px;
         }
 
-        /* 🔍 SEARCH ICON (WHITE MAGNIFIER INSIDE BLACK BOX) */
+        /* SEARCH ICON */
         .search-btn svg {
             width: 25px;
             height: 25px;
-            stroke: #ffffff;    /* white lines */
+            stroke: #ffffff;
             stroke-width: 2;
             fill: none;
         }
@@ -215,6 +215,8 @@
             padding: 16px 16px;
         }
 
+        /* QUICK ACTION BUTTONS */
+
         .quick-actions {
             display: flex;
             gap: 14px;
@@ -243,14 +245,22 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
+        @media (max-width: 480px) {
+            .action-btn {
+                padding: 13px 16px;
+            }
+        }
+
+        /* NEW WELCOME SECTION LAYOUT
+           text + ring on left, illustration on right, NO card container
+        */
+
         .welcome-section {
-            background: white;
-            border-radius: 24px;
-            padding: 31px;
+            padding: 10px 0;
             margin-bottom: 35px;
-            position: relative;
-            overflow: hidden;
-            border: 1.5px solid #e0e0e0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
         }
 
         .welcome-content {
@@ -260,15 +270,18 @@
             gap: 24px;
         }
 
-        .welcome-text-content {
+        .welcome-left {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
 
         .welcome-text-content h3 {
             font-size: 24px;
             font-weight: 600;
             color: #2d3436;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .welcome-text-content p {
@@ -323,6 +336,25 @@
             font-size: 12px;
             color: #8e8e93;
             font-weight: 500;
+        }
+
+        .welcome-illustration {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .welcome-illustration img {
+            max-height: 220px;
+            width: auto;
+            display: block;
+        }
+
+        /* TEXT FADE ANIMATION */
+        .fade-text {
+            opacity: 0;
+            transition: opacity 0.35s ease;
         }
 
         .section-header {
@@ -652,7 +684,12 @@
             }
 
             .welcome-content {
-                flex-direction: column;
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+
+            .welcome-left {
+                align-items: center;
             }
 
             .attendance-ring {
@@ -672,18 +709,13 @@
                 grid-template-columns: 1fr;
             }
         }
-        @media (max-width: 480px) {
-            .action-btn {
-                padding: 13px 16px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="header" id="header">
         <div class="top-bar">
             <div class="left-section">
-                <!-- 🍔 NEW MENU BUTTON -->
+                <!-- MENU BUTTON -->
                 <button class="menu-btn">
                     <div class="menu-lines">
                         <span></span>
@@ -698,7 +730,7 @@
                 </div>
             </div>
 
-            <!-- 🔍 NEW SEARCH BUTTON -->
+            <!-- SEARCH BUTTON -->
             <button class="search-btn">
                 <svg viewBox="0 0 24 24">
                     <circle cx="10" cy="10" r="7"></circle>
@@ -757,26 +789,44 @@
 
     <div class="content-body">
         <div class="quick-actions">
-            <button class="action-btn">Attendance</button>
-            <button class="action-btn">Events</button>
-            <button class="action-btn">Books</button>
+            <button class="action-btn"
+                onclick="changeWelcomeText('Attendance Overview', 'Track your daily and overall attendance here.')">
+                Attendance
+            </button>
+            <button class="action-btn"
+                onclick="changeWelcomeText('Upcoming Events', 'Stay updated with your upcoming classes and campus events.')">
+                Events
+            </button>
+            <button class="action-btn"
+                onclick="changeWelcomeText('Books & Materials', 'Access books, notes and all your study resources here.')">
+                Books
+            </button>
         </div>
 
+        <!-- NEW WELCOME SECTION: text + ring LEFT, illustration RIGHT -->
         <div class="welcome-section">
             <div class="welcome-content">
-                <div class="welcome-text-content">
-                    <h3>Hello, User!</h3>
-                    <p>Great progress! Keep maintaining your attendance streak.</p>
-                </div>
-                <div class="attendance-ring">
-                    <svg class="ring-svg" viewBox="0 0 160 160">
-                        <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>
-                        <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>
-                    </svg>
-                    <div class="ring-center">
-                        <span class="percentage" id="percentageText">75%</span>
-                        <span class="percentage-label">Overall</span>
+                <div class="welcome-left">
+                    <div class="welcome-text-content">
+                        <h3 id="welcomeTitle">Hello, User!</h3>
+                        <p id="welcomeSubtitle">Great progress! Keep maintaining your attendance streak.</p>
                     </div>
+
+                    <div class="attendance-ring">
+                        <svg class="ring-svg" viewBox="0 0 160 160">
+                            <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>
+                            <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>
+                        </svg>
+                        <div class="ring-center">
+                            <span class="percentage" id="percentageText">75%</span>
+                            <span class="percentage-label">Overall</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="welcome-illustration">
+                    <!-- change the path if you save it somewhere else -->
+                    <img src="Image/Illustration.png" alt="Student illustration">
                 </div>
             </div>
         </div>
@@ -996,6 +1046,22 @@
             } else {
                 quoteElement.textContent = "Time to catch up! Every class counts.";
             }
+        }
+
+        // Smooth text change for action buttons
+        function changeWelcomeText(title, subtitle) {
+            const titleEl = document.getElementById('welcomeTitle');
+            const subtitleEl = document.getElementById('welcomeSubtitle');
+
+            titleEl.classList.add('fade-text');
+            subtitleEl.classList.add('fade-text');
+
+            setTimeout(() => {
+                titleEl.textContent = title;
+                subtitleEl.textContent = subtitle;
+                titleEl.classList.remove('fade-text');
+                subtitleEl.classList.remove('fade-text');
+            }, 350);
         }
 
         // Carousel smooth scroll with mouse drag
