@@ -12,9 +12,10 @@
     <!-- Notebook page fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&display=swap" rel="stylesheet"
-    
+    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&display=swap" rel="stylesheet">
+
     <title>ATTENZA - for Dispur College</title>
+
     <style>
         * {
             margin: 0;
@@ -27,8 +28,7 @@
             background: #f5f3ef;
             min-height: 100vh;
             overflow-x: hidden;
-            /* space so bottom AI card does not overlap content */
-            padding-bottom: 100px;
+            padding-bottom: 100px; /* space so bottom AI card does not overlap content */
         }
 
         .header {
@@ -282,7 +282,7 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            margin-top: 10px; /* distance below header */
+            margin-top: 10px;
         }
 
         .sketch-line {
@@ -306,18 +306,17 @@
             stroke-linejoin: round;
             filter: drop-shadow(0 0 0.7px rgba(0,0,0,0.25));
             transform: translateY(1px);
-         }
+        }
 
-        /* 🎨 HERO / WELCOME AREA – illustration as background on right */
+        /* HERO / WELCOME AREA – illustration as background on right */
         .welcome-section {
-            margin: 4px -16px 28px;  /* remove side padding so bg can touch edge */
+            margin: 4px -16px 28px;
             padding: 16px 16px 20px;
             background-color: #f5f3ef;
-            /* 🔴 CHANGE THIS PATH TO YOUR PNG FILE */
-            background-image: url("Image/Illustration.png");
+            background-image: url("Image/Illustration.png"); /* change path as needed */
             background-repeat: no-repeat;
             background-position: right bottom;
-            background-size: auto 300px; /* height of illustration */
+            background-size: auto 300px;
         }
 
         .welcome-content {
@@ -329,7 +328,7 @@
         }
 
         .welcome-text-content {
-            max-width: 60%; /* text + ring area on left */
+            max-width: 60%;
         }
 
         .welcome-text-content h3 {
@@ -394,7 +393,6 @@
             font-weight: 500;
         }
 
-        /* Fade animation for text when buttons clicked (still used by changeWelcomeText) */
         .fade-text {
             opacity: 0;
             transition: opacity 0.35s ease;
@@ -715,20 +713,21 @@
 
         /* NOTEBOOK PAGE SECTION (full-width card with 20px side space) */
         .notebook-section {
-            margin: 0 -16px 32px;   /* take over full width from content-body */
-            padding: 0 20px;        /* 20px space from screen edges */
+            margin: 0 -16px 32px;
+            padding: 0 20px;
         }
 
         .page {
             position: relative;
-            box-sizing: border-box;
             width: 100%;
             font-family: "Gaegu", cursive;
             font-size: 16px;
             background: #fffdf6;
-            background-image: linear-gradient(#f5f5f0 var(--line-light, 0.85rem), #ccc var(--line-dark, 0.95rem));
+            background-image: linear-gradient(
+                    #f5f5f0 var(--line-light, 0.85rem),
+                    #ccc var(--line-dark, 0.95rem)
+            );
             background-size: 100% var(--line-gap, 0.95rem);
-
             padding: 0.7rem 0.7rem 0.8rem 5.5rem;
             border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 0;
@@ -753,7 +752,7 @@
             transform: skew(-3deg) rotate(-2deg);
         }
 
-        .page::after  {
+        .page::after {
             right: 18px;
             transform: skew(3deg) rotate(2deg);
         }
@@ -818,7 +817,7 @@
             }
 
             .welcome-section {
-                background-size: auto 275px; /* slightly smaller on mobile */
+                background-size: auto 275px;
             }
 
             .attendance-ring {
@@ -848,7 +847,7 @@
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            pointer-events: none; /* board itself will re-enable */
+            pointer-events: none;
         }
 
         .ai-board {
@@ -997,7 +996,7 @@
             box-shadow: 0 2px 5px rgba(15, 23, 42, 0.25);
         }
 
-        /* ---------- BOARD LOADER (separate from card loader) ---------- */
+        /* BOARD LOADER */
 
         .ai-status-loader {
             transform: rotate(80deg);
@@ -1046,35 +1045,28 @@
         .ai-card-container {
             position: fixed;
             bottom: 16px;
-
-            /* make the container full width */
             left: 0;
             right: 0;
             width: 100%;
-
-            /* center the card but keep it near the edges */
             display: flex;
             justify-content: center;
-
-            /* horizontal padding = distance from screen edge */
             padding: 0 17px;
-
             z-index: 1000;
             pointer-events: none;
         }
 
         .ai-card-container .see-more-btn {
-            pointer-events: auto; /* enable interaction on the card itself */
+            pointer-events: auto;
         }
 
-        /* ---------- YOUR AI CARD CSS (UNCHANGED) ---------- */
+        /* ---------- AI CARD ---------- */
 
         .see-more-btn {
             position: relative;
             background-color: #262626;
-            height: 4.5rem;          /* increase card height if you want */
-            width: 100%;             /* take full width of the container */
-            max-width: 540px;        /* optional: cap width on desktop */
+            height: 4.5rem;
+            width: 100%;
+            max-width: 540px;
             text-align: left;
             padding: 0.75rem;
             color: #f9fafb;
@@ -1138,23 +1130,12 @@
             right: -2rem;
         }
 
-        .logo-img {
-            height: 100%;
-            margin-left: -0.4rem;
-            width: auto;
-            object-fit: contain;
-            position: relative;
-            z-index: 20;
-            pointer-events: none;
-        }
-
         .divider {
             width: 2px;
             height: 18px;
             background: rgba(255,255,255,0.7);
             border-radius: 4px;
-
-            margin-left: 1rem;   /* move right from logo */
+            margin-left: 1rem;
             margin-right: 0.5rem;
         }
 
@@ -1235,7 +1216,7 @@
         .logo-loader-wrapper {
             height: 2.7rem;
             width: 2.7rem;
-            margin-left: 0rem;
+            margin-left: 0;
             position: relative;
             z-index: 20;
             flex-shrink: 0;
@@ -1249,7 +1230,7 @@
             --size: 0.5;
         }
 
-        /* From Uiverse.io by andrew-manzyk */
+        /* Loader (from Uiverse) */
         .loader {
             --color-one: #ffbf48;
             --color-two: #be4a1d;
@@ -1262,8 +1243,8 @@
             border-radius: 50%;
             transform: scale(var(--size));
             box-shadow:
-                    0 0 25px 0 var(--color-three),
-                    0 20px 50px 0 var(--color-four);
+                0 0 25px 0 var(--color-three),
+                0 20px 50px 0 var(--color-four);
             animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
         }
 
@@ -1279,8 +1260,8 @@
             border-bottom: solid 1px var(--color-two);
             background: linear-gradient(180deg, var(--color-five), var(--color-four));
             box-shadow:
-                    inset 0 10px 10px 0 var(--color-three),
-                    inset 0 -10px 10px 0 var(--color-four);
+                inset 0 10px 10px 0 var(--color-three),
+                inset 0 -10px 10px 0 var(--color-four);
         }
 
         .loader .box {
@@ -1369,7 +1350,7 @@
 <div class="header" id="header">
     <div class="top-bar">
         <div class="left-section">
-            <!-- NEW MENU BUTTON (border-only) -->
+            <!-- MENU BUTTON -->
             <button class="icon-btn" aria-label="Menu">
                 <div class="menu-mini"><span></span></div>
             </button>
@@ -1380,20 +1361,20 @@
             </div>
         </div>
 
-        <!-- NEW NOTIFICATION BUTTON (border-only) -->
+        <!-- NOTIFICATION BUTTON -->
         <button class="icon-btn notif-rev" aria-label="Notifications">
             <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
             >
                 <path
-                        d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"
-                        stroke-width="2.25"
-                        stroke-linejoin="round"
-                        stroke-linecap="round"
-                        stroke="currentColor"
+                    d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"
+                    stroke-width="2.25"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
+                    stroke="currentColor"
                 ></path>
             </svg>
             <div class="notif-dot"></div>
@@ -1449,42 +1430,41 @@
 </div>
 
 <div class="sketch-line-container">
-  <span class="sketch-line">
-    I
-    <svg class="sketch-heart" viewBox="0 0 120 120">
-      <path d="M60 105
-               C20 70, 10 40, 30 25
-               C50 10, 70 20, 60 40
-               C80 10, 110 25, 90 50
-               C70 80, 60 95, 60 105 Z"/>
+    <span class="sketch-line">
+        I
+        <svg class="sketch-heart" viewBox="0 0 120 120">
+            <path d="M60 105
+                     C20 70, 10 40, 30 25
+                     C50 10, 70 20, 60 40
+                     C80 10, 110 25, 90 50
+                     C70 80, 60 95, 60 105 Z"/>
 
-      <g stroke="#e63946"
-         stroke-width="4"
-         fill="none"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         opacity="0.9">
+            <g stroke="#e63946"
+               stroke-width="4"
+               fill="none"
+               stroke-linecap="round"
+               stroke-linejoin="round"
+               opacity="0.9">
 
-        <path d="M35 60 Q 55 50 80 55" />
-        <path d="M32 68 Q 55 60 85 64" />
-        <path d="M34 76 Q 55 70 82 75" />
-        <path d="37 84 Q 58 78 79 82" />
+                <path d="M35 60 Q 55 50 80 55" />
+                <path d="M32 68 Q 55 60 85 64" />
+                <path d="M34 76 Q 55 70 82 75" />
+                <!-- fixed missing 'M' here -->
+                <path d="M37 84 Q 58 78 79 82" />
 
-        <path d="M45 45 Q 60 55 78 68" />
-        <path d="M40 52 Q 55 64 75 78" />
+                <path d="M45 45 Q 60 55 78 68" />
+                <path d="M40 52 Q 55 64 75 78" />
 
-        <path d="M50 70 Q 55 68 60 72" />
-        <path d="M58 80 Q 63 78 68 82" />
-      </g>
-    </svg>
-    Dispur College
-  </span>
+                <path d="M50 70 Q 55 68 60 72" />
+                <path d="M58 80 Q 63 78 68 82" />
+            </g>
+        </svg>
+        Dispur College
+    </span>
 </div>
 
 <div class="content-body">
-    <!-- DIRECTLY WELCOME SECTION BELOW HEADER (quick actions removed) -->
-
-    <!-- HERO / WELCOME – illustration as background on right -->
+    <!-- HERO / WELCOME -->
     <div class="welcome-section">
         <div class="welcome-content">
             <div class="welcome-text-content">
@@ -1505,7 +1485,7 @@
         </div>
     </div>
 
-    <!-- NOTEBOOK STYLE PAGE CARD (full width with 20px side space) -->
+    <!-- NOTEBOOK STYLE PAGE CARD -->
     <div class="notebook-section">
         <div class="page">
             <img src="your-logo.png" alt="Logo" class="note-logo">
@@ -1516,7 +1496,6 @@
                 This space can work like your personal college notebook page.
             </p>
 
-            <!-- Teacher / principal mark bottom right -->
             <div class="teacher-mark">
                 <span class="teacher-sign">Principal</span>
             </div>
@@ -1712,14 +1691,12 @@
         </div>
 
         <div class="ai-board-body">
-            <!-- User message card -->
             <div class="ai-user-card-wrapper">
                 <div class="ai-user-card" id="userMessageCard">
                     Your question will appear here.
                 </div>
             </div>
 
-            <!-- Loading + status -->
             <div class="ai-status-row">
                 <div class="ai-status-loader">
                     <div class="stripe"></div>
@@ -1730,14 +1707,12 @@
                 <span class="ai-status-text" id="aiStatusText">Analyzing…</span>
             </div>
 
-            <!-- AI response -->
             <div class="ai-response" id="aiResponse">
 Here is a sample response from Attenza AI.
 
 Once you connect Gemini and your attendance backend, this will show real, detailed insights.
             </div>
 
-            <!-- Copy button -->
             <button class="ai-copy-btn" id="aiCopyBtn">
                 <span>📋</span>
                 <span>Copy</span>
@@ -1746,10 +1721,9 @@ Once you connect Gemini and your attendance backend, this will show real, detail
     </div>
 </div>
 
-<!-- FIXED AI CARD AT BOTTOM (YOUR CARD) -->
+<!-- FIXED AI CARD AT BOTTOM -->
 <div class="ai-card-container">
     <div class="see-more-btn">
-        <!-- Animated logo -->
         <div class="logo-loader-wrapper">
             <div class="loader">
                 <svg width="100" height="100" viewBox="0 0 100 100">
@@ -1769,27 +1743,24 @@ Once you connect Gemini and your attendance backend, this will show real, detail
             </div>
         </div>
 
-        <!-- Vertical bar -->
         <span class="divider"></span>
 
-        <!-- Typewriter / Input area -->
         <div class="prompt-area" id="promptArea">
             <div class="prompt-display">
                 <span class="typewriter-text" id="typewriterText"></span>
                 <input
-                        type="text"
-                        id="promptInput"
-                        class="prompt-input"
-                        autocomplete="off"
-                        autocorrect="off"
-                        autocapitalize="sentences"
-                        spellcheck="false"
+                    type="text"
+                    id="promptInput"
+                    class="prompt-input"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="sentences"
+                    spellcheck="false"
                 />
             </div>
 
-            <!-- Send button with upward arrow icon -->
             <button class="send-btn" id="sendBtn">
-                <svg viewBox="0 0 24 24" style="width:22px; height:22px; transform: scale(1);">
+                <svg viewBox="0 0 24 24" style="width:22px; height:22px;">
                     <path d="M12 5L18 11" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
                     <path d="M12 5L6 11" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
                     <path d="M12 5V19" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
@@ -1800,7 +1771,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
 </div>
 
 <script>
-    // Header expand/collapse functionality
+    // Header expand/collapse
     const expandArrow = document.getElementById('expandArrow');
     const expandedContent = document.getElementById('expandedContent');
     const header = document.getElementById('header');
@@ -1811,7 +1782,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         header.classList.toggle('expanded');
     });
 
-    // Update attendance ring
+    // Attendance ring
     function updateRing(percentage) {
         const circle = document.getElementById('progressCircle');
         const radius = 70;
@@ -1822,7 +1793,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         circle.style.strokeDashoffset = offset;
     }
 
-    // Dynamic quote based on attendance
+    // Dynamic quote
     function updateQuote(percentage) {
         const quoteElement = document.querySelector('.welcome-text-content p');
         if (percentage >= 85) {
@@ -1836,7 +1807,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         }
     }
 
-    // Smooth text change (still available if you decide to call it)
+    // Smooth text change (kept for future use)
     function changeWelcomeText(title, subtitle) {
         const titleEl = document.getElementById('welcomeTitle');
         const subtitleEl = document.getElementById('welcomeSubtitle');
@@ -1853,7 +1824,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         }, 350);
     }
 
-    // Carousel smooth scroll with mouse drag
+    // Carousel drag scroll
     const carousel = document.getElementById('carousel');
     let isDown = false;
     let startX;
@@ -1884,7 +1855,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         carousel.scrollLeft = scrollLeft - walk;
     });
 
-    // Attendance button handlers
+    // Attendance buttons
     document.querySelectorAll('.attendance-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const card = this.closest('.class-card');
@@ -1900,12 +1871,12 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         });
     });
 
-    // Initialize
+    // Initialize ring + quote
     updateRing(75);
     updateQuote(75);
     carousel.style.cursor = 'grab';
 
-    // PWA Install functionality
+    // PWA Install
     let deferredPrompt;
     const installStrip = document.getElementById('installStrip');
     const installText = document.getElementById('installText');
@@ -1978,7 +1949,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
 </script>
 
 <script>
-    /* ---------- AI BOARD JS ---------- */
+    /* AI BOARD JS */
     const aiBoard = document.getElementById("aiBoard");
     const aiCloseBtn = document.getElementById("aiCloseBtn");
     const aiCopyBtn = document.getElementById("aiCopyBtn");
@@ -2013,7 +1984,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         aiStatusText.textContent = statuses[statusIndex];
     }, 2000);
 
-    /* ---------- AI CARD JS (YOUR LOGIC, WITH BOARD INTEGRATION) ---------- */
+    /* AI CARD JS (typewriter + input) */
     const phrases = ["Ask attenza ai your doubts", "Can i bunk eng class ?"];
     const typewriterEl = document.getElementById("typewriterText");
     const promptArea = document.getElementById("promptArea");
@@ -2065,10 +2036,10 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         promptInput.style.display = "block";
     }
 
-    // Start typewriter on load
+    // Start typewriter
     typeLoop();
 
-    // When user taps the prompt area -> switch to input
+    // Switch to input on tap
     promptArea.addEventListener("click", () => {
         if (typingActive) {
             stopTypewriter();
@@ -2076,7 +2047,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         promptInput.focus();
     });
 
-    // Show send button when there's text
+    // Show send button when text present
     promptInput.addEventListener("input", () => {
         if (promptInput.value.trim().length > 0) {
             sendBtn.classList.add("visible");
@@ -2085,7 +2056,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
         }
     });
 
-    // On send: open AI board with the prompt text
+    // Send -> open AI board
     sendBtn.addEventListener("click", () => {
         const value = promptInput.value.trim();
         if (!value) return;
@@ -2093,7 +2064,6 @@ Once you connect Gemini and your attendance backend, this will show real, detail
 
         openBoardWithPrompt(value);
 
-        // Clear input after send
         promptInput.value = "";
         sendBtn.classList.remove("visible");
     });
