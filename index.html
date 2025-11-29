@@ -12,7 +12,8 @@
     <!-- Notebook page fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&display=swap" rel="stylesheet"
+    
     <title>ATTENZA - for Dispur College</title>
     <style>
         * {
@@ -276,6 +277,36 @@
             margin: 0 auto;
             padding: 16px 16px;
         }
+
+        .sketch-line-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 10px; /* distance below header */
+        }
+
+        .sketch-line {
+            font-family: "Cabin Sketch", system-ui, sans-serif;
+            font-size: 20px;
+            letter-spacing: 0.6px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+        }
+
+        .sketch-heart {
+            width: 22px;
+            height: 22px;
+            stroke: #e63946;
+            stroke-width: 6;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 0.7px rgba(0,0,0,0.25));
+            transform: translateY(1px);
+         }
 
         /* 🎨 HERO / WELCOME AREA – illustration as background on right */
         .welcome-section {
@@ -1415,6 +1446,39 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="sketch-line-container">
+  <span class="sketch-line">
+    I
+    <svg class="sketch-heart" viewBox="0 0 120 120">
+      <path d="M60 105
+               C20 70, 10 40, 30 25
+               C50 10, 70 20, 60 40
+               C80 10, 110 25, 90 50
+               C70 80, 60 95, 60 105 Z"/>
+
+      <g stroke="#e63946"
+         stroke-width="4"
+         fill="none"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         opacity="0.9">
+
+        <path d="M35 60 Q 55 50 80 55" />
+        <path d="M32 68 Q 55 60 85 64" />
+        <path d="M34 76 Q 55 70 82 75" />
+        <path d="37 84 Q 58 78 79 82" />
+
+        <path d="M45 45 Q 60 55 78 68" />
+        <path d="M40 52 Q 55 64 75 78" />
+
+        <path d="M50 70 Q 55 68 60 72" />
+        <path d="M58 80 Q 63 78 68 82" />
+      </g>
+    </svg>
+    Dispur College
+  </span>
 </div>
 
 <div class="content-body">
