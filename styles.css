@@ -1108,7 +1108,7 @@
         --info-border: rgba(148, 163, 184, 0.5);  
 
         /* keep yellow subject background */  
-        --subject-2-bg: linear-gradient(135deg, #fef3c7, #fde68a);  
+        --subject-2-bg: linear-gradient(135deg, #F9C74F, #fde68a);  
 
         --card-radius: 18px;  
         --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);  
