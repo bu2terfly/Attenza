@@ -1108,7 +1108,7 @@
         --info-border: rgba(148, 163, 184, 0.5);  
 
         /* keep yellow subject background */  
-        --subject-2-bg: linear-gradient(135deg, #F4C542, #F9C74F);  
+        --subject-2-bg: #ffc460;
 
         --card-radius: 18px;  
         --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);  
@@ -1631,7 +1631,7 @@
     }  
 
     .card.subject-card.purple {  
-        background: linear-gradient(135deg, #b39ddb 0%, #9575cd 100%);  
+        background: #9d9ee7;
         border: none;  
     }  
 
