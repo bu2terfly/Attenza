@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Attendmark</title>
+<title>Attendmark - Student Attendance</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
     tailwind.config = {
@@ -36,12 +36,10 @@
   --dark: #1F1A1C;
   --bg-landing: #f5f3ef;
   --bg-auth: #1e1e1e;
-  
   --btn-bg: #3a3336;
   --arrow-bg: #8381fc;
   --text: #111;
   --accent: #8381fc;
-  
   --item-h: 34px;
   --arrow-w: 26px;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -81,9 +79,7 @@ body.auth-active {
   transition: color 0.5s ease;
 }
 
-body.auth-active .title {
-  color: #ffffff;
-}
+body.auth-active .title { color: #ffffff; }
 
 .with {
   position: absolute;
@@ -104,13 +100,9 @@ body.auth-active .title {
   transition: color 0.5s ease;
 }
 
-body.auth-active .subtitle {
-  color: #888;
-}
+body.auth-active .subtitle { color: #888; }
+.btn-text { word-spacing: 0.17em; }
 
-.btn-text {
-  word-spacing: 0.17em;
-}
 /* ================= STRIP ================= */
 .strip {
   margin-top: 25px;  
@@ -136,10 +128,7 @@ body.auth-active .subtitle {
   color: #111;
 }
 
-.strip-track span {
-  padding: 0 24px;
-  white-space: nowrap;
-}
+.strip-track span { padding: 0 24px; white-space: nowrap; }
 
 @keyframes stripMove {
   from { transform: translateX(0); }
@@ -167,9 +156,7 @@ body.auth-active .subtitle {
   transition: background 0.5s ease;
 }
 
-body.auth-active .menu-btn span {
-  background: #ffffff;
-}
+body.auth-active .menu-btn span { background: #ffffff; }
 
 .menu-dropdown {
   position: absolute;
@@ -207,7 +194,7 @@ body.auth-active .menu-btn span {
     opacity: 0;
     transform: translateY(-20px);
     pointer-events: none;
-    position: absolute;  /* Ensures it doesn't take up space */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -268,20 +255,13 @@ body.auth-active .menu-btn span {
 .footer-logos { margin-top: 10px; display: flex; justify-content: center; gap: 14px; }
 .footer-logos img { height: 18px; opacity: .85; }
 
-.footer-made {
-  font-size: 15px;
-  line-height: 1.4;
-  font-weight: 500;
-  color: #777;
-}
+.footer-made { font-size: 15px; line-height: 1.4; font-weight: 500; color: #777; }
+
 /* ================= AUTH CUSTOM CSS ================= */
 .custom-input { transition: all 0.2s ease-in-out; outline: none; }
 .fade-in { animation: fadeIn 0.4s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .dark .text-gray-100 { color: #f3f4f6; }
-
-
-}
 </style>
 </head>
 <body class="selection:bg-primary selection:text-white">
@@ -306,7 +286,7 @@ body.auth-active .menu-btn span {
 </div>
 
 <div id="landing-view">
-    <div class="hero"><div class="illustration"><img src="Image/30719.png" alt="Illustration"></div></div>
+    <div class="hero"><div class="illustration"><img src="Image/30719.png" alt="Illustration" onerror="this.style.display='none'"></div></div>
     <div class="text-anim">
       <div class="fixed-arrow left"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l6 7-6 7"/></svg></div>
       <div class="viewport"><div class="list-center"><div class="list" id="list"></div></div></div>
@@ -335,6 +315,7 @@ body.auth-active .menu-btn span {
 </div>
 
 <div id="auth-wrapper" class="dark">
+  
   <div id="view-login" class="min-h-full flex flex-col items-center justify-start pt-0 px-6 transition-all duration-300">
     <div class="w-full flex-1 flex flex-col items-center max-w-sm">
         <div class="text-center mb-6 mt-2">
@@ -386,9 +367,9 @@ body.auth-active .menu-btn span {
         </div>
         <div class="text-center text-xs text-gray-500 leading-relaxed px-4 pb-4">By continuing, you agree to our <a class="underline hover:text-primary" href="#">Terms</a> and <a class="underline hover:text-primary" href="#">Privacy Policy</a>.</div>
     </div>
-</div>
+  </div>
 
-<div id="view-forgot" class="hidden min-h-full flex flex-col items-center justify-start pt-0 px-6 fade-in">
+  <div id="view-forgot" class="hidden min-h-full flex flex-col items-center justify-start pt-0 px-6 fade-in">
     <div class="w-full flex-1 flex flex-col items-center max-w-sm">
          
          <div class="relative w-full flex items-center justify-center mb-8 mt-2">
@@ -402,17 +383,16 @@ body.auth-active .menu-btn span {
 
         <div class="text-center mb-8">
             <p class="text-[13px] text-gray-400 font-medium mb-1">for account linked to</p>
-            <p id="forgotEmailDisplay" class="font-sans text-lg font-bold text-white tracking-wide"></p>
+            <p id="forgotEmailDisplay" class="font-sans text-lg font-bold text-white tracking-wide break-all"></p>
         </div>
 
         <div class="w-full space-y-6">
-            
             <div id="forgotStateInitial" class="w-full space-y-5">
                 <div class="bg-primary/10 border border-primary/30 rounded-xl p-3 text-center">
                     <p class="text-[13px] text-primary font-semibold">A password reset link will be sent to this email address.</p>
                 </div>
                 
-                <button onclick="sendResetLink()" class="w-full bg-primary text-white rounded-xl py-3.5 font-bold text-[16px] hover:bg-opacity-90 active:scale-[0.98] transition-all btn-text">
+                <button onclick="sendResetLink()" id="btnSendReset" class="w-full bg-primary text-white rounded-xl py-3.5 font-bold text-[16px] hover:bg-opacity-90 active:scale-[0.98] transition-all btn-text">
                     Send Link
                 </button>
             </div>
@@ -422,15 +402,17 @@ body.auth-active .menu-btn span {
                     <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 </div>
                 <p class="text-[13px] text-gray-300">
-                    A password link has been sent to your email <br>
-                    <span id="sentEmailSpan" class="text-green-400 font-medium"></span>
+                    If an account exists, a link was sent to<br>
+                    <span id="sentEmailSpan" class="text-green-400 font-medium break-all"></span>
+                    <br><br>
+                    <span class="text-xs text-gray-400">Check your <b>Spam/Junk</b> folder!</span>
                 </p>
             </div>
         </div>
     </div>
-</div>
+  </div>
 
-<div id="view-registration" class="hidden min-h-full flex flex-col relative px-6 pt-0 fade-in">
+  <div id="view-registration" class="hidden min-h-full flex flex-col relative px-6 pt-0 fade-in">
     
     <div class="w-full mb-6 mt-2 fade-in">
         <div class="relative w-full flex items-center justify-center mb-2 min-h-[28px]">
@@ -446,7 +428,6 @@ body.auth-active .menu-btn span {
     </div>
 
     <main class="flex-1 flex flex-col justify-start w-full max-w-sm mx-auto">
-        
         <p class="text-[10px] text-gray-500 font-bold tracking-wider mb-2 ml-1">Fill all details correctly</p>
 
         <div class="grid grid-cols-2 gap-2">
@@ -537,7 +518,7 @@ body.auth-active .menu-btn span {
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
-  // Your web app's Firebase configuration
+  // --- FIREBASE CONFIGURATION ---
   const firebaseConfig = {
     apiKey: "AIzaSyBjimAKxtrdKBufP5Rw_gUi4BJZRF6AGrs",
     authDomain: "attenza-21fc2.firebaseapp.com",
@@ -547,13 +528,13 @@ body.auth-active .menu-btn span {
     appId: "1:363087900006:web:5072149dc1219b447e2ca7"
   };
 
-  // Initialize Firebase
+  // Initialize Services
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
   const googleProvider = new GoogleAuthProvider();
 
-  // Expose functions to window for HTML onclick handlers
+  // Expose functions to global scope
   window.handleGoogleLogin = handleGoogleLogin;
   window.checkEmailAndProceed = checkEmailAndProceed;
   window.handleEmailLogin = handleEmailLogin;
@@ -561,55 +542,61 @@ body.auth-active .menu-btn span {
   window.sendResetLink = sendResetLink;
   window.signOutUser = () => signOut(auth);
 
-  // --- STATE LISTENER ---
+  // --- AUTH STATE OBSERVER ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      console.log("User detected, checking profile...");
-      // Immediately check profile. Using Popup method, we don't rely on sessionStorage reload logic anymore
+      console.log("User detected:", user.email);
       await checkUserProfile(user);
     } else {
       console.log("No user logged in.");
     }
   });
 
-  // --- LOGIC: GOOGLE LOGIN (POPUP) ---
+  // --- 1. GOOGLE LOGIN ---
   async function handleGoogleLogin() {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      // The onAuthStateChanged listener will automatically fire and run checkUserProfile
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
        console.error("Google login error:", error);
-       alert(error.message);
+       alert("Google Sign-in failed. Please try again.");
     }
   }
 
-  // --- LOGIC: CHECK EMAIL / UI FLOW ---
+  // --- 2. CHECK EMAIL LOGIC ---
   async function checkEmailAndProceed() {
     const emailInput = document.getElementById('emailInput');
     const emailValue = emailInput.value.trim();
     if (!emailValue) return;
 
     const arrowBtn = document.getElementById('emailArrowBtn');
+    const originalContent = arrowBtn.innerHTML;
     
-    // Disable button momentarily
-    const originalBtnContent = arrowBtn.innerHTML;
-    arrowBtn.innerHTML = '...';
+    // UI Loading State
+    arrowBtn.innerHTML = '<div class="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>';
     arrowBtn.disabled = true;
 
     try {
-      // NOTE: YOU MUST DISABLE "EMAIL ENUMERATION PROTECTION" IN FIREBASE CONSOLE
-      const methods = await fetchSignInMethodsForEmail(auth, emailValue);
+      // NOTE: Go to Firebase Console -> Auth -> Settings -> User Actions 
+      // and DISABLE "Email enumeration protection" for this to work precisely.
+      let methods = [];
+      try {
+        methods = await fetchSignInMethodsForEmail(auth, emailValue);
+      } catch (err) {
+        console.warn("Enumeration protection likely enabled. Defaulting to password view.", err);
+        // Fallback: Assume user exists to protect privacy, show password field
+        methods = ['password']; 
+      }
       
       if (methods.length === 0) {
-        // NEW USER -> Registration View UI
+        // NEW USER -> Registration
+        console.log("New user detected");
         document.getElementById('regEmailInput').value = emailValue;
         document.getElementById('view-login').style.display = 'none';
-        
-        const regView = document.getElementById('view-registration');
-        regView.classList.remove('hidden');
-        regView.style.display = 'flex';
+        document.getElementById('view-registration').classList.remove('hidden');
+        document.getElementById('view-registration').style.display = 'flex';
       } else {
-        // EXISTING USER -> Password View UI
+        // EXISTING USER -> Password
+        console.log("Existing user detected");
         arrowBtn.classList.add('hidden');
         document.getElementById('passwordContainer').classList.remove('hidden');
         document.getElementById('continueBtn').classList.remove('hidden');
@@ -617,18 +604,14 @@ body.auth-active .menu-btn span {
       }
     } catch (error) {
       console.error("Check email error:", error);
-      // Fallback: Assume existing and show password field to be safe
-      arrowBtn.classList.add('hidden');
-      document.getElementById('passwordContainer').classList.remove('hidden');
-      document.getElementById('continueBtn').classList.remove('hidden');
-      document.getElementById('loginPassword').focus();
+      alert("Something went wrong. Please check your internet.");
     } finally {
-      arrowBtn.innerHTML = originalBtnContent;
+      arrowBtn.innerHTML = originalContent;
       arrowBtn.disabled = false;
     }
   }
 
-  // --- LOGIC: EMAIL LOGIN (EXISTING) ---
+  // --- 3. EMAIL LOGIN ---
   async function handleEmailLogin() {
     const email = document.getElementById('emailInput').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -639,21 +622,23 @@ body.auth-active .menu-btn span {
     }
 
     const btn = document.getElementById('continueBtn');
+    const prevText = btn.textContent;
     btn.textContent = "Verifying...";
     btn.disabled = true;
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged will handle redirect
     } catch (error) {
       console.error("Login error:", error);
-      alert("Login failed: " + error.message);
-      btn.textContent = "Continue";
+      let msg = "Login failed.";
+      if(error.code === 'auth/invalid-credential') msg = "Incorrect password or email.";
+      alert(msg);
+      btn.textContent = prevText;
       btn.disabled = false;
     }
   }
 
-  // --- LOGIC: COMPLETE REGISTRATION (PROFILE SETUP) ---
+  // --- 4. REGISTRATION (PROFILE) ---
   async function completeRegistration() {
     const fullName = document.getElementById('regFullName').value.trim();
     const college = document.getElementById('regCollege').value;
@@ -661,38 +646,40 @@ body.auth-active .menu-btn span {
     const section = document.getElementById('regSection').value;
     const rollNo = document.getElementById('regRollNo').value.trim();
     const password = document.getElementById('regPassword').value;
-    const email = document.getElementById('regEmailInput').value;
+    const email = document.getElementById('regEmailInput').value.trim();
 
     if (!fullName || !college || !course || !section || !rollNo) {
-      alert("Please fill all fields correctly.");
+      alert("Please fill all fields.");
       return;
     }
 
     const btn = document.querySelector('#view-registration button[onclick="completeRegistration()"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Creating...';
     btn.disabled = true;
     
     try {
       let user = auth.currentUser;
 
-      // Scenario 1: New Email User (Not logged in yet)
+      // If not logged in (Email flow)
       if (!user) {
         if (!password) {
-          alert("Password is required for new account.");
+          alert("Password is required.");
+          btn.innerHTML = originalText;
           btn.disabled = false;
           return;
         }
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         user = credential.user;
       } 
-      // Scenario 2: Google User (Logged in, just setting up profile)
-      else if (user) {
-        // If password provided, try to link/update (optional)
+      // If logged in via Google but creating profile
+      else {
         if (password) {
-            try { await updatePassword(user, password); } catch(e) {}
+            try { await updatePassword(user, password); } catch(e) { console.log("Pass update skipped/failed"); }
         }
       }
 
-      // Save Profile to Firestore
+      // Create User Document
       await setDoc(doc(db, "users", user.uid), {
         name: fullName,
         college: college,
@@ -704,88 +691,111 @@ body.auth-active .menu-btn span {
         createdAt: serverTimestamp()
       });
 
-      // Redirect to INDEX.HTML
       window.location.replace("index.html");
 
     } catch (error) {
       console.error("Registration error:", error);
-      alert("Registration failed: " + error.message);
+      alert("Error: " + error.message);
+      btn.innerHTML = originalText;
       btn.disabled = false;
     }
   }
 
-  // --- LOGIC: CHECK PROFILE (FORCED SWAP) ---
+  // --- 5. CHECK USER PROFILE ---
   async function checkUserProfile(user) {
     try {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
-        // CASE 1: Profile Exists AND is Complete -> Go to INDEX.HTML
         if (userSnap.exists() && userSnap.data().profileComplete === true) {
-            console.log("Profile complete. Redirecting to Index.");
             window.location.replace("index.html");
             return;
         } 
         
-        // CASE 2: Profile Missing or Incomplete -> FORCE Registration UI
-        console.log("Profile incomplete. Forcing registration view.");
-        
-        // Ensure Auth UI Wrapper is visible (in case user came from landing)
+        // Force Registration View
         document.getElementById('landing-view').style.display = 'none';
         document.getElementById('auth-wrapper').classList.add('active-view');
         document.body.classList.add('auth-active');
         document.getElementById('getStartedBtnArea').classList.add('hide-btn');
 
-        // HIDE Login View completely
         document.getElementById('view-login').style.display = 'none';
-        document.getElementById('view-login').classList.add('hidden');
-
-        // SHOW Registration View
         const regView = document.getElementById('view-registration');
         regView.classList.remove('hidden');
         regView.style.display = 'flex';
         
-        // Pre-fill Email
         document.getElementById('regEmailInput').value = user.email;
-        // Pre-fill Name (if available from Google)
         if (user.displayName) {
              document.getElementById('regFullName').value = user.displayName;
         }
 
     } catch (err) {
-        console.error("Error checking profile:", err);
-        alert("Connectivity Error: Could not verify user profile.");
+        console.error("Profile check error:", err);
     }
   }
 
-  // --- LOGIC: PASSWORD RESET ---
+  // --- 6. PASSWORD RESET LOGIC (Refined) ---
   async function sendResetLink() {
-    const email = document.getElementById('forgotEmailDisplay').innerText;
-    if(!email) return;
+    // Get email from DOM and clean it
+    const emailRaw = document.getElementById('forgotEmailDisplay').innerText;
+    const email = emailRaw ? emailRaw.trim() : "";
+
+    if(!email) {
+        alert("No email address found.");
+        return;
+    }
+
+    const btn = document.getElementById('btnSendReset');
+    btn.innerText = "Sending...";
+    btn.disabled = true;
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      // Configuration object (optional, can be null)
+      const actionCodeSettings = {
+        url: window.location.href, // Returns user here after reset
+      };
+      
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      
+      // Update UI on success
+      console.log("Reset email sent to:", email);
       document.getElementById('sentEmailSpan').textContent = email;
       document.getElementById('forgotStateInitial').classList.add('hidden');
       document.getElementById('forgotStateSuccess').classList.remove('hidden');
+
     } catch (error) {
-        alert("Error sending link: " + error.message);
+        console.error("Reset Error:", error);
+        if (error.code === 'auth/user-not-found') {
+            // Security: Don't reveal user doesn't exist, just show success or generic message
+            alert("If that email is registered, we have sent a link.");
+        } else {
+            alert("Error: " + error.message);
+        }
+        btn.innerText = "Send Link";
+        btn.disabled = false;
     }
   }
 
 </script>
 
 <script>
-/* ================= LANDING JS ================= */
+/* ================= UI INTERACTION SCRIPTS ================= */
 const baseLabels = ["Track  attendance", "Get  detailed  stats", "Subjects  analytics", "Plan  safebunks", "Tips  &  roadmap", "Ask  doubts  to  AI", "Log  short  notes", "Realtime  counts", "View  edit  anytime", "College  friendly"];
 const labels = Array.from({ length: 20 }, () => baseLabels).flat();
 const list = document.getElementById("list");
-labels.forEach(text => { const el = document.createElement("div"); el.className = "item"; el.textContent = text; list.appendChild(el); });
 
+// Init List
+labels.forEach(text => { 
+    const el = document.createElement("div"); 
+    el.className = "item"; 
+    el.textContent = text; 
+    list.appendChild(el); 
+});
+
+// Animation Loop
 const items = [...document.querySelectorAll(".item")];
 let index = 1;
 function render() {
-  const h = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--item-h"));
+  const h = 34; // Fixed height from CSS
   list.style.transform = `translateY(${-(index - 1) * h}px)`;
   items.forEach((el, i) => {
     el.classList.remove("active", "near");
@@ -793,18 +803,31 @@ function render() {
     else if (Math.abs(i - index) === 1) el.classList.add("near");
   });
 }
+
 function step() {
-  if (index >= labels.length - 2) { clearInterval(timer); list.style.transition = "none"; render(); return; }
-  index++; list.style.transition = `transform 500ms cubic-bezier(0.4,0,0.2,1)`; render();
+  if (index >= labels.length - 2) { 
+      // Reset animation smoothly if needed, or just stop
+      clearInterval(timer); 
+      return; 
+  }
+  index++; 
+  list.style.transition = `transform 500ms cubic-bezier(0.4,0,0.2,1)`; 
+  render();
 }
+
 render();
 const timer = setInterval(step, 1200);
 
+// Menu Handling
 const menuBtn = document.querySelector(".menu-btn");
 const menuDropdown = document.getElementById("menuDropdown");
-menuBtn.addEventListener("click", e => { e.stopPropagation(); menuDropdown.style.display = menuDropdown.style.display === "block" ? "none" : "block"; });
+menuBtn.addEventListener("click", e => { 
+    e.stopPropagation(); 
+    menuDropdown.style.display = menuDropdown.style.display === "block" ? "none" : "block"; 
+});
 document.addEventListener("click", () => { menuDropdown.style.display = "none"; });
 
+// View Transition
 function transitionToAuth() {
     document.getElementById('getStartedBtnArea').classList.add('hide-btn');
     document.getElementById('landing-view').classList.add('hidden-view');
@@ -815,14 +838,14 @@ function transitionToAuth() {
     }, 600);
 }
 
-/* ================= AUTH JS (HELPERS) ================= */
+// Input Logic
 function toggleArrow() {
     const emailInput = document.getElementById('emailInput');
     const arrowBtn = document.getElementById('emailArrowBtn');
     const emailIcon = document.getElementById('emailIconStatic');
     const passwordContainer = document.getElementById('passwordContainer');
     
-    if (emailInput.value.length > 0 && passwordContainer.classList.contains('hidden')) {
+    if (emailInput.value.trim().length > 0 && passwordContainer.classList.contains('hidden')) {
         arrowBtn.classList.remove('hidden');
         emailIcon.classList.add('hidden');
     } else {
@@ -835,14 +858,10 @@ function toggleArrow() {
 
 function togglePasswordVisibility(id) {
     const input = document.getElementById(id);
-    if (input.type === "password") {
-        input.type = "text";
-    } else {
-        input.type = "password";
-    }
+    input.type = input.type === "password" ? "text" : "password";
 }
 
-/* SWITCH TO FORGOT PASSWORD VIEW */
+// Navigation
 function switchToForgot() {
     const emailValue = document.getElementById('emailInput').value.trim();
     document.getElementById('view-login').style.display = 'none';
@@ -850,22 +869,23 @@ function switchToForgot() {
     forgotView.classList.remove('hidden');
     forgotView.style.display = 'flex';
     
-    // Set Email in TEXT field (innerText)
+    // Pass Email securely
     document.getElementById('forgotEmailDisplay').innerText = emailValue || "No email provided";
     
     // Reset State
     document.getElementById('forgotStateInitial').classList.remove('hidden');
     document.getElementById('forgotStateSuccess').classList.add('hidden');
+    document.getElementById('btnSendReset').innerText = "Send Link";
+    document.getElementById('btnSendReset').disabled = false;
 }
 
-/* GENERIC BACK FUNCTION */
 function backToLogin(currentViewId) {
     document.getElementById(currentViewId).style.display = 'none';
     document.getElementById(currentViewId).classList.add('hidden');
     
     const loginView = document.getElementById('view-login');
     loginView.style.display = 'flex';
-    document.getElementById('view-login').classList.remove('hidden'); // Ensure visible
+    loginView.classList.remove('hidden'); 
     
     // Reset Login Elements
     document.getElementById('passwordContainer').classList.add('hidden');
