@@ -113,7 +113,7 @@ body.auth-active .subtitle {
 }
 /* ================= STRIP ================= */
 .strip {
-  margin-top: 25px;
+  margin-top: 25px;  
   width: 100%;
   padding: 8px 0;
   background: #f8e6d8;
@@ -207,7 +207,7 @@ body.auth-active .menu-btn span {
     opacity: 0;
     transform: translateY(-20px);
     pointer-events: none;
-    position: absolute;
+    position: absolute;  /* Ensures it doesn't take up space */
     top: 0;
     left: 0;
     width: 100%;
@@ -609,17 +609,48 @@ body.auth-active .menu-btn span {
     const emailValue = emailInput.value.trim();
     if (!emailValue) return;
 
-    // We assume OLD USER (Login flow) first to avoid enumerating emails
     const arrowBtn = document.getElementById('emailArrowBtn');
     
-    // Switch to Password UI
-    arrowBtn.classList.add('hidden');
-    document.getElementById('passwordContainer').classList.remove('hidden');
-    document.getElementById('continueBtn').classList.remove('hidden');
-    document.getElementById('loginPassword').focus();
+    // Disable button momentarily
+    const originalBtnContent = arrowBtn.innerHTML;
+    arrowBtn.innerHTML = '...';
+    arrowBtn.disabled = true;
+
+    try {
+      // NOTE: YOU MUST DISABLE "EMAIL ENUMERATION PROTECTION" IN FIREBASE CONSOLE
+      const methods = await fetchSignInMethodsForEmail(auth, emailValue);
+      
+      if (methods.length === 0) {
+        // NEW USER -> Registration View UI
+        document.getElementById('regEmailInput').value = emailValue;
+        document.getElementById('view-login').style.display = 'none';
+        
+        const regView = document.getElementById('view-registration');
+        regView.classList.remove('hidden');
+        regView.style.display = 'flex';
+      } else {
+        // EXISTING USER -> Password View UI
+        arrowBtn.classList.add('hidden');
+        document.getElementById('passwordContainer').classList.remove('hidden');
+        document.getElementById('continueBtn').classList.remove('hidden');
+        document.getElementById('loginPassword').focus();
+      }
+    } catch (error) {
+      console.error("Check email error:", error);
+      alert("Error checking email: " + error.message + "\nMake sure 'Email Enumeration Protection' is disabled in Firebase Console.");
+      
+      // Fallback: Assume existing and show password field to be safe
+      arrowBtn.classList.add('hidden');
+      document.getElementById('passwordContainer').classList.remove('hidden');
+      document.getElementById('continueBtn').classList.remove('hidden');
+      document.getElementById('loginPassword').focus();
+    } finally {
+      arrowBtn.innerHTML = originalBtnContent;
+      arrowBtn.disabled = false;
+    }
   }
 
-  // --- LOGIC: EMAIL LOGIN (EXISTING OR NEW) ---
+  // --- LOGIC: EMAIL LOGIN (EXISTING) ---
   async function handleEmailLogin() {
     const email = document.getElementById('emailInput').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -636,34 +667,12 @@ body.auth-active .menu-btn span {
     try {
       sessionStorage.setItem('auth_flow_active', 'true');
       await signInWithEmailAndPassword(auth, email, password);
-      // Success? onAuthStateChanged will handle redirect to index.html
+      // onAuthStateChanged will handle redirect
     } catch (error) {
-      
-      // ERROR HANDLING: If User Not Found -> It is a NEW USER
-      if (error.code === 'auth/user-not-found') {
-          console.log("User not found, switching to Registration view");
-          
-          // Switch to Registration View
-          document.getElementById('view-login').style.display = 'none';
-          const regView = document.getElementById('view-registration');
-          regView.classList.remove('hidden');
-          regView.style.display = 'flex';
-          
-          // Pre-fill fields
-          document.getElementById('regEmailInput').value = email;
-          // Optionally pre-fill password since they just typed it
-          // document.getElementById('regPassword').value = password; 
-
-      } else if (error.code === 'auth/wrong-password') {
-          alert("Incorrect password. Please try again or reset it.");
-          btn.textContent = "Continue";
-          btn.disabled = false;
-      } else {
-          console.error("Login error:", error);
-          alert("Login failed: " + error.message);
-          btn.textContent = "Continue";
-          btn.disabled = false;
-      }
+      console.error("Login error:", error);
+      alert("Login failed: " + error.message);
+      btn.textContent = "Continue";
+      btn.disabled = false;
     }
   }
 
@@ -688,14 +697,13 @@ body.auth-active .menu-btn span {
     try {
       let user = auth.currentUser;
 
-      // Scenario 1: New Email User (User entered email -> password -> continue -> failed login -> switched here)
+      // Scenario 1: New Email User (Not logged in yet)
       if (!user) {
         if (!password) {
           alert("Password is required for new account.");
           btn.disabled = false;
           return;
         }
-        // Create the user
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         user = credential.user;
       } 
