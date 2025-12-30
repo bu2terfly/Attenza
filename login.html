@@ -588,8 +588,6 @@ body.auth-active .menu-btn span {
       await checkUserProfile(user);
     } else {
       console.log("No user logged in.");
-      // If user manually logged out, clear the session flag
-      // But if we are just loading, we leave it to the session check
     }
   });
 
@@ -726,8 +724,8 @@ body.auth-active .menu-btn span {
         createdAt: serverTimestamp()
       });
 
-      // Redirect to Dashboard
-      window.location.replace("dashboard.html");
+      // Redirect to INDEX.HTML
+      window.location.replace("index.html");
 
     } catch (error) {
       console.error("Registration error:", error);
@@ -742,10 +740,10 @@ body.auth-active .menu-btn span {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
-        // CASE 1: Profile Exists AND is Complete -> Go to Dashboard
+        // CASE 1: Profile Exists AND is Complete -> Go to INDEX.HTML
         if (userSnap.exists() && userSnap.data().profileComplete === true) {
-            console.log("Profile complete. Redirecting to Dashboard.");
-            window.location.replace("dashboard.html");
+            console.log("Profile complete. Redirecting to Index.");
+            window.location.replace("index.html");
             return;
         } 
         
@@ -770,7 +768,6 @@ body.auth-active .menu-btn span {
 
     } catch (err) {
         console.error("Error checking profile:", err);
-        // On error, we might stay on login or alert user
     }
   }
 
