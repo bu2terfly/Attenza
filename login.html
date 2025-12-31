@@ -485,6 +485,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
                 <span>Complete Registration</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
             </button>
+            <p class="text-[10px] text-center text-primary mt-2 opacity-80 font-medium">
+                Note: After google verification your account will be created.
+            </p>
         </div>
 
         <div class="text-center text-[11px] text-gray-500 mt-2 mb-8">
@@ -508,7 +511,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
     sendPasswordResetEmail,
     EmailAuthProvider,
     linkWithCredential,
-    signOut
+    linkWithPopup,
+    signOut,
+    deleteUser
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { 
     getFirestore, 
@@ -543,9 +548,6 @@ body.auth-active .menu-btn span { background: #ffffff; }
   const continueBtn = document.getElementById('continueBtn');
   const loginPassword = document.getElementById('loginPassword');
   
-  // Variables for Account Linking
-  let pendingCredential = null;
-
   // expose some functions for inline handlers
   window.checkEmailAndProceed = checkEmailAndProceed;
   window.handleEmailLogin = handleEmailLogin;
@@ -574,54 +576,29 @@ body.auth-active .menu-btn span { background: #ffffff; }
         regView.classList.remove('hidden');
         regView.style.display = 'flex';
         
-        document.getElementById('regEmailInput').value = user.email;
-        if (user.displayName) document.getElementById('regFullName').value = user.displayName;
+        // Populate inputs if coming from Google login initially
+        if (!document.getElementById('regEmailInput').value && user.email) {
+            document.getElementById('regEmailInput').value = user.email;
+        }
+        if (user.displayName && !document.getElementById('regFullName').value) {
+            document.getElementById('regFullName').value = user.displayName;
+        }
       } catch (err) {
         console.error("Profile check error:", err);
       }
-    } else {
-        // Reset state on sign out
-        pendingCredential = null;
     }
   });
 
-  // --- GOOGLE LOGIN WITH AUTO-LINKING SUPPORT ---
+  // --- GOOGLE LOGIN (Login Page) ---
   async function handleGoogleLogin() {
     try {
       await signInWithPopup(auth, googleProvider);
-      // If success, standard onAuthStateChanged handles it.
     } catch (error) {
       console.error("Google login error:", error);
-      
-      // CRITICAL LOGIC: If account exists with password, force password entry & link
       if (error.code === 'auth/account-exists-with-different-credential') {
-        
-        // 1. Capture the pending Google Credential
-        pendingCredential = GoogleAuthProvider.credentialFromError(error);
-        
-        // 2. Extract email from error
-        const existingEmail = error.customData.email;
-        
-        // 3. UI Update: Prompt for password
-        if (existingEmail) {
-            // Fill email and disable it so they can't change it
-            emailInput.value = existingEmail;
-            emailInput.disabled = true; 
-            
-            // Show password field
-            emailIconStatic.classList.add('hidden');
-            emailArrowBtn.classList.add('hidden');
-            passwordContainer.classList.remove('hidden');
-            continueBtn.classList.remove('hidden');
-            
-            // Update button text to indicate linking
-            continueBtn.textContent = "Verify Password to Link Google";
-            
-            alert("This email already has a password set. Please enter your password once to verify and link your Google account.");
-            loginPassword.focus();
-        }
+          alert("This email is registered with a Password. Please log in with your password first.");
       } else {
-        alert("Google Sign In Failed: " + error.message);
+          alert("Sign in failed. Please try again.");
       }
     }
   }
@@ -645,8 +622,8 @@ body.auth-active .menu-btn span { background: #ffffff; }
         console.warn("fetchSignInMethodsForEmail error:", err);
       }
 
-      // If new user -> Register
       if (methods.length === 0) {
+        // New user -> Registration
         document.getElementById('regEmailInput').value = emailValue;
         document.getElementById('view-login').style.display = 'none';
         document.getElementById('view-registration').classList.remove('hidden');
@@ -654,9 +631,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
         return;
       }
 
-      // If existing user (password or google), show password input
-      // We allow them to try password. If they only have Google and no password,
-      // signInWithEmailAndPassword will fail, which is fine.
+      // Existing User -> Show Password
       emailIconStatic.classList.add('hidden');
       emailArrowBtn.classList.add('hidden');
       passwordContainer.classList.remove('hidden');
@@ -672,7 +647,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- EMAIL LOGIN (AND LINKING IF PENDING) ---
+  // --- EMAIL LOGIN ---
   async function handleEmailLogin() {
     const email = emailInput.value.trim();
     const password = loginPassword.value;
@@ -685,37 +660,21 @@ body.auth-active .menu-btn span { background: #ffffff; }
     btn.disabled = true;
 
     try {
-      // 1. Sign in with Email/Password
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      // 2. CHECK IF WE NEED TO LINK GOOGLE
-      if (pendingCredential) {
-          try {
-              // Merge the pending Google credential into this user account
-              await linkWithCredential(userCredential.user, pendingCredential);
-              console.log("SUCCESS: Google account linked to Email account.");
-              alert("Google account linked successfully! You can now use Google login.");
-          } catch(linkErr) {
-              console.error("Linking failed:", linkErr);
-              // We don't stop here, the user is still logged in via password, which is fine.
-          }
-      }
-
-      // Login success -> Redirect will happen via onAuthStateChanged
-
+      await signInWithEmailAndPassword(auth, email, password);
+      // Redirect happens in onAuthStateChanged
     } catch (error) {
       console.error("Login error:", error);
       if (error.code === "auth/wrong-password") {
           alert("Incorrect password.");
       } else {
-          alert("Login failed. " + error.message);
+          alert("Login failed. Please check credentials.");
       }
       btn.textContent = prevText;
       btn.disabled = false;
     }
   }
 
-  // --- REGISTRATION ---
+  // --- REGISTRATION (WIZARD STYLE WITH REVOKE LOGIC) ---
   async function completeRegistration() {
     const fullName = document.getElementById('regFullName').value.trim();
     const college = document.getElementById('regCollege').value;
@@ -725,40 +684,88 @@ body.auth-active .menu-btn span { background: #ffffff; }
     const password = document.getElementById('regPassword').value;
     const email = document.getElementById('regEmailInput').value.trim();
 
+    // 1. Validate Form
     if (!fullName || !college || !course || !section || !rollNo) {
       alert("Please fill all fields.");
       return;
     }
 
     const btn = document.querySelector('#completeRegBtn');
-    const originalText = btn ? btn.innerHTML : 'Creating...';
+    const originalText = btn ? btn.innerHTML : 'Complete Registration';
     if (btn) { btn.innerHTML = 'Creating...'; btn.disabled = true; }
 
     try {
       let user = auth.currentUser;
 
-      // Create new account if needed
+      // 2. Scenario: New Email/Password User
       if (!user) {
         if (!password) {
-          alert("Password is required for new account.");
+          alert("Password is required.");
           if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
           return;
         }
+
+        // A. Create the base account
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         user = credential.user;
-      } 
-      // User came from Google but is completing profile
-      else if (password) {
-        // Optional: Link password to Google user if they typed one
+
+        // B. Update UI for Step 2
+        btn.innerHTML = `
+            <svg class="w-5 h-5 animate-spin mr-2" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Verifying with Google...
+        `;
+
+        // C. Trigger Google Link Immediately
         try {
+            googleProvider.setCustomParameters({ 
+                prompt: 'select_account',
+                login_hint: email 
+            });
+            
+            // Wait for user to pick account in popup
+            const result = await linkWithPopup(user, googleProvider);
+            
+            // D. CRITICAL: Validate Email Match
+            // We check the email of the provider credential we just linked
+            const providerProfile = result.user.providerData.find(p => p.providerId === 'google.com');
+            
+            if (providerProfile && providerProfile.email !== email) {
+                throw new Error("EMAIL_MISMATCH");
+            }
+
+        } catch (linkError) {
+            // E. Revoke Process on Error or Mismatch
+            console.error("Linking failed or Mismatch:", linkError);
+            
+            // Delete the temporary user we just created
+            await deleteUser(user);
+
+            if (linkError.message === "EMAIL_MISMATCH") {
+                alert("Error: The Google account you selected does not match the email you entered (" + email + "). Registration cancelled.");
+            } else if (linkError.code === 'auth/credential-already-in-use') {
+                 alert("Error: This Google account is already linked to another user. Registration cancelled.");
+            } else {
+                alert("Google verification was cancelled or failed. You must verify with Google to create this account.");
+            }
+            
+            // Restart the page/process
+            window.location.reload();
+            return;
+        }
+
+      } 
+      // Scenario: User already signed in (started with Google), just filling details
+      else if (password) {
+         try {
             const credential = EmailAuthProvider.credential(user.email, password);
             await linkWithCredential(user, credential);
-        } catch(e) {
-            console.log("Could not link password (maybe already exists):", e);
-        }
+        } catch(e) { console.log("Password linking skipped:", e); }
       }
 
-      // Save Data
+      // 3. Save User Profile (Only reached if verification passed)
       await setDoc(doc(db, "users", user.uid), {
         name: fullName,
         college: college,
@@ -770,6 +777,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
         createdAt: serverTimestamp()
       });
 
+      // 4. Redirect
       window.location.replace("index.html");
 
     } catch (error) {
@@ -875,16 +883,13 @@ function toggleArrow() {
     const emailIcon = document.getElementById('emailIconStatic');
     const passwordContainer = document.getElementById('passwordContainer');
     
-    // Only toggle if not disabled (disabled means we are in linking mode)
-    if (!emailInput.disabled) {
-        if (emailInput.value.trim().length > 0 && passwordContainer.classList.contains('hidden')) {
-            arrowBtn.classList.remove('hidden');
-            emailIcon.classList.add('hidden');
-        } else {
-            if (passwordContainer.classList.contains('hidden')) {
-                arrowBtn.classList.add('hidden');
-                emailIcon.classList.remove('hidden');
-            }
+    if (emailInput.value.trim().length > 0 && passwordContainer.classList.contains('hidden')) {
+        arrowBtn.classList.remove('hidden');
+        emailIcon.classList.add('hidden');
+    } else {
+        if (passwordContainer.classList.contains('hidden')) {
+            arrowBtn.classList.add('hidden');
+            emailIcon.classList.remove('hidden');
         }
     }
 }
@@ -923,11 +928,6 @@ function backToLogin(currentViewId) {
     // Reset Login Elements
     document.getElementById('passwordContainer').classList.add('hidden');
     document.getElementById('continueBtn').classList.add('hidden');
-    
-    // Re-enable email input in case it was locked by linking flow
-    const emailInput = document.getElementById('emailInput');
-    emailInput.disabled = false;
-    
     toggleArrow(); 
 }
 </script>
