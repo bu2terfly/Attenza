@@ -485,8 +485,8 @@ body.auth-active .menu-btn span { background: #ffffff; }
                 <span>Complete Registration</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
             </button>
-            <p class="text-[10px] text-center text-primary mt-2 opacity-80 font-medium">
-                Note: After google verification your account will be created.
+            <p id="googleVerifyNote" class="hidden text-[11px] text-center text-primary mt-2 opacity-90 font-medium bg-primary/10 py-1.5 px-2 rounded-lg border border-primary/20">
+                ⚠️ Final Step: Please verify with Google to enable one-click login and secure your account.
             </p>
         </div>
 
@@ -548,6 +548,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
   const continueBtn = document.getElementById('continueBtn');
   const loginPassword = document.getElementById('loginPassword');
   
+  // Pending Credential for the "Ask Password Once" flow
+  let pendingCredential = null;
+
   // expose some functions for inline handlers
   window.checkEmailAndProceed = checkEmailAndProceed;
   window.handleEmailLogin = handleEmailLogin;
@@ -557,6 +560,11 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
   // --- AUTH STATE OBSERVER ---
   onAuthStateChanged(auth, async (user) => {
+    // CRITICAL: If we are in the middle of a link operation, DO NOT Redirect.
+    if (pendingCredential) {
+        return; 
+    }
+
     if (user) {
       try {
         const userRef = doc(db, "users", user.uid);
@@ -589,16 +597,38 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   });
 
-  // --- GOOGLE LOGIN (Login Page) ---
+  // --- GOOGLE LOGIN (Reactive: Ask Password Once if needed) ---
   async function handleGoogleLogin() {
     try {
       await signInWithPopup(auth, googleProvider);
+      // Success: Standard onAuthStateChanged handles the rest
     } catch (error) {
-      console.error("Google login error:", error);
+      
+      // LOGIC: If account exists with password -> Ask for password once.
       if (error.code === 'auth/account-exists-with-different-credential') {
-          alert("This email is registered with a Password. Please log in with your password first.");
+        
+        // 1. Save the Google Credential to link later
+        pendingCredential = GoogleAuthProvider.credentialFromError(error);
+        const existingEmail = error.customData.email;
+        
+        // 2. UI Update: Show Password Field automatically
+        if (existingEmail) {
+            emailInput.value = existingEmail;
+            emailInput.disabled = true; // Lock email
+            
+            emailIconStatic.classList.add('hidden');
+            emailArrowBtn.classList.add('hidden');
+            passwordContainer.classList.remove('hidden');
+            continueBtn.classList.remove('hidden');
+            
+            continueBtn.textContent = "Verify & Link Account";
+            
+            alert("This email is already registered with a password. Please enter your password once to link your Google account.");
+            loginPassword.focus();
+        }
       } else {
-          alert("Sign in failed. Please try again.");
+        console.error("Google login error:", error);
+        alert("Sign in failed. Please try again.");
       }
     }
   }
@@ -647,7 +677,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- EMAIL LOGIN ---
+  // --- EMAIL LOGIN (HANDLES LINKING) ---
   async function handleEmailLogin() {
     const email = emailInput.value.trim();
     const password = loginPassword.value;
@@ -660,8 +690,35 @@ body.auth-active .menu-btn span { background: #ffffff; }
     btn.disabled = true;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Redirect happens in onAuthStateChanged
+      // 1. Sign in with Email/Password
+      // This will Trigger onAuthStateChanged BUT we block it because pendingCredential might be set
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // 2. IF PENDING GOOGLE CREDENTIAL EXISTS -> LINK IT NOW
+      if (pendingCredential) {
+          try {
+              // Wait for the link to complete
+              await linkWithCredential(userCredential.user, pendingCredential);
+              console.log("SUCCESS: Google account linked.");
+              alert("Google account successfully linked! You can now use Google login.");
+          } catch(linkErr) {
+              console.error("Linking failed:", linkErr);
+          }
+          // Clear Pending so Redirect can happen
+          pendingCredential = null;
+      }
+
+      // 3. Manual Check/Redirect (Safe guard against race conditions)
+      if(userCredential.user) {
+           const userRef = doc(db, "users", userCredential.user.uid);
+           const userSnap = await getDoc(userRef);
+           if (userSnap.exists() && userSnap.data().profileComplete === true) {
+                window.location.replace("index.html");
+           } else {
+               window.location.reload();
+           }
+      }
+
     } catch (error) {
       console.error("Login error:", error);
       if (error.code === "auth/wrong-password") {
@@ -674,7 +731,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- REGISTRATION (WIZARD STYLE WITH REVOKE LOGIC) ---
+  // --- REGISTRATION (PROACTIVE SETUP WIZARD) ---
   async function completeRegistration() {
     const fullName = document.getElementById('regFullName').value.trim();
     const college = document.getElementById('regCollege').value;
@@ -684,20 +741,21 @@ body.auth-active .menu-btn span { background: #ffffff; }
     const password = document.getElementById('regPassword').value;
     const email = document.getElementById('regEmailInput').value.trim();
 
-    // 1. Validate Form
     if (!fullName || !college || !course || !section || !rollNo) {
       alert("Please fill all fields.");
       return;
     }
 
     const btn = document.querySelector('#completeRegBtn');
+    const note = document.getElementById('googleVerifyNote');
     const originalText = btn ? btn.innerHTML : 'Complete Registration';
+    
     if (btn) { btn.innerHTML = 'Creating...'; btn.disabled = true; }
 
     try {
       let user = auth.currentUser;
 
-      // 2. Scenario: New Email/Password User
+      // Scenario: New Email/Password User -> Force Google Link
       if (!user) {
         if (!password) {
           alert("Password is required.");
@@ -705,11 +763,11 @@ body.auth-active .menu-btn span { background: #ffffff; }
           return;
         }
 
-        // A. Create the base account
+        // 1. Create Base Account
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         user = credential.user;
 
-        // B. Update UI for Step 2
+        // 2. Update UI for Wizard Step
         btn.innerHTML = `
             <svg class="w-5 h-5 animate-spin mr-2" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -717,55 +775,47 @@ body.auth-active .menu-btn span { background: #ffffff; }
             </svg>
             Verifying with Google...
         `;
+        note.classList.remove('hidden'); // Show the explanation note
 
-        // C. Trigger Google Link Immediately
+        // 3. Force Google Link
         try {
             googleProvider.setCustomParameters({ 
                 prompt: 'select_account',
                 login_hint: email 
             });
             
-            // Wait for user to pick account in popup
             const result = await linkWithPopup(user, googleProvider);
             
-            // D. CRITICAL: Validate Email Match
-            // We check the email of the provider credential we just linked
+            // Validate Email Match
             const providerProfile = result.user.providerData.find(p => p.providerId === 'google.com');
-            
             if (providerProfile && providerProfile.email !== email) {
                 throw new Error("EMAIL_MISMATCH");
             }
-
         } catch (linkError) {
-            // E. Revoke Process on Error or Mismatch
-            console.error("Linking failed or Mismatch:", linkError);
+            console.error("Linking failed:", linkError);
             
-            // Delete the temporary user we just created
+            // STRICT MODE: Delete user if they don't link (keeps DB clean)
             await deleteUser(user);
 
             if (linkError.message === "EMAIL_MISMATCH") {
                 alert("Error: The Google account you selected does not match the email you entered (" + email + "). Registration cancelled.");
-            } else if (linkError.code === 'auth/credential-already-in-use') {
-                 alert("Error: This Google account is already linked to another user. Registration cancelled.");
             } else {
-                alert("Google verification was cancelled or failed. You must verify with Google to create this account.");
+                alert("Google verification was skipped or failed. You must verify with Google to complete registration.");
             }
             
-            // Restart the page/process
             window.location.reload();
             return;
         }
-
       } 
-      // Scenario: User already signed in (started with Google), just filling details
+      // Scenario: Already signed in via Google, just adding details
       else if (password) {
          try {
             const credential = EmailAuthProvider.credential(user.email, password);
             await linkWithCredential(user, credential);
-        } catch(e) { console.log("Password linking skipped:", e); }
+        } catch(e) { console.log("Password linking skipped (already linked?):", e); }
       }
 
-      // 3. Save User Profile (Only reached if verification passed)
+      // 4. Save Profile Data
       await setDoc(doc(db, "users", user.uid), {
         name: fullName,
         college: college,
@@ -777,7 +827,6 @@ body.auth-active .menu-btn span { background: #ffffff; }
         createdAt: serverTimestamp()
       });
 
-      // 4. Redirect
       window.location.replace("index.html");
 
     } catch (error) {
@@ -787,7 +836,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- PASSWORD RESET ---
+  // --- PASSWORD RESET (Brevo SMTP Optimized) ---
   async function sendResetLink() {
     const emailRaw = document.getElementById('forgotEmailDisplay').innerText;
     const email = emailRaw ? emailRaw.trim() : "";
@@ -798,20 +847,34 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
 
     const btn = document.getElementById('btnSendReset');
-    btn.innerText = "Sending...";
+    const originalText = btn.innerText;
+
+    btn.innerText = "Sending Link...";
     btn.disabled = true;
 
     try {
-      const actionCodeSettings = { url: window.location.href };
+      const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+      
+      // Calls Firebase -> Custom SMTP (Brevo)
       await sendPasswordResetEmail(auth, email, actionCodeSettings);
+
       document.getElementById('sentEmailSpan').textContent = email;
       document.getElementById('forgotStateInitial').classList.add('hidden');
       document.getElementById('forgotStateSuccess').classList.remove('hidden');
+      
     } catch (error) {
         console.error("Reset Error:", error);
-        alert("Error: " + (error.message || "Failed to send link"));
-        btn.innerText = "Send Link";
-        btn.disabled = false;
+        
+        // UX: If user not found, don't reveal it (security), just pretend success
+        if (error.code === 'auth/user-not-found') {
+             document.getElementById('sentEmailSpan').textContent = email;
+             document.getElementById('forgotStateInitial').classList.add('hidden');
+             document.getElementById('forgotStateSuccess').classList.remove('hidden');
+        } else {
+             alert("Error: " + error.message);
+             btn.innerText = originalText;
+             btn.disabled = false;
+        }
     }
   }
 </script>
@@ -883,13 +946,15 @@ function toggleArrow() {
     const emailIcon = document.getElementById('emailIconStatic');
     const passwordContainer = document.getElementById('passwordContainer');
     
-    if (emailInput.value.trim().length > 0 && passwordContainer.classList.contains('hidden')) {
-        arrowBtn.classList.remove('hidden');
-        emailIcon.classList.add('hidden');
-    } else {
-        if (passwordContainer.classList.contains('hidden')) {
-            arrowBtn.classList.add('hidden');
-            emailIcon.classList.remove('hidden');
+    if (!emailInput.disabled) {
+        if (emailInput.value.trim().length > 0 && passwordContainer.classList.contains('hidden')) {
+            arrowBtn.classList.remove('hidden');
+            emailIcon.classList.add('hidden');
+        } else {
+            if (passwordContainer.classList.contains('hidden')) {
+                arrowBtn.classList.add('hidden');
+                emailIcon.classList.remove('hidden');
+            }
         }
     }
 }
@@ -928,6 +993,10 @@ function backToLogin(currentViewId) {
     // Reset Login Elements
     document.getElementById('passwordContainer').classList.add('hidden');
     document.getElementById('continueBtn').classList.add('hidden');
+    
+    const emailInput = document.getElementById('emailInput');
+    emailInput.disabled = false;
+    
     toggleArrow(); 
 }
 </script>
