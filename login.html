@@ -262,6 +262,21 @@ body.auth-active .menu-btn span { background: #ffffff; }
 .fade-in { animation: fadeIn 0.4s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .dark .text-gray-100 { color: #f3f4f6; }
+
+/* small message box under password for linking */
+.auth-note {
+  font-size: 13px;
+  color: #d1d5db;
+  margin-top: 8px;
+  text-align: center;
+}
+.auth-warning {
+  color: #ffd66b;
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: 8px;
+  text-align: center;
+}
 </style>
 </head>
 <body class="selection:bg-primary selection:text-white">
@@ -360,10 +375,13 @@ body.auth-active .menu-btn span { background: #ffffff; }
                 <div class="text-right mt-2 mr-1">
                     <span onclick="switchToForgot()" class="text-[12px] text-primary hover:text-white cursor-pointer transition-colors font-medium">Forgot Password?</span>
                 </div>
+
+                <div id="linkHint" class="auth-note hidden">Enter password to link this Google login to your existing account.</div>
             </div>
 
             <button class="hidden fade-in w-full bg-primary text-white rounded-xl py-3.5 font-bold text-[16px] hover:bg-opacity-90 active:scale-[0.98] transition-all" 
                     onclick="handleEmailLogin()" id="continueBtn">Continue</button>
+
         </div>
         <div class="text-center text-xs text-gray-500 leading-relaxed px-4 pb-4">By continuing, you agree to our <a class="underline hover:text-primary" href="#">Terms</a> and <a class="underline hover:text-primary" href="#">Privacy Policy</a>.</div>
     </div>
@@ -509,7 +527,8 @@ body.auth-active .menu-btn span { background: #ffffff; }
     EmailAuthProvider,
     linkWithCredential,
     linkWithPopup,
-    signOut
+    signOut,
+    credentialFromError // helper in some versions, fallback below
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { 
     getFirestore, 
@@ -551,29 +570,33 @@ body.auth-active .menu-btn span { background: #ffffff; }
   const forgotStateSuccess = document.getElementById('forgotStateSuccess');
   const googleBtn = document.getElementById('googleBtn');
   const completeRegBtn = document.getElementById('completeRegBtn');
+  const linkHint = document.getElementById('linkHint');
 
-  // Pending OAuth credential (used when account-exists-with-different-credential occurs)
-  let pendingGoogleCredential = null;
-  let pendingEmailForLink = null;
+  // Pending OAuth credential and email for linking flows
+  let pendingGoogleCredential = null;   // AuthCredential object returned by providerFromError
+  let pendingEmailForLink = null;       // email string
+  let precheckLinkFlow = false;         // true when we detect password provider before opening popup
 
-  // expose some functions for inline handlers
+  // Expose functions used by inline handlers
   window.checkEmailAndProceed = checkEmailAndProceed;
   window.handleEmailLogin = handleEmailLogin;
   window.completeRegistration = completeRegistration;
   window.sendResetLink = sendResetLink;
   window.signOutUser = () => signOut(auth);
 
-  // --- AUTH STATE OBSERVER ---
+  // ---------- Auth state observer ----------
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       try {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
+
         if (userSnap.exists() && userSnap.data().profileComplete === true) {
             window.location.replace("index.html");
             return;
         } 
-        // Force Registration View for incomplete profile
+        
+        // Force Registration View when profile missing
         document.getElementById('landing-view').style.display = 'none';
         document.getElementById('auth-wrapper').classList.add('active-view');
         document.body.classList.add('auth-active');
@@ -590,45 +613,94 @@ body.auth-active .menu-btn span { background: #ffffff; }
         console.error("Profile check error:", err);
       }
     } else {
-      // user signed out, clear any pending cred
+      // Clear pending when user signs out
       pendingGoogleCredential = null;
       pendingEmailForLink = null;
+      precheckLinkFlow = false;
     }
   });
 
-  // --- GOOGLE LOGIN / LINKING (robust) ---
-  async function handleGoogleLogin() {
-    // Try a popup sign-in; if account exists with different credential, handle it.
+  // ---------- Helper: extract Google credential from error  ----------
+  function googleCredentialFromError(error) {
+    // In some SDK builds: GoogleAuthProvider.credentialFromError(error)
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      // success -> user signed in or linked (if already signed-in and used linkWithPopup)
-      // no further action required; onAuthStateChanged will redirect if profile complete
-      pendingGoogleCredential = null;
-      pendingEmailForLink = null;
-    } catch (error) {
-      console.error("Google popup error:", error);
-      // If account exists with different credential, capture pending credential
-      if (error && error.code === 'auth/account-exists-with-different-credential') {
-        // The credential the user tried to sign in with.
-        pendingGoogleCredential = error.credential || null;
-        // The email for the existing account.
-        const email = (error.customData && error.customData.email) ? error.customData.email : (emailInput.value || null);
-        pendingEmailForLink = email;
-        // In this case the correct workflow is: ask the user to sign in with the existing provider (password),
-        // then link the pending credential to that signed-in user.
-        if (email) {
-          // prefill email input and show password container
-          emailInput.value = email;
-          emailIconStatic.classList.add('hidden');
-          emailArrowBtn.classList.add('hidden');
+      const { GoogleAuthProvider } = window.firebase ? window.firebase.auth : { };
+    } catch(_) {}
+    // fallback: error.credential may exist
+    if (error && error.credential) return error.credential;
+    // try to use provider helper if available
+    try {
+      const c = GoogleAuthProvider.credentialFromError ? GoogleAuthProvider.credentialFromError(error) : null;
+      if (c) return c;
+    } catch(e){/* ignore */}
+    return null;
+  }
+
+  // ---------- 1) GOOGLE login handler with PRE-CHECK ----------
+  async function handleGoogleLogin() {
+    // If the user typed an email, do a pre-check to avoid account-exists race
+    const typedEmail = emailInput.value && emailInput.value.trim();
+    if (typedEmail) {
+      try {
+        const methods = await fetchSignInMethodsForEmail(auth, typedEmail);
+        // If a password is registered, we should ask for password to link Google (safer UX)
+        if (methods.includes('password')) {
+          // Show password container and a hint that linking will occur
+          pendingEmailForLink = typedEmail;
+          precheckLinkFlow = true;
           passwordContainer.classList.remove('hidden');
           continueBtn.classList.remove('hidden');
-          alert('This email already exists — enter your password below to link Google to your account.');
-          return;
-        } else {
-          alert('Account exists with different credential. Please sign in with the existing provider and then link Google from account settings.');
+          linkHint.classList.remove('hidden');
+          emailIconStatic.classList.add('hidden');
+          emailArrowBtn.classList.add('hidden');
+          // Focus password so user can type and link
+          loginPassword.focus();
           return;
         }
+        // If provider only google or none, proceed with popup
+      } catch (err) {
+        console.warn("Pre-check fetchSignInMethodsForEmail failed:", err);
+        // fallback to normal popup attempt
+      }
+    }
+
+    // No typed email or not password provider -> try direct popup.
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      // success -> normal sign-in or link if user was logged in
+      pendingGoogleCredential = null;
+      pendingEmailForLink = null;
+      precheckLinkFlow = false;
+      // onAuthStateChanged will handle redirect
+    } catch (error) {
+      console.error("Google popup error:", error);
+      // If account exists with different credential, prepare to link
+      if (error && error.code === 'auth/account-exists-with-different-credential') {
+        // store pending credential (will be used after password sign-in)
+        // depending on SDK, credential may be in error.credential or via provider helper
+        let oauthCred = null;
+        try {
+          // Preferred: use GoogleAuthProvider.credentialFromError if available
+          const { GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+          oauthCred = GoogleAuthProvider.credentialFromError ? GoogleAuthProvider.credentialFromError(error) : (error.credential || null);
+        } catch(e){
+          oauthCred = error.credential || null;
+        }
+
+        pendingGoogleCredential = oauthCred;
+        // error.customData.email often contains the existing email
+        const email = (error.customData && error.customData.email) ? error.customData.email : (emailInput.value || "");
+        pendingEmailForLink = email;
+        // Show password container so user can sign in with password and complete linking
+        passwordContainer.classList.remove('hidden');
+        continueBtn.classList.remove('hidden');
+        linkHint.classList.remove('hidden');
+        emailInput.value = email;
+        emailIconStatic.classList.add('hidden');
+        emailArrowBtn.classList.add('hidden');
+
+        alert("This email already exists. Please enter your password once to link Google to your account.");
+        return;
       } else {
         alert("Google Sign-in failed. Try again.");
       }
@@ -636,11 +708,10 @@ body.auth-active .menu-btn span { background: #ffffff; }
   }
   window.handleGoogleLogin = handleGoogleLogin;
 
-  // --- CHECK EMAIL LOGIC (show password / registration) ---
+  // ---------- 2) CHECK EMAIL logic (when user types email and clicks arrow) ----------
   async function checkEmailAndProceed() {
     const emailValue = emailInput.value.trim();
     if (!emailValue) return;
-
     const arrowBtn = emailArrowBtn;
     const originalContent = arrowBtn.innerHTML;
     arrowBtn.innerHTML = '<div class="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>';
@@ -683,6 +754,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
       // fallback
       passwordContainer.classList.remove('hidden');
       continueBtn.classList.remove('hidden');
+
     } catch (error) {
       console.error("Check email error:", error);
       alert("Something went wrong. Please check your internet.");
@@ -692,9 +764,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- EMAIL LOGIN (and link pending Google if present) ---
+  // ---------- 3) EMAIL login and linking (Continue button) ----------
   async function handleEmailLogin() {
-    const email = emailInput.value.trim();
+    const email = (pendingEmailForLink || emailInput.value || "").trim();
     const password = loginPassword.value;
 
     if (!password) { alert("Please enter password"); return; }
@@ -705,21 +777,40 @@ body.auth-active .menu-btn span { background: #ffffff; }
     btn.disabled = true;
 
     try {
+      // Sign in with email/password
       const cred = await signInWithEmailAndPassword(auth, email, password);
-      // If we have a pending Google OAuth credential (from earlier attempted Google sign-in),
-      // link it to the signed-in user.
-      if (pendingGoogleCredential && pendingEmailForLink && pendingEmailForLink === email) {
+      const user = cred.user;
+
+      // If we captured a pending Google credential from an earlier popup error -> link it
+      if (pendingGoogleCredential) {
         try {
-          await linkWithCredential(cred.user, pendingGoogleCredential);
-          // linking successful
-          pendingGoogleCredential = null;
-          pendingEmailForLink = null;
-          console.log("Linked pending Google credential to existing email account.");
+          // Link using pending credential (no popup)
+          await linkWithCredential(user, pendingGoogleCredential);
+          console.log("Linked pending Google credential.");
         } catch (linkErr) {
-          console.error("Linking pending Google cred failed:", linkErr);
-          // Not fatal: continue
+          console.error("linkWithCredential failed:", linkErr);
+          // fallback: ask user to click 'Continue with Google' now to perform popup link
+          alert("Could not link Google automatically. After login, click Continue with Google to link.");
         }
+        // cleanup
+        pendingGoogleCredential = null;
+        pendingEmailForLink = null;
+        precheckLinkFlow = false;
+      } else if (precheckLinkFlow) {
+        // We did a pre-check (found password provider) and the user signed in.
+        // Now we should open Google popup to link (because we didn't call popup earlier).
+        try {
+          // Use linkWithPopup to link user with Google provider
+          await linkWithPopup(user, googleProvider);
+          console.log("Linked Google via popup after password sign-in.");
+        } catch (err) {
+          console.error("linkWithPopup after password sign-in failed:", err);
+          // If user cancelled popup or blocked, inform them
+          alert("Google linking was not completed. Please try 'Continue with Google' again while logged in.");
+        }
+        precheckLinkFlow = false;
       }
+
       // onAuthStateChanged will redirect if profile is complete
     } catch (error) {
       console.error("Login error:", error);
@@ -729,7 +820,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- REGISTRATION (EMAIL) ---
+  // ---------- 4) Registration (unchanged behaviour) ----------
   async function completeRegistration() {
     const fullName = document.getElementById('regFullName').value.trim();
     const college = document.getElementById('regCollege').value;
@@ -794,7 +885,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- PASSWORD RESET ---
+  // ---------- 5) Password reset ----------
   async function sendResetLink() {
     const emailRaw = document.getElementById('forgotEmailDisplay').innerText;
     const email = emailRaw ? emailRaw.trim() : "";
@@ -825,6 +916,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
         btn.disabled = false;
     }
   }
+
 </script>
 
 <script>
@@ -939,9 +1031,9 @@ function backToLogin(currentViewId) {
     // Reset Login Elements
     document.getElementById('passwordContainer').classList.add('hidden');
     document.getElementById('continueBtn').classList.add('hidden');
+    document.getElementById('linkHint').classList.add('hidden');
     toggleArrow(); 
 }
 </script>
 </body>
 </html>
-
