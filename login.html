@@ -600,10 +600,10 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
         // Check if email is verified
         if (user.emailVerified) {
-             // FORCE REGISTRATION SCREEN.
+             // FORCE REGISTRATION SCREEN (User is Google or Verified Email)
              showRegistrationScreen(user);
         } else {
-             // Show Verify Screen
+             // Show Verify Screen (User is Unverified Email)
              document.getElementById('verifyEmailDisplay').innerText = user.email;
              document.getElementById('view-verify-email').classList.remove('hidden');
              document.getElementById('view-verify-email').style.display = 'flex';
@@ -746,24 +746,26 @@ body.auth-active .menu-btn span { background: #ffffff; }
     try {
         let user = auth.currentUser;
 
-        // CASE 1: New Email/Password User (Auth user doesn't exist yet)
+        // ============================================
+        // CASE A: NEW USER (No Auth User exists yet)
+        // ============================================
         if (!user) {
             if (!password) { alert("Password required."); btn.innerHTML=originalText; btn.disabled=false; return; }
             
-            // Create Auth User
+            // 1. Create Auth User
             const credential = await createUserWithEmailAndPassword(auth, email, password);
             user = credential.user;
 
-            // Store data temporarily 
+            // 2. Store data temporarily 
             pendingProfileData = {
                 name: fullName, college, course_or_class: course, section, rollNumber: rollNo,
                 email: user.email, profileComplete: true, createdAt: serverTimestamp()
             };
 
-            // Send Verification
+            // 3. Send Verification
             await sendEmailVerification(user);
 
-            // Hide Reg, Show Verify View
+            // 4. Hide Reg, Show Verify View
             document.getElementById('view-registration').style.display = 'none';
             document.getElementById('view-registration').classList.add('hidden');
             
@@ -772,29 +774,42 @@ body.auth-active .menu-btn span { background: #ffffff; }
             verifyView.classList.remove('hidden');
             verifyView.style.display = 'flex';
 
-            // Start Listener
+            // 5. Start Listener
             startVerificationListener(user);
-
         } 
-        // CASE 2: Google User (Auth user exists, verified, but profile incomplete)
-        else {
-             // --- LINKING PASSWORD LOGIC ---
+        
+        // ============================================
+        // CASE B: GOOGLE USER (Auth User exists & is VERIFIED)
+        // ============================================
+        else if (user.emailVerified) {
+             // 1. Link Password if provided (Optional for Google users)
              if (password) {
                  try {
                      const credential = EmailAuthProvider.credential(user.email, password);
                      await linkWithCredential(user, credential);
                  } catch(e) {
-                     console.log("Could not link password (maybe already linked or weak)", e);
-                     // Optional: Alert user if linking fails, but usually we proceed
+                     console.log("Could not link password (maybe linked or weak)", e);
                  }
              }
 
-             // Save to Firestore directly
+             // 2. Save Profile DIRECTLY (No Verification Email needed)
              await saveUserProfile(user.uid, {
                 name: fullName, college, course_or_class: course, section, rollNumber: rollNo,
                 email: user.email, profileComplete: true, createdAt: serverTimestamp()
              });
+             
+             // 3. Redirect
              window.location.replace("index.html");
+        }
+        
+        // ============================================
+        // CASE C: RARE EDGE CASE (Exists but not verified?)
+        // ============================================
+        else {
+             // Should not happen if flow is correct, but safer to treat as New User needing verification
+             await sendEmailVerification(user);
+             alert("Your email is not verified. Sending verification link...");
+             window.location.reload();
         }
 
     } catch (error) {
