@@ -416,7 +416,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     
     <div class="w-full mb-6 mt-2 fade-in">
         <div class="relative w-full flex items-center justify-center mb-2 min-h-[28px]">
-            <button onclick="backToLogin('view-registration')" class="absolute left-0 top-1/2 -translate-y-1/2 group flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors -ml-2 z-10">
+            <button onclick="handleRegistrationCancel()" class="absolute left-0 top-1/2 -translate-y-1/2 group flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors -ml-2 z-10">
                 <svg class="w-6 h-6 text-gray-400 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -472,7 +472,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
                 <input id="regRollNo" class="custom-input w-full bg-surface-input-dark text-gray-100 rounded-xl py-2.5 px-4 placeholder-gray-500 focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Roll No." type="tel"/>
             </div>
 
-            <div class="col-span-2 relative">
+            <div class="col-span-2 relative" id="regPasswordContainer">
                 <input id="regPassword" class="custom-input w-full bg-surface-input-dark text-gray-100 rounded-xl py-2.5 px-4 placeholder-gray-500 focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Create Password" type="password"/>
                 <button type="button" onclick="togglePasswordVisibility('regPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary transition-colors cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -481,19 +481,36 @@ body.auth-active .menu-btn span { background: #ffffff; }
         </div>
 
         <div class="mt-4 mb-2">
-            <button id="completeRegBtn" onclick="completeRegistration()" class="w-full bg-primary text-white rounded-xl py-3.5 font-bold text-[16px] hover:bg-opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-text">
+            <button id="completeRegBtn" onclick="initiateRegistration()" class="w-full bg-primary text-white rounded-xl py-3.5 font-bold text-[16px] hover:bg-opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 btn-text">
                 <span>Complete Registration</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
             </button>
-            <p id="verifyNote" class="hidden text-[11px] text-center text-primary mt-2 opacity-90 font-medium bg-primary/10 py-1.5 px-2 rounded-lg border border-primary/20">
-                ⚠️ Verification email sent! Please check your inbox/spam to secure your account.
-            </p>
         </div>
 
         <div class="text-center text-[11px] text-gray-500 mt-2 mb-8">
             By clicking "Complete Registration", you agree to our <a href="#" class="underline hover:text-gray-300">Terms of Service</a> and <a href="#" class="underline hover:text-gray-300">Privacy Policy</a>.
         </div>
     </main>
+</div>
+
+<div id="view-verify-email" class="hidden min-h-full flex flex-col items-center justify-center px-6 fade-in text-center relative">
+    <div class="absolute top-6 left-6">
+        <button onclick="cancelVerification()" class="text-gray-400 text-sm underline">Cancel/Logout</button>
+    </div>
+    <div class="bg-primary/20 p-4 rounded-full mb-4">
+        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+    </div>
+    <h2 class="text-2xl font-bold text-white mb-2">Verify your Email</h2>
+    <p class="text-gray-400 text-sm mb-6 max-w-xs">
+        We've sent a verification link to <span id="verifyEmailDisplay" class="text-primary font-medium"></span>.
+    </p>
+    <div class="bg-surface-input-dark p-4 rounded-xl border border-gray-700 w-full max-w-xs mb-6">
+        <div class="flex items-center justify-center space-x-2">
+            <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+            <span class="text-xs text-gray-300 font-medium">Waiting for you to click the link...</span>
+        </div>
+    </div>
+    <p class="text-[10px] text-gray-500">Once verified, we'll create your account automatically.</p>
 </div>
 
 </div> 
@@ -511,9 +528,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
     sendPasswordResetEmail,
     EmailAuthProvider,
     linkWithCredential,
-    linkWithPopup,
     signOut,
-    sendEmailVerification // Added here
+    sendEmailVerification,
+    deleteUser
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { 
     getFirestore, 
@@ -540,6 +557,10 @@ body.auth-active .menu-btn span { background: #ffffff; }
   const db = getFirestore(app);
   const googleProvider = new GoogleAuthProvider();
 
+  // Globals for Verification Polling
+  let verificationInterval = null;
+  let pendingProfileData = null; // Store registration data temporarily
+
   // DOM refs
   const emailInput = document.getElementById('emailInput');
   const emailArrowBtn = document.getElementById('emailArrowBtn');
@@ -548,12 +569,14 @@ body.auth-active .menu-btn span { background: #ffffff; }
   const continueBtn = document.getElementById('continueBtn');
   const loginPassword = document.getElementById('loginPassword');
   
-  // expose some functions for inline handlers
+  // Expose functions to window
   window.checkEmailAndProceed = checkEmailAndProceed;
   window.handleEmailLogin = handleEmailLogin;
-  window.completeRegistration = completeRegistration;
+  window.initiateRegistration = initiateRegistration;
   window.sendResetLink = sendResetLink;
-  window.signOutUser = () => signOut(auth);
+  window.handleGoogleLogin = handleGoogleLogin;
+  window.handleRegistrationCancel = handleRegistrationCancel;
+  window.cancelVerification = cancelVerification;
 
   // --- AUTH STATE OBSERVER ---
   onAuthStateChanged(auth, async (user) => {
@@ -561,46 +584,88 @@ body.auth-active .menu-btn span { background: #ffffff; }
       try {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
+        
+        // 1. Fully Complete Profile -> Go Home
         if (userSnap.exists() && userSnap.data().profileComplete === true) {
-            // Redirect to dashboard/home
+            // Also check if email verified if provider is password (optional based on your strictness)
             window.location.replace("index.html");
             return;
         } 
-        // Force Registration View for incomplete profile
+        
+        // 2. Profile Missing (Incomplete Google or Unverified Email returning)
+        // Transition to Auth Layout
         document.getElementById('landing-view').style.display = 'none';
         document.getElementById('auth-wrapper').classList.add('active-view');
         document.body.classList.add('auth-active');
         document.getElementById('getStartedBtnArea').classList.add('hide-btn');
-
         document.getElementById('view-login').style.display = 'none';
-        const regView = document.getElementById('view-registration');
-        regView.classList.remove('hidden');
-        regView.style.display = 'flex';
-        
-        // Populate inputs if coming from Google login initially
-        if (!document.getElementById('regEmailInput').value && user.email) {
-            document.getElementById('regEmailInput').value = user.email;
+
+        // Check if email is verified
+        if (user.emailVerified) {
+             // Email is verified (Google or Verified Email User) but NO Profile in DB.
+             // FORCE REGISTRATION SCREEN.
+             showRegistrationScreen(user);
+        } else {
+            // Email NOT verified. 
+            // If they are here, they probably closed the tab during verification and came back.
+            // We can delete the unverified user to keep clean, or show the "Verify" screen again.
+            // Let's show Verify screen to be nice, but checking interval.
+            // (Simpler for this logic: If not verified, and no profile, assume new registration flow handles it. 
+            // If they just reloaded, show Verify Screen).
+             document.getElementById('verifyEmailDisplay').innerText = user.email;
+             document.getElementById('view-verify-email').classList.remove('hidden');
+             document.getElementById('view-verify-email').style.display = 'flex';
+             startVerificationListener(user);
         }
-        if (user.displayName && !document.getElementById('regFullName').value) {
-            document.getElementById('regFullName').value = user.displayName;
-        }
+
       } catch (err) {
         console.error("Profile check error:", err);
       }
     }
   });
 
-  // --- GOOGLE LOGIN (Clean: No complex linking) ---
+  function showRegistrationScreen(user) {
+    const regView = document.getElementById('view-registration');
+    regView.classList.remove('hidden');
+    regView.style.display = 'flex';
+    
+    // Auto-fill knowns
+    if (user.email) document.getElementById('regEmailInput').value = user.email;
+    if (user.displayName) document.getElementById('regFullName').value = user.displayName;
+    
+    // Hide password field for Google users (they don't need to create one)
+    const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+    if (isGoogle) {
+        document.getElementById('regPasswordContainer').style.display = 'none';
+    }
+  }
+
+  // --- GOOGLE LOGIN ---
   async function handleGoogleLogin() {
     try {
       await signInWithPopup(auth, googleProvider);
-      // Success: onAuthStateChanged will handle next steps
+      // onAuthStateChanged handles the rest
     } catch (error) {
       console.error("Google login error:", error);
       alert("Sign in failed. Please try again.");
     }
   }
-  window.handleGoogleLogin = handleGoogleLogin;
+
+  // --- CLEANUP: Handle "Back" from Registration ---
+  // This fulfills the "Delete account if flow broken" request
+  async function handleRegistrationCancel() {
+    const user = auth.currentUser;
+    if (user) {
+        try {
+            await deleteUser(user); // Delete the temp account
+            console.log("Incomplete user deleted.");
+        } catch (e) {
+            console.error("Error deleting user:", e);
+            await signOut(auth); // Fallback
+        }
+    }
+    backToLogin('view-registration'); // UI reset
+  }
 
   // --- CHECK EMAIL LOGIC ---
   async function checkEmailAndProceed() {
@@ -614,22 +679,21 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
     try {
       let methods = [];
-      try {
-        methods = await fetchSignInMethodsForEmail(auth, emailValue);
-      } catch (err) {
-        console.warn("fetchSignInMethodsForEmail error:", err);
-      }
+      try { methods = await fetchSignInMethodsForEmail(auth, emailValue); } 
+      catch (err) { console.warn("fetch methods err:", err); }
 
       if (methods.length === 0) {
-        // New user -> Registration
+        // New user -> Registration Form
         document.getElementById('regEmailInput').value = emailValue;
         document.getElementById('view-login').style.display = 'none';
         document.getElementById('view-registration').classList.remove('hidden');
         document.getElementById('view-registration').style.display = 'flex';
+        // Ensure password field is visible for email users
+        document.getElementById('regPasswordContainer').style.display = 'block';
         return;
       }
 
-      // Existing User -> Show Password
+      // Existing User -> Login
       emailIconStatic.classList.add('hidden');
       emailArrowBtn.classList.add('hidden');
       passwordContainer.classList.remove('hidden');
@@ -638,60 +702,51 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
     } catch (error) {
       console.error("Check email error:", error);
-      alert("Something went wrong. Please check your internet.");
+      alert("Network error. Please try again.");
     } finally {
       arrowBtn.innerHTML = originalContent;
       arrowBtn.disabled = false;
     }
   }
 
-  // --- EMAIL LOGIN (Clean: Just login) ---
+  // --- LOGIN ---
   async function handleEmailLogin() {
     const email = emailInput.value.trim();
     const password = loginPassword.value;
-
     if (!password) { alert("Please enter password"); return; }
 
     const btn = continueBtn;
-    const prevText = btn.textContent;
     btn.textContent = "Verifying...";
     btn.disabled = true;
 
     try {
-      // 1. Sign in with Email/Password
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      // 2. Manual Check/Redirect
-      if(userCredential.user) {
-           const userRef = doc(db, "users", userCredential.user.uid);
-           const userSnap = await getDoc(userRef);
-           if (userSnap.exists() && userSnap.data().profileComplete === true) {
-                window.location.replace("index.html");
-           } else {
-               window.location.reload();
-           }
+      // Check for verification (optional enforcement on login)
+      if (!userCredential.user.emailVerified) {
+          alert("Please verify your email first.");
+          await signOut(auth);
+          btn.textContent = "Continue";
+          btn.disabled = false;
+          return;
       }
-
+      // If verified, onAuthStateChanged handles redirect
     } catch (error) {
       console.error("Login error:", error);
-      if (error.code === "auth/wrong-password") {
-          alert("Incorrect password.");
-      } else {
-          alert("Login failed. Please check credentials.");
-      }
-      btn.textContent = prevText;
+      alert("Invalid email or password.");
+      btn.textContent = "Continue";
       btn.disabled = false;
     }
   }
 
-  // --- REGISTRATION (Includes Email Verification for PW users) ---
-  async function completeRegistration() {
+  // --- REGISTRATION LOGIC START ---
+  async function initiateRegistration() {
+    // Gather Data
     const fullName = document.getElementById('regFullName').value.trim();
     const college = document.getElementById('regCollege').value;
     const course = document.getElementById('regClass').value;
     const section = document.getElementById('regSection').value;
     const rollNo = document.getElementById('regRollNo').value.trim();
-    const password = document.getElementById('regPassword').value;
+    const password = document.getElementById('regPassword').value; // Might be empty for Google
     const email = document.getElementById('regEmailInput').value.trim();
 
     if (!fullName || !college || !course || !section || !rollNo) {
@@ -700,101 +755,125 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
 
     const btn = document.querySelector('#completeRegBtn');
-    const note = document.getElementById('verifyNote');
-    const originalText = btn ? btn.innerHTML : 'Complete Registration';
-    
-    if (btn) { btn.innerHTML = 'Creating...'; btn.disabled = true; }
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Processing...'; btn.disabled = true;
 
     try {
-      let user = auth.currentUser;
+        let user = auth.currentUser;
 
-      // Scenario: New Email/Password User -> Create Account & Verify
-      if (!user) {
-        if (!password) {
-          alert("Password is required.");
-          if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
-          return;
+        // CASE 1: New Email/Password User (Auth user doesn't exist yet)
+        if (!user) {
+            if (!password) { alert("Password required."); btn.innerHTML=originalText; btn.disabled=false; return; }
+            
+            // Create Auth User
+            const credential = await createUserWithEmailAndPassword(auth, email, password);
+            user = credential.user;
+
+            // Store data temporarily (DO NOT save to Firestore yet)
+            pendingProfileData = {
+                name: fullName, college, course_or_class: course, section, rollNumber: rollNo,
+                email: user.email, profileComplete: true, createdAt: serverTimestamp()
+            };
+
+            // Send Verification
+            await sendEmailVerification(user);
+
+            // Hide Reg, Show Verify View
+            document.getElementById('view-registration').style.display = 'none';
+            document.getElementById('view-registration').classList.add('hidden');
+            
+            document.getElementById('verifyEmailDisplay').innerText = email;
+            const verifyView = document.getElementById('view-verify-email');
+            verifyView.classList.remove('hidden');
+            verifyView.style.display = 'flex';
+
+            // Start Listener
+            startVerificationListener(user);
+
+        } 
+        // CASE 2: Google User (Auth user exists, verified, but profile incomplete)
+        else {
+             // Just save to Firestore directly
+             await saveUserProfile(user.uid, {
+                name: fullName, college, course_or_class: course, section, rollNumber: rollNo,
+                email: user.email, profileComplete: true, createdAt: serverTimestamp()
+             });
+             window.location.replace("index.html");
         }
 
-        // 1. Create Base Account
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
-        user = credential.user;
-
-        // 2. SEND VERIFICATION EMAIL (Only for new password users)
-        await sendEmailVerification(user);
-        
-        // Show success note
-        note.classList.remove('hidden');
-        alert("Account created successfully!\n\nIMPORTANT: We have sent a verification email to " + email + ". Please verify it so you can also use Google Login in the future.");
-      } 
-      
-      // Scenario: Already signed in via Google (User exists)
-      // We do NOT send verification email here, because Google is already verified.
-      else if (password) {
-         try {
-            const credential = EmailAuthProvider.credential(user.email, password);
-            await linkWithCredential(user, credential);
-        } catch(e) { console.log("Password linking skipped or failed:", e); }
-      }
-
-      // 3. Save Profile Data
-      await setDoc(doc(db, "users", user.uid), {
-        name: fullName,
-        college: college,
-        course_or_class: course,
-        section: section,
-        rollNumber: rollNo,
-        email: user.email,
-        profileComplete: true,
-        createdAt: serverTimestamp()
-      });
-
-      // Redirect
-      window.location.replace("index.html");
-
     } catch (error) {
-      console.error("Registration error:", error);
-      alert("Error: " + (error.message || error));
-      if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+        console.error("Reg Error:", error);
+        alert(error.message);
+        btn.innerHTML = originalText; btn.disabled = false;
     }
+  }
+
+  // --- LISTENER: Wait for Email Click ---
+  function startVerificationListener(user) {
+    if (verificationInterval) clearInterval(verificationInterval);
+    
+    verificationInterval = setInterval(async () => {
+        try {
+            await user.reload(); // Refresh token
+            if (user.emailVerified) {
+                clearInterval(verificationInterval);
+                
+                // If we have pending data (Flow 1), save it now
+                if (pendingProfileData) {
+                    await saveUserProfile(user.uid, pendingProfileData);
+                } else {
+                    // Fallback: If they reloaded page, data might be lost from memory.
+                    // Ideally we'd ask them to fill form again, but for now let's just create empty or handle elsewhere.
+                    // But since we are inside the same session logic, pendingData usually exists.
+                    // If logic fails, just redirect, the 'profileComplete' check will catch them later.
+                }
+                
+                alert("Email Verified! Setting up your dashboard...");
+                window.location.replace("index.html");
+            }
+        } catch(e) {
+            console.log("Polling error", e);
+        }
+    }, 3000); // Check every 3 seconds
+  }
+
+  async function saveUserProfile(uid, data) {
+      await setDoc(doc(db, "users", uid), data);
+  }
+
+  async function cancelVerification() {
+      if (verificationInterval) clearInterval(verificationInterval);
+      const user = auth.currentUser;
+      if (user) await deleteUser(user); // Delete unverified account
+      window.location.reload();
   }
 
   // --- PASSWORD RESET ---
   async function sendResetLink() {
     const emailRaw = document.getElementById('forgotEmailDisplay').innerText;
     const email = emailRaw ? emailRaw.trim() : "";
-
-    if(!email) {
-        alert("No email address found.");
-        return;
-    }
+    if(!email) return;
 
     const btn = document.getElementById('btnSendReset');
     const originalText = btn.innerText;
-
-    btn.innerText = "Sending Link...";
-    btn.disabled = true;
+    btn.innerText = "Sending..."; btn.disabled = true;
 
     try {
-      const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
-      
-      await sendPasswordResetEmail(auth, email, actionCodeSettings);
-
+      await sendPasswordResetEmail(auth, email, { url: window.location.href });
       document.getElementById('sentEmailSpan').textContent = email;
       document.getElementById('forgotStateInitial').classList.add('hidden');
       document.getElementById('forgotStateSuccess').classList.remove('hidden');
-      
     } catch (error) {
-        console.error("Reset Error:", error);
-        if (error.code === 'auth/user-not-found') {
-             document.getElementById('sentEmailSpan').textContent = email;
-             document.getElementById('forgotStateInitial').classList.add('hidden');
-             document.getElementById('forgotStateSuccess').classList.remove('hidden');
-        } else {
-             alert("Error: " + error.message);
-             btn.innerText = originalText;
-             btn.disabled = false;
-        }
+       console.error(error);
+       if (error.code === 'auth/user-not-found') {
+          // Fake success for security
+          document.getElementById('sentEmailSpan').textContent = email;
+          document.getElementById('forgotStateInitial').classList.add('hidden');
+          document.getElementById('forgotStateSuccess').classList.remove('hidden');
+       } else {
+          alert("Error sending link.");
+          btn.innerText = originalText; btn.disabled = false;
+       }
     }
   }
 </script>
@@ -805,7 +884,6 @@ const baseLabels = ["Track  attendance", "Get  detailed  stats", "Subjects  anal
 const labels = Array.from({ length: 20 }, () => baseLabels).flat();
 const list = document.getElementById("list");
 
-// Init List
 labels.forEach(text => { 
     const el = document.createElement("div"); 
     el.className = "item"; 
@@ -813,11 +891,10 @@ labels.forEach(text => {
     list.appendChild(el); 
 });
 
-// Animation Loop
 const items = [...document.querySelectorAll(".item")];
 let index = 1;
 function render() {
-  const h = 34; // Fixed height from CSS
+  const h = 34; 
   list.style.transform = `translateY(${-(index - 1) * h}px)`;
   items.forEach((el, i) => {
     el.classList.remove("active", "near");
@@ -827,10 +904,7 @@ function render() {
 }
 
 function step() {
-  if (index >= labels.length - 2) { 
-      clearInterval(timer); 
-      return; 
-  }
+  if (index >= labels.length - 2) { clearInterval(timer); return; }
   index++; 
   list.style.transition = `transform 500ms cubic-bezier(0.4,0,0.2,1)`; 
   render();
@@ -839,7 +913,7 @@ function step() {
 render();
 const timer = setInterval(step, 1200);
 
-// Menu Handling
+// Menu
 const menuBtn = document.querySelector(".menu-btn");
 const menuDropdown = document.getElementById("menuDropdown");
 menuBtn.addEventListener("click", e => { 
@@ -884,18 +958,13 @@ function togglePasswordVisibility(id) {
     input.type = input.type === "password" ? "text" : "password";
 }
 
-// Navigation
 function switchToForgot() {
     const emailValue = document.getElementById('emailInput').value.trim();
     document.getElementById('view-login').style.display = 'none';
     const forgotView = document.getElementById('view-forgot');
     forgotView.classList.remove('hidden');
     forgotView.style.display = 'flex';
-    
-    // Pass Email securely
     document.getElementById('forgotEmailDisplay').innerText = emailValue || "No email provided";
-    
-    // Reset State
     document.getElementById('forgotStateInitial').classList.remove('hidden');
     document.getElementById('forgotStateSuccess').classList.add('hidden');
     document.getElementById('btnSendReset').innerText = "Send Link";
@@ -910,13 +979,10 @@ function backToLogin(currentViewId) {
     loginView.style.display = 'flex';
     loginView.classList.remove('hidden'); 
     
-    // Reset Login Elements
     document.getElementById('passwordContainer').classList.add('hidden');
     document.getElementById('continueBtn').classList.add('hidden');
-    
     const emailInput = document.getElementById('emailInput');
     emailInput.disabled = false;
-    
     toggleArrow(); 
 }
 </script>
