@@ -559,7 +559,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
   // Globals for Verification Polling
   let verificationInterval = null;
-  let pendingProfileData = null; // Store registration data temporarily
+  let pendingProfileData = null; 
 
   // DOM refs
   const emailInput = document.getElementById('emailInput');
@@ -587,13 +587,11 @@ body.auth-active .menu-btn span { background: #ffffff; }
         
         // 1. Fully Complete Profile -> Go Home
         if (userSnap.exists() && userSnap.data().profileComplete === true) {
-            // Also check if email verified if provider is password (optional based on your strictness)
             window.location.replace("index.html");
             return;
         } 
         
         // 2. Profile Missing (Incomplete Google or Unverified Email returning)
-        // Transition to Auth Layout
         document.getElementById('landing-view').style.display = 'none';
         document.getElementById('auth-wrapper').classList.add('active-view');
         document.body.classList.add('auth-active');
@@ -602,16 +600,10 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
         // Check if email is verified
         if (user.emailVerified) {
-             // Email is verified (Google or Verified Email User) but NO Profile in DB.
              // FORCE REGISTRATION SCREEN.
              showRegistrationScreen(user);
         } else {
-            // Email NOT verified. 
-            // If they are here, they probably closed the tab during verification and came back.
-            // We can delete the unverified user to keep clean, or show the "Verify" screen again.
-            // Let's show Verify screen to be nice, but checking interval.
-            // (Simpler for this logic: If not verified, and no profile, assume new registration flow handles it. 
-            // If they just reloaded, show Verify Screen).
+             // Show Verify Screen
              document.getElementById('verifyEmailDisplay').innerText = user.email;
              document.getElementById('view-verify-email').classList.remove('hidden');
              document.getElementById('view-verify-email').style.display = 'flex';
@@ -633,18 +625,14 @@ body.auth-active .menu-btn span { background: #ffffff; }
     if (user.email) document.getElementById('regEmailInput').value = user.email;
     if (user.displayName) document.getElementById('regFullName').value = user.displayName;
     
-    // Hide password field for Google users (they don't need to create one)
-    const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
-    if (isGoogle) {
-        document.getElementById('regPasswordContainer').style.display = 'none';
-    }
+    // Ensure password container is VISIBLE (so they can link password)
+    document.getElementById('regPasswordContainer').style.display = 'block';
   }
 
   // --- GOOGLE LOGIN ---
   async function handleGoogleLogin() {
     try {
       await signInWithPopup(auth, googleProvider);
-      // onAuthStateChanged handles the rest
     } catch (error) {
       console.error("Google login error:", error);
       alert("Sign in failed. Please try again.");
@@ -652,19 +640,17 @@ body.auth-active .menu-btn span { background: #ffffff; }
   }
 
   // --- CLEANUP: Handle "Back" from Registration ---
-  // This fulfills the "Delete account if flow broken" request
   async function handleRegistrationCancel() {
     const user = auth.currentUser;
     if (user) {
         try {
-            await deleteUser(user); // Delete the temp account
-            console.log("Incomplete user deleted.");
+            await deleteUser(user); 
         } catch (e) {
             console.error("Error deleting user:", e);
-            await signOut(auth); // Fallback
+            await signOut(auth);
         }
     }
-    backToLogin('view-registration'); // UI reset
+    backToLogin('view-registration'); 
   }
 
   // --- CHECK EMAIL LOGIC ---
@@ -688,7 +674,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
         document.getElementById('view-login').style.display = 'none';
         document.getElementById('view-registration').classList.remove('hidden');
         document.getElementById('view-registration').style.display = 'flex';
-        // Ensure password field is visible for email users
+        // Ensure password field is visible
         document.getElementById('regPasswordContainer').style.display = 'block';
         return;
       }
@@ -721,7 +707,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Check for verification (optional enforcement on login)
+      // Check for verification
       if (!userCredential.user.emailVerified) {
           alert("Please verify your email first.");
           await signOut(auth);
@@ -729,7 +715,6 @@ body.auth-active .menu-btn span { background: #ffffff; }
           btn.disabled = false;
           return;
       }
-      // If verified, onAuthStateChanged handles redirect
     } catch (error) {
       console.error("Login error:", error);
       alert("Invalid email or password.");
@@ -746,7 +731,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     const course = document.getElementById('regClass').value;
     const section = document.getElementById('regSection').value;
     const rollNo = document.getElementById('regRollNo').value.trim();
-    const password = document.getElementById('regPassword').value; // Might be empty for Google
+    const password = document.getElementById('regPassword').value; 
     const email = document.getElementById('regEmailInput').value.trim();
 
     if (!fullName || !college || !course || !section || !rollNo) {
@@ -769,7 +754,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
             const credential = await createUserWithEmailAndPassword(auth, email, password);
             user = credential.user;
 
-            // Store data temporarily (DO NOT save to Firestore yet)
+            // Store data temporarily 
             pendingProfileData = {
                 name: fullName, college, course_or_class: course, section, rollNumber: rollNo,
                 email: user.email, profileComplete: true, createdAt: serverTimestamp()
@@ -793,7 +778,18 @@ body.auth-active .menu-btn span { background: #ffffff; }
         } 
         // CASE 2: Google User (Auth user exists, verified, but profile incomplete)
         else {
-             // Just save to Firestore directly
+             // --- LINKING PASSWORD LOGIC ---
+             if (password) {
+                 try {
+                     const credential = EmailAuthProvider.credential(user.email, password);
+                     await linkWithCredential(user, credential);
+                 } catch(e) {
+                     console.log("Could not link password (maybe already linked or weak)", e);
+                     // Optional: Alert user if linking fails, but usually we proceed
+                 }
+             }
+
+             // Save to Firestore directly
              await saveUserProfile(user.uid, {
                 name: fullName, college, course_or_class: course, section, rollNumber: rollNo,
                 email: user.email, profileComplete: true, createdAt: serverTimestamp()
@@ -818,15 +814,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
             if (user.emailVerified) {
                 clearInterval(verificationInterval);
                 
-                // If we have pending data (Flow 1), save it now
                 if (pendingProfileData) {
                     await saveUserProfile(user.uid, pendingProfileData);
-                } else {
-                    // Fallback: If they reloaded page, data might be lost from memory.
-                    // Ideally we'd ask them to fill form again, but for now let's just create empty or handle elsewhere.
-                    // But since we are inside the same session logic, pendingData usually exists.
-                    // If logic fails, just redirect, the 'profileComplete' check will catch them later.
-                }
+                } 
                 
                 alert("Email Verified! Setting up your dashboard...");
                 window.location.replace("index.html");
@@ -834,7 +824,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
         } catch(e) {
             console.log("Polling error", e);
         }
-    }, 3000); // Check every 3 seconds
+    }, 3000); 
   }
 
   async function saveUserProfile(uid, data) {
