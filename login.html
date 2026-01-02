@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -44,66 +45,88 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }{ margin:0; padding:0; box-sizing:border-box; }
 
-
-/* Utility hidden class (use consistently) */ .hidden { display: none !important; }
+/* Utility hidden class (IMPORTANT: This ensures only one view shows) */ 
+.hidden { display: none !important; }
 
 body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-landing); word-spacing: 0.1em; min-height: 100vh; position: relative; overflow-x: hidden; transition: background-color 0.8s ease; }
-
 body.auth-active { background: var(--bg-auth); overflow-y: auto !important; overflow-x: hidden; }
 
-/* ================= HEADER ================= */ .header-container { position: relative; z-index: 4000; padding: 16px 16px 0 16px; transition: all 0.5s ease; }
-
+/* ================= HEADER ================= */ 
+.header-container { position: relative; z-index: 4000; padding: 16px 16px 0 16px; transition: all 0.5s ease; }
 .title { font-size: 33px; font-weight: 750; line-height: 1.05; color: var(--btn-bg); transition: color 0.5s ease; }
-
 body.auth-active .title { color: #ffffff; }
-
 .with { position: absolute; top: 30px; left: 36px; font-family: 'Caveat', cursive; font-size: 30px; transform: rotate(-12deg); color: #918BFF; }
-
 .subtitle { margin-top: 6px; font-size: 8px; color: #444; text-transform: uppercase; letter-spacing: .12em; transition: color 0.5s ease; }
-
 body.auth-active .subtitle { color: #888; } .btn-text { word-spacing: 0.17em; }
 
-/* ================= STRIP ================= */ .strip { margin-top: 25px;
-width: 100%; padding: 8px 0; background: #f8e6d8; border-top: 1px solid #f0c7a8; border-bottom: 1px solid #f0c7a8; overflow: hidden; position: relative; z-index: 2000; }
-
+/* ================= STRIP ================= */ 
+.strip { margin-top: 25px; width: 100%; padding: 8px 0; background: #f8e6d8; border-top: 1px solid #f0c7a8; border-bottom: 1px solid #f0c7a8; overflow: hidden; position: relative; z-index: 2000; }
 .strip-track { display: flex; width: max-content; animation: stripMove 22s linear infinite; font-size: 11px; word-spacing: 0.4em; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #111; }
-
 .strip-track span { padding: 0 24px; white-space: nowrap; }
-
 @keyframes stripMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-/* ================= MENU BUTTON ================= */ .menu-btn { position: absolute; top: 36px; right: 16px; width: 32px; height: 12px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; z-index: 5000; }
-
+/* ================= MENU BUTTON ================= */ 
+.menu-btn { position: absolute; top: 36px; right: 16px; width: 32px; height: 12px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; z-index: 5000; }
 .menu-btn span { height: 3px; background: #353839; border-radius: 2.5px; transition: background 0.5s ease; }
-
 body.auth-active .menu-btn span { background: #ffffff; }
+.menu-dropdown { position: absolute; top: 60px; right: 15px; min-width: 180px; background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 3px 0; box-shadow: 0 12px 32px rgba(0,0,0,.12); display: none; z-index: 6000; } 
+.menu-dropdown a { display: block; padding: 12px 16px; font-size: 14px; color: #111; text-decoration: none; border-bottom: 1px solid #ededed; } 
+.menu-dropdown a:last-child { border-bottom: none; } 
+.menu-dropdown a:hover { background: #f6f6f6; }
 
-.menu-dropdown { position: absolute; top: 60px; right: 15px; min-width: 180px; background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 3px 0; box-shadow: 0 12px 32px rgba(0,0,0,.12); display: none; z-index: 6000; } .menu-dropdown a { display: block; padding: 12px 16px; font-size: 14px; color: #111; text-decoration: none; border-bottom: 1px solid #ededed; } .menu-dropdown a:last-child { border-bottom: none; } .menu-dropdown a:hover { background: #f6f6f6; }
-
-/* ================= VIEW TRANSITIONS ================= */ #landing-view { opacity: 1; transform: translateY(0); transition: opacity 0.6s ease, transform 0.6s ease; padding: 0 16px 260px 16px; }
-
+/* ================= VIEW TRANSITIONS ================= */ 
+#landing-view { opacity: 1; transform: translateY(0); transition: opacity 0.6s ease, transform 0.6s ease; padding: 0 16px 260px 16px; }
 #landing-view.hidden-view { opacity: 0; transform: translateY(-20px); pointer-events: none; position: absolute; top: 0; left: 0; width: 100%; z-index: -1; }
 
 #auth-wrapper { opacity: 0; visibility: hidden; position: absolute; top: 42px; left: 0; width: 100%; height: calc(100vh - 42px); overflow-y: auto; padding-bottom: 40px; transition: opacity 0.8s ease 0.2s; z-index: 100; }
-
 #auth-wrapper.active-view { opacity: 1; visibility: visible; position: relative; }
 
-/* ================= LANDING UI ================= */ .hero { display: flex; margin-top: 30px; justify-content: center; align-items: center; } .illustration { margin-left: -16px; margin-right: -16px; max-height: 36vh; width: 100%; display: flex; justify-content: center; } .illustration img { width: 100%; object-fit: contain; }
+/* ================= LANDING UI ================= */ 
+.hero { display: flex; margin-top: 30px; justify-content: center; align-items: center; } 
+.illustration { margin-left: -16px; margin-right: -16px; max-height: 36vh; width: 100%; display: flex; justify-content: center; } 
+.illustration img { width: 100%; object-fit: contain; }
 
-.text-anim { position: relative; height: calc(var(--item-h) * 3); margin-top: 12px; overflow-y: hidden; overflow-x: visible; } .viewport { height: 100%; overflow-y: hidden; overflow-x: visible; } .list-center { position: relative; left: 50%; transform: translateX(-50%); } .list { position: absolute; left: 0; right: 0; } .item { position: relative; height: var(--item-h); display: flex; align-items: center; justify-content: center; font-family: 'LINE Seed Sans', sans-serif; font-size: 1.35rem; word-spacing: 0.1em; font-weight: 500; white-space: nowrap; color: var(--text); opacity: 0.25; transition: transform .45s var(--ease), opacity .45s var(--ease), color .45s var(--ease), font-size .45s var(--ease); } .item.active { opacity: 1; color: var(--accent); font-weight: 600; font-size: 1.85rem; } .item.near { opacity: 0.55; } .fixed-arrow { position: absolute; top: 50%; width: var(--arrow-w); height: var(--arrow-w); transform: translateY(-50%); pointer-events: none; } .fixed-arrow svg { width: 100%; height: 100%; fill: none; stroke: var(--accent); stroke-width: 2.5; } .fixed-arrow.left { left: 0px; } .fixed-arrow.right { right: 0px; transform: translateY(-50%) rotate(180deg); }
+.text-anim { position: relative; height: calc(var(--item-h) * 3); margin-top: 12px; overflow-y: hidden; overflow-x: visible; } 
+.viewport { height: 100%; overflow-y: hidden; overflow-x: visible; } 
+.list-center { position: relative; left: 50%; transform: translateX(-50%); } 
+.list { position: absolute; left: 0; right: 0; } 
+.item { position: relative; height: var(--item-h); display: flex; align-items: center; justify-content: center; font-family: 'LINE Seed Sans', sans-serif; font-size: 1.35rem; word-spacing: 0.1em; font-weight: 500; white-space: nowrap; color: var(--text); opacity: 0.25; transition: transform .45s var(--ease), opacity .45s var(--ease), color .45s var(--ease), font-size .45s var(--ease); } 
+.item.active { opacity: 1; color: var(--accent); font-weight: 600; font-size: 1.85rem; } 
+.item.near { opacity: 0.55; } 
+.fixed-arrow { position: absolute; top: 50%; width: var(--arrow-w); height: var(--arrow-w); transform: translateY(-50%); pointer-events: none; } 
+.fixed-arrow svg { width: 100%; height: 100%; fill: none; stroke: var(--accent); stroke-width: 2.5; } 
+.fixed-arrow.left { left: 0px; } 
+.fixed-arrow.right { right: 0px; transform: translateY(-50%) rotate(180deg); }
 
-.cards-wrap { margin-top: 40px; padding: 22px; background: #efeee9; border: 1px solid #d8d6cf; border-radius: 26px; } .cards-title { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 25px; margin-top: -8px; } .cards { display: grid; gap: 14px; } .card { background: #fff; border-radius: 18px; padding: 18px; border: 1px solid #e3e2dd; } .card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; } .card p { font-size: 13px; color: #666; line-height: 1.5; }
+.cards-wrap { margin-top: 40px; padding: 22px; background: #efeee9; border: 1px solid #d8d6cf; border-radius: 26px; } 
+.cards-title { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 25px; margin-top: -8px; } 
+.cards { display: grid; gap: 14px; } 
+.card { background: #fff; border-radius: 18px; padding: 18px; border: 1px solid #e3e2dd; } 
+.card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; } 
+.card p { font-size: 13px; color: #666; line-height: 1.5; }
 
-.button-area { position: fixed; bottom: 16px; left: 0; right: 0; width: 100%; display: flex; justify-content: center; padding: 0 32px; z-index: 1000; transition: transform 0.5s ease, opacity 0.5s ease; } .button-area.hide-btn { transform: translateY(100px); opacity: 0; pointer-events: none; } .get-started { margin: 0 70px; position: relative; display: flex; align-items: center; height: 60px; padding-left: 24px; padding-right: 118px; background: var(--btn-bg); color: #fff; font-size: 22px; font-weight: 600; border-radius: 999px; text-decoration: none; box-shadow: 0 6px 18px rgba(0,0,0,.25); cursor: pointer; } .get-started .arrow-btn { position: absolute; top: 0; right: 0; width: 60px; height: 60px; background: var(--arrow-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; } .get-started svg { width: 40px; height: 40px; stroke: #fff; stroke-width: 1.6; fill: none; }
+.button-area { position: fixed; bottom: 16px; left: 0; right: 0; width: 100%; display: flex; justify-content: center; padding: 0 32px; z-index: 1000; transition: transform 0.5s ease, opacity 0.5s ease; } 
+.button-area.hide-btn { transform: translateY(100px); opacity: 0; pointer-events: none; } 
+.get-started { margin: 0 70px; position: relative; display: flex; align-items: center; height: 60px; padding-left: 24px; padding-right: 118px; background: var(--btn-bg); color: #fff; font-size: 22px; font-weight: 600; border-radius: 999px; text-decoration: none; box-shadow: 0 6px 18px rgba(0,0,0,.25); cursor: pointer; } 
+.get-started .arrow-btn { position: absolute; top: 0; right: 0; width: 60px; height: 60px; background: var(--arrow-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; } 
+.get-started svg { width: 40px; height: 40px; stroke: #fff; stroke-width: 1.6; fill: none; }
 
-.footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; padding-bottom: 20px;} .footer-logos { margin-top: 10px; display: flex; justify-content: center; gap: 14px; } .footer-logos img { height: 18px; opacity: .85; }
-
+.footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; padding-bottom: 20px;} 
+.footer-logos { margin-top: 10px; display: flex; justify-content: center; gap: 14px; } 
+.footer-logos img { height: 18px; opacity: .85; }
 .footer-made { font-size: 15px; line-height: 1.4; font-weight: 500; color: #777; }
 
-/* ================= AUTH CUSTOM CSS ================= */ .custom-input { transition: all 0.2s ease-in-out; outline: none; } .fade-in { animation: fadeIn 0.4s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .dark .text-gray-100 { color: #f3f4f6; } </style>
+/* ================= AUTH CUSTOM CSS ================= */ 
+.custom-input { transition: all 0.2s ease-in-out; outline: none; } 
+.fade-in { animation: fadeIn 0.4s ease-out forwards; } 
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } 
+.dark .text-gray-100 { color: #f3f4f6; } 
+</style>
 
 </head>
-<body class="selection:bg-primary selection:text-white"><div class="header-container">
+<body class="selection:bg-primary selection:text-white">
+
+<div class="header-container">
   <div class="title">Attendmark</div>
   <div class="title">Saar AI</div>
   <div class="with">with</div>
@@ -113,12 +136,16 @@ body.auth-active .menu-btn span { background: #ffffff; }
     <a href="#">Terms & Privacy</a>
     <a href="#">Contact Creator</a>
   </div>
-</div><div class="strip">
+</div>
+
+<div class="strip">
     <div class="strip-track">
       <span> A  student  self  driven  attendance  tracker  and  a  AI  for  college  students. </span>
       <span> A  student  self  driven  attendance  tracker  and  a  AI  for  college  students. </span>
     </div>
-</div><div id="landing-view">
+</div>
+
+<div id="landing-view">
     <div class="hero"><div class="illustration"><img src="Image/30719.png" alt="Illustration" onerror="this.style.display='none'"></div></div>
     <div class="text-anim">
       <div class="fixed-arrow left"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l6 7-6 7"/></svg></div>
@@ -138,18 +165,25 @@ body.auth-active .menu-btn span { background: #ffffff; }
       <div class="footer-made" style="margin-top:16px;">Made with ❤️ by a DCIAN<br> entirely using</div>
       <div class="footer-logos"><img src="Image/Ai3.webp" alt="ChatGPT"><img src="Image/Ai1.webp" alt="Claude"><img src="Image/Ai2.webp" alt="Gemini"></div>
     </footer>
-</div><div class="button-area" id="getStartedBtnArea">
+</div>
+
+<div class="button-area" id="getStartedBtnArea">
   <div class="get-started" id="getStartedBtn" role="button">
     Get&nbsp;Started
     <div class="arrow-btn"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></div>
   </div>
-</div><div id="auth-wrapper" class="dark hidden">  <div id="view-login" class="min-h-full flex flex-col items-center justify-start pt-0 px-6 transition-all duration-300">
+</div>
+
+<div id="auth-wrapper" class="dark hidden">
+  
+  <div id="view-login" class="min-h-full flex flex-col items-center justify-start pt-0 px-6 transition-all duration-300">
     <div class="w-full flex-1 flex flex-col items-center max-w-sm">
         <div class="text-center mb-6 mt-2">
             <h1 class="font-display text-3xl font-extrabold tracking-tight text-gray-100 btn-text">Welcome mates</h1>
             <p class="text-[13px] text-gray-400 mt-1 font-medium">Please log in or sign up to continue</p>
-        </div><div class="w-full space-y-3 mb-4 relative">
-        <button id="googleBtn" class="w-full bg-white hover:bg-gray-200 text-black rounded-xl py-3.5 font-bold text-[16px] flex items-center justify-center gap-3 transition-all group btn-text">
+        </div>
+        <div class="w-full space-y-3 mb-4 relative">
+        <button id="googleBtn" onclick="handleGoogleLogin()" class="w-full bg-white hover:bg-gray-200 text-black rounded-xl py-3.5 font-bold text-[16px] flex items-center justify-center gap-3 transition-all group btn-text">
             <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path></svg>
             Continue with Google
         </button>
@@ -183,7 +217,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
             </button>
 
             <div class="text-right mt-2 mr-1">
-                <span onclick="switchToForgot()" class="text-[12px] text-primary hover:text-white cursor-pointer transition-colors font-medium">Forgot Password?</span>
+                <span onclick="switchAuthView('view-forgot'); switchToForgot();" class="text-[12px] text-primary hover:text-white cursor-pointer transition-colors font-medium">Forgot Password?</span>
             </div>
         </div>
 
@@ -192,10 +226,11 @@ body.auth-active .menu-btn span { background: #ffffff; }
     </div>
     <div class="text-center text-xs text-gray-500 leading-relaxed px-4 pb-4">By continuing, you agree to our <a class="underline hover:text-primary" href="#">Terms</a> and <a class="underline hover:text-primary" href="#">Privacy Policy</a>.</div>
 </div>
+</div>
 
-  </div>  <div id="view-forgot" class="hidden min-h-full flex flex-col items-center justify-start pt-0 px-6 fade-in">
+<div id="view-forgot" class="hidden min-h-full flex flex-col items-center justify-start pt-0 px-6 fade-in">
     <div class="w-full flex-1 flex flex-col items-center max-w-sm"><div class="relative w-full flex items-center justify-center mb-8 mt-2">
-        <button onclick="backToLogin('view-forgot')" class="absolute left-0 group flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors">
+        <button onclick="switchAuthView('view-login'); backToLogin('view-forgot')" class="absolute left-0 group flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors">
             <svg class="w-6 h-6 text-primary group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -232,8 +267,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
         </div>
     </div>
 </div>
+</div> 
 
-  </div>  <div id="view-registration" class="hidden min-h-full flex flex-col relative px-6 pt-0 fade-in"><div class="w-full mb-6 mt-2 fade-in">
+<div id="view-registration" class="hidden min-h-full flex flex-col relative px-6 pt-0 fade-in"><div class="w-full mb-6 mt-2 fade-in">
     <div class="relative w-full flex items-center justify-center mb-2 min-h-[28px]">
         <button onclick="handleRegistrationCancel()" class="absolute left-0 top-1/2 -translate-y-1/2 group flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors -ml-2 z-10">
             <svg class="w-6 h-6 text-gray-400 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -311,7 +347,9 @@ body.auth-active .menu-btn span { background: #ffffff; }
     </div>
 </main>
 
-</div><div id="view-verify-email" class="hidden min-h-full flex flex-col items-center justify-center px-6 fade-in text-center relative">
+</div>
+
+<div id="view-verify-email" class="hidden min-h-full flex flex-col items-center justify-center px-6 fade-in text-center relative">
     <div class="absolute top-6 left-6">
         <button onclick="cancelVerification()" class="text-gray-400 text-sm underline">Cancel/Logout</button>
     </div>
@@ -329,7 +367,11 @@ body.auth-active .menu-btn span { background: #ffffff; }
         </div>
     </div>
     <p class="text-[10px] text-gray-500">Once verified, we'll create your account automatically.</p>
-</div></div> <script type="module">
+</div>
+
+</div> 
+
+<script type="module">
   // --- FIREBASE IMPORTS ---
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { 
@@ -378,10 +420,10 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
   // Globals
   let verificationInterval = null;
-  const STATE_KEY = 'attendmark_pending_reg'; // Key for sessionStorage quick lookup
+  const STATE_KEY = 'attendmark_pending_reg'; 
   let lastFetchMethodsTs = 0;
   const FETCH_MIN_INTERVAL_MS = 1500;
-  window.pendingCredential = null; // will hold OAuthCredential when provider conflict occurs
+  window.pendingCredential = null; 
 
   // DOM Refs
   const emailInput = document.getElementById('emailInput');
@@ -395,7 +437,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
   const regFullName = document.getElementById('regFullName');
   const completeRegBtn = document.getElementById('completeRegBtn');
 
-  // Expose to window (for inline onclicks preserved)
+  // Expose to window 
   window.checkEmailAndProceed = checkEmailAndProceed;
   window.handleEmailLogin = handleEmailLogin;
   window.initiateRegistration = initiateRegistration;
@@ -403,20 +445,36 @@ body.auth-active .menu-btn span { background: #ffffff; }
   window.handleGoogleLogin = handleGoogleLogin;
   window.handleRegistrationCancel = handleRegistrationCancel;
   window.cancelVerification = cancelVerification;
+  window.switchAuthView = switchAuthView;
+
+  // --- VIEW SWITCHER HELPER (FIXES UI BREAKS) ---
+  function switchAuthView(viewId) {
+      // 1. Activate Main Wrapper
+      document.getElementById('landing-view').classList.add('hidden-view');
+      document.getElementById('landing-view').classList.add('hidden');
+      document.getElementById('auth-wrapper').classList.remove('hidden');
+      document.getElementById('auth-wrapper').classList.add('active-view');
+      document.body.classList.add('auth-active');
+      document.getElementById('getStartedBtnArea').classList.add('hide-btn');
+
+      // 2. Hide ALL sub-views
+      const views = ['view-login', 'view-forgot', 'view-registration', 'view-verify-email'];
+      views.forEach(id => {
+          document.getElementById(id).classList.add('hidden');
+      });
+
+      // 3. Show TARGET view
+      document.getElementById(viewId).classList.remove('hidden');
+  }
 
   // --- HELPERS ---
   function encodeEmailAsId(email) {
-    // Simple encode to produce safe doc id for email
     return encodeURIComponent(email.toLowerCase());
   }
 
   async function logAuthEvent(type, payload = {}) {
     try {
-      await addDoc(collection(db, 'auth_logs'), {
-        type,
-        payload,
-        ts: serverTimestamp()
-      });
+      await addDoc(collection(db, 'auth_logs'), { type, payload, ts: serverTimestamp() });
     } catch (e) { console.warn('Logging failed', e); }
   }
 
@@ -430,10 +488,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
       }, { merge: true });
       sessionStorage.setItem(STATE_KEY, id);
       return id;
-    } catch (e) {
-      console.error('Failed to write pending profile', e);
-      return null;
-    }
+    } catch (e) { console.error('Failed to write pending profile', e); return null; }
   }
 
   async function removePendingProfile(emailOrId) {
@@ -459,29 +514,14 @@ body.auth-active .menu-btn span { background: #ffffff; }
       try {
         const existing = await getDoc(userRef);
         if (existing.exists()) {
-          // merge; preserve createdAt if exists
           const existingData = existing.data();
-          const payload = {
-            ...existingData,
-            ...data,
-            updatedAt: serverTimestamp()
-          };
-          // If createdAt not present, set it
+          const payload = { ...existingData, ...data, updatedAt: serverTimestamp() };
           if (!existingData.createdAt) payload.createdAt = serverTimestamp();
           await setDoc(userRef, payload, { merge: true });
         } else {
-          // New doc
-          await setDoc(userRef, {
-            ...data,
-            profileComplete: true,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          }, { merge: true });
+          await setDoc(userRef, { ...data, profileComplete: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
         }
-      } catch (e) {
-        console.error('Failed to save user profile', e);
-        throw e;
-      }
+      } catch (e) { console.error('Failed to save user profile', e); throw e; }
   }
 
   // --- GATEKEEPER LOGIC ---
@@ -492,58 +532,34 @@ body.auth-active .menu-btn span { background: #ffffff; }
       const isVerified = user.emailVerified || isGoogle;
 
       if (!isVerified) {
-         setupViewsForAuth();
+         switchAuthView('view-verify-email');
          document.getElementById('verifyEmailDisplay').innerText = user.email || '';
-         document.getElementById('view-verify-email').classList.remove('hidden');
          startVerificationListener(user);
          return;
       }
 
-      // 2. Check Profile Completeness (Gatekeeper against bypass)
+      // 2. Check Profile Completeness
       try {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists() && userSnap.data().profileComplete === true) {
-            // Success: Profile exists.
             window.location.replace("index.html");
         } else {
-            // Block: Profile missing (even if password reset was done)
-            setupViewsForAuth();
-            await showRegistrationScreen(user);
+            // SHOW REGISTRATION (Existing Auth, No Profile)
+            switchAuthView('view-registration');
+            await setupRegistrationScreenValues(user);
         }
       } catch (err) {
         console.error("Profile check error:", err);
         alert("Connection error. Please check your internet.");
       }
-    } else {
-        // No User signed in; show landing
     }
   });
 
-  function setupViewsForAuth() {
-    document.getElementById('landing-view').classList.add('hidden-view');
-    document.getElementById('landing-view').classList.add('hidden');
-    document.getElementById('auth-wrapper').classList.remove('hidden');
-    document.getElementById('auth-wrapper').classList.add('active-view');
-    document.body.classList.add('auth-active');
-    document.getElementById('getStartedBtnArea').classList.add('hide-btn');
-    document.getElementById('view-login').classList.remove('hidden');
-    // Reset specific UI bits
-    document.getElementById('passwordContainer').classList.add('hidden');
-    document.getElementById('continueBtn').classList.add('hidden');
-    document.getElementById('emailIconStatic').classList.remove('hidden');
-  }
-
-  async function showRegistrationScreen(user) {
-    const regView = document.getElementById('view-registration');
-    regView.classList.remove('hidden');
-    document.getElementById('view-login').classList.add('hidden');
-    document.getElementById('auth-wrapper').classList.add('active-view');
-
+  async function setupRegistrationScreenValues(user) {
     if (user.email) regEmailInput.value = user.email;
     if (user.displayName) regFullName.value = user.displayName;
 
-    // Logic: Always show password field unless they ALREADY have a password provider linked.
     const hasPassword = user.providerData.some(p => p.providerId === 'password');
     if (hasPassword) {
       regPasswordContainer.classList.add('hidden');
@@ -555,48 +571,36 @@ body.auth-active .menu-btn span { background: #ffffff; }
   // --- GOOGLE LOGIN ---
   async function handleGoogleLogin() {
     try {
-      // open popup
       const result = await signInWithPopup(auth, googleProvider);
-      // success - onAuthStateChanged will handle next steps
     } catch (error) {
       console.error('Google sign-in error', error);
-      // Specific handling for account-exists-with-different-credential
       const code = error && error.code;
-      // Try to extract email from error (may be in customData)
       const conflictEmail = (error && (error.customData && error.customData.email)) || (error && error.email) || null;
 
-      // Extract pending credential if available
       try { window.pendingCredential = googleProvider.credentialFromError ? googleProvider.credentialFromError(error) : null; } catch(e) { window.pendingCredential = null; }
-      // If provider conflict, guide the user to sign in via existing method and then link
+      
       if (code === 'auth/account-exists-with-different-credential') {
          await logAuthEvent('provider_conflict', { email: conflictEmail, code });
          let methods = [];
-         try { if (conflictEmail) methods = await fetchSignInMethodsForEmail(auth, conflictEmail); } catch(e) { console.warn('Could not fetch methods for conflict email', e); }
+         try { if (conflictEmail) methods = await fetchSignInMethodsForEmail(auth, conflictEmail); } catch(e) { console.warn('Could not fetch methods', e); }
 
          if (methods && methods.length) {
-           const primary = methods[0];
-           // Guide the user: prefill email and show password UI if password is primary
            if (conflictEmail) {
              emailInput.value = conflictEmail;
              if (methods.includes('password')) {
-               // Show login by password UI and store pending credential to link after login
                document.getElementById('passwordContainer').classList.remove('hidden');
                document.getElementById('continueBtn').classList.remove('hidden');
                emailIconStatic.classList.add('hidden');
-               alert('This email is already registered using email/password. Please sign in with your password to link your Google account.');
+               alert('This email is registered via Password. Please sign in to link Google.');
                return;
              } else {
-               // If primary provider is e.g. facebook.com or phone, inform the user
-               alert('This email is already registered using a different sign-in method: ' + methods.join(', ') + '. Please sign in using that method and then link Google from settings.');
+               alert('Sign in using: ' + methods.join(', '));
                return;
              }
            }
          }
       }
-
-      // Generic fallback
-      alert('Google sign-in failed. Please try again or use email sign-in.');
-      await logAuthEvent('google_signin_failed', { code, message: error && error.message });
+      alert('Google sign-in failed. Please try again.');
     }
   }
 
@@ -604,7 +608,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
   async function handleRegistrationCancel() {
     try {
       await signOut(auth);
-      sessionStorage.removeItem(STATE_KEY); // Clean up
+      sessionStorage.removeItem(STATE_KEY); 
     } catch (e) { console.error(e); }
     window.location.reload();
   }
@@ -614,7 +618,6 @@ body.auth-active .menu-btn span { background: #ffffff; }
     const emailValue = emailInput.value.trim();
     if (!emailValue) return;
 
-    // Rate Limiting
     const now = Date.now();
     if (now - lastFetchMethodsTs < FETCH_MIN_INTERVAL_MS) {
       await new Promise(r => setTimeout(r, FETCH_MIN_INTERVAL_MS - (now - lastFetchMethodsTs)));
@@ -629,22 +632,17 @@ body.auth-active .menu-btn span { background: #ffffff; }
     try {
       let methods = [];
       try { methods = await fetchSignInMethodsForEmail(auth, emailValue); } 
-      catch (err) { 
-        // Fail open to Registration to prevent blocking legitimate new users if API limits hit
-        console.warn("API check skipped:", err);
-        methods = []; 
-      }
+      catch (err) { methods = []; }
 
-      await new Promise(r => setTimeout(r, 400)); // UX consistency
+      await new Promise(r => setTimeout(r, 400)); 
 
       if (methods.length === 0) {
-        // New User -> registration
+        // New User -> Switch to Registration View cleanly
         document.getElementById('regEmailInput').value = emailValue;
-        document.getElementById('view-login').classList.add('hidden');
-        document.getElementById('view-registration').classList.remove('hidden');
+        switchAuthView('view-registration');
         regPasswordContainer.classList.remove('hidden');
       } else {
-        // Existing User - show appropriate login method
+        // Existing User -> Stay on Login, show password
         emailIconStatic.classList.add('hidden');
         emailArrowBtn.classList.add('hidden');
         passwordContainer.classList.remove('hidden');
@@ -672,21 +670,12 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-
-      // If there is a pending third-party credential waiting to be linked, link it now
       if (window.pendingCredential) {
         try {
           await linkWithCredential(auth.currentUser, window.pendingCredential);
-          await logAuthEvent('link_success', { uid: auth.currentUser.uid, provider: 'google' });
           window.pendingCredential = null;
-        } catch (e) {
-          console.warn('Linking pending credential failed', e);
-          await logAuthEvent('link_failed', { error: e.code || e.message });
-        }
+        } catch (e) { console.warn('Linking failed', e); }
       }
-
-      // Post sign-in flow will be handled by onAuthStateChanged
-
     } catch (error) {
       console.error(error);
       alert("Invalid credentials. Please try again.");
@@ -694,9 +683,8 @@ body.auth-active .menu-btn span { background: #ffffff; }
     }
   }
 
-  // --- REGISTRATION LOGIC (The Core Fix) ---
+  // --- REGISTRATION LOGIC ---
   async function initiateRegistration() {
-    // 1. Gather & Sanitize
     const fullName = document.getElementById('regFullName').value.trim();
     const college = document.getElementById('regCollege').value;
     const course = document.getElementById('regClass').value;
@@ -705,7 +693,6 @@ body.auth-active .menu-btn span { background: #ffffff; }
     const password = document.getElementById('regPassword').value; 
     const email = document.getElementById('regEmailInput').value.trim();
 
-    // 2. Validate
     if (!fullName || !college || !course || !section || !rollNo) {
       alert("Please fill all fields."); return;
     }
@@ -719,50 +706,27 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
     try {
         let user = auth.currentUser;
-
-        // PREPARE PROFILE DATA
         const profileData = {
-            name: fullName,
-            college,
-            course_or_class: course,
-            section,
-            rollNumber: rollNo,
-            email: email.toLowerCase(), // ensure we capture correct email
-            profileComplete: true // Mark as complete immediately upon save
+            name: fullName, college, course_or_class: course, section,
+            rollNumber: rollNo, email: email.toLowerCase(), profileComplete: true
         };
 
-        // --- CASE A: NEW USER (Email/Pass) ---
         if (!user) {
             if (!password || password.length < 6) { 
                 alert("Password must be at least 6 characters."); 
                 btn.innerHTML=originalText; btn.disabled=false; return; 
             }
-
-            // Save pending profile to Firestore (cross-device recovery)
             await savePendingProfileToFirestore(email, profileData);
-
-            // Create Auth (this signs user in)
             const credential = await createUserWithEmailAndPassword(auth, email, password);
             user = credential.user;
-
-            // Update display name
             await updateProfile(user, { displayName: fullName }).catch(e => console.log(e));
-
-            // Send Verification
             await sendEmailVerification(user);
 
-            // UI Switch
-            document.getElementById('view-registration').classList.add('hidden');
             document.getElementById('verifyEmailDisplay').innerText = email;
-            const verifyView = document.getElementById('view-verify-email');
-            verifyView.classList.remove('hidden');
-
+            switchAuthView('view-verify-email');
             startVerificationListener(user);
         } 
-        
-        // --- CASE B: EXISTING SIGNED-IN USER (Google) ---
         else {
-             // If user entered a password, link it
              if (password) {
                  if (password.length < 6) {
                     alert("Password must be at least 6 characters.");
@@ -771,35 +735,16 @@ body.auth-active .menu-btn span { background: #ffffff; }
                  try {
                      const cred = EmailAuthProvider.credential(user.email, password);
                      await linkWithCredential(user, cred);
-                 } catch (e) {
-                     // Handle specific linking errors
-                     console.warn('Link error', e);
-                     if (e.code === 'auth/credential-already-in-use') {
-                       alert("This password/email combination is already in use.");
-                     } else if (e.code === 'auth/weak-password') {
-                       alert("Password is too weak.");
-                     } else {
-                       console.error("Link error:", e);
-                       // We do NOT stop registration here. 
-                       alert("Profile saved, but password could not be linked (it may be weak or used). You can use Google login.");
-                     }
-                 }
+                 } catch (e) { console.warn('Link error', e); }
              }
-
-             // Save Profile
              await saveUserProfile(user.uid, profileData);
-             // Remove any pending doc
              await removePendingProfile(email);
              window.location.replace("index.html");
         }
 
     } catch (error) {
         console.error("Reg Error:", error);
-        if (error.code === 'auth/email-already-in-use') {
-            alert("Email already registered. Please log in.");
-        } else {
-            alert("Registration failed: " + (error.message || error));
-        }
+        alert("Registration failed: " + (error.message || error));
         btn.innerHTML = originalText; btn.disabled = false;
     }
   }
@@ -812,49 +757,27 @@ body.auth-active .menu-btn span { background: #ffffff; }
             await user.reload(); 
             if (user.emailVerified) {
                 clearInterval(verificationInterval);
-
-                // RECOVERY LOGIC - prefer Firestore pending profile (cross-device)
                 let dataToSave = null;
                 const email = (user && user.email) ? user.email.toLowerCase() : null;
                 if (email) {
                   const pending = await getPendingProfileByEmail(email);
-                  if (pending && pending.data) {
-                    dataToSave = pending.data;
-                  }
+                  if (pending && pending.data) dataToSave = pending.data;
                 }
-
                 if (!dataToSave) {
-                    // sessionStorage fallback
-                    const storedId = sessionStorage.getItem(STATE_KEY);
-                    if (storedId) {
-                      try {
-                        const snap = await getDoc(doc(db, 'pending_regs', storedId));
-                        if (snap.exists()) dataToSave = snap.data().data;
-                      } catch(e) { console.warn(e); }
-                    }
-                }
-
-                if (!dataToSave) {
-                    // "Amnesia" happened (tab closed). Ask user to re-enter but sign-in remains verified.
                     alert("Email verified! Please confirm your details to finish setup.");
-                    window.location.reload(); // Will trigger Gatekeeper -> Show Registration
+                    window.location.reload(); 
                     return;
                 }
-
-                // Save Data
                 await saveUserProfile(user.uid, dataToSave);
-
-                // Cleanup & Redirect
                 await removePendingProfile(user.email);
                 sessionStorage.removeItem(STATE_KEY);
                 alert("Verification Successful!");
                 window.location.replace("index.html");
             }
         } catch(e) { console.log(e); }
-    }, 3000); // Check every 3s
+    }, 3000); 
   }
 
-  // --- RESET & LOGOUT ---
   async function cancelVerification() {
       if (verificationInterval) clearInterval(verificationInterval);
       sessionStorage.removeItem(STATE_KEY);
@@ -870,21 +793,17 @@ body.auth-active .menu-btn span { background: #ffffff; }
     const originalText = btn.innerText;
     btn.innerText = "Sending..."; btn.disabled = true;
 
-    try {
-      await sendPasswordResetEmail(auth, email);
-      // Success UI
-    } catch (error) {
-       console.error(error); // Fail silently for security (user enumeration)
-    }
+    try { await sendPasswordResetEmail(auth, email); } catch (error) { console.error(error); }
     
     document.getElementById('sentEmailSpan').textContent = email;
     document.getElementById('forgotStateInitial').classList.add('hidden');
     document.getElementById('forgotStateSuccess').classList.remove('hidden');
     btn.innerText = originalText; btn.disabled = false;
   }
-</script><script>
+</script>
+
+<script>
 /* ================= UI INTERACTION SCRIPTS ================= */
-// (Kept visually similar but use class .hidden consistently)
 const baseLabels = ["Track  attendance", "Get  detailed  stats", "Subjects  analytics", "Plan  safebunks", "Tips  &  roadmap", "Ask  doubts  to  AI", "Log  short  notes", "Realtime  counts", "View  edit  anytime", "College  friendly"];
 const labels = Array.from({ length: 20 }, () => baseLabels).flat();
 const list = document.getElementById("list");
@@ -930,14 +849,7 @@ document.addEventListener("click", () => { menuDropdown.style.display = "none"; 
 // View Transition
 const getStartedBtn = document.getElementById('getStartedBtn');
 function transitionToAuth() {
-    document.getElementById('getStartedBtnArea').classList.add('hide-btn');
-    document.getElementById('landing-view').classList.add('hidden-view');
-    document.getElementById('landing-view').classList.add('hidden');
-    document.body.classList.add('auth-active');
-    setTimeout(() => {
-        document.getElementById('auth-wrapper').classList.remove('hidden');
-        document.getElementById('auth-wrapper').classList.add('active-view');
-    }, 600);
+    window.switchAuthView('view-login');
 }
 getStartedBtn.addEventListener('click', transitionToAuth);
 
@@ -968,9 +880,6 @@ function togglePasswordVisibility(id) {
 
 function switchToForgot() {
     const emailValue = document.getElementById('emailInput').value.trim();
-    document.getElementById('view-login').classList.add('hidden');
-    const forgotView = document.getElementById('view-forgot');
-    forgotView.classList.remove('hidden');
     document.getElementById('forgotEmailDisplay').innerText = emailValue || "No email provided";
     document.getElementById('forgotStateInitial').classList.remove('hidden');
     document.getElementById('forgotStateSuccess').classList.add('hidden');
@@ -979,14 +888,12 @@ function switchToForgot() {
 }
 
 function backToLogin(currentViewId) {
-    document.getElementById(currentViewId).classList.add('hidden');
-    const loginView = document.getElementById('view-login');
-    loginView.classList.remove('hidden'); 
     document.getElementById('passwordContainer').classList.add('hidden');
     document.getElementById('continueBtn').classList.add('hidden');
     const emailInput = document.getElementById('emailInput');
     emailInput.disabled = false;
     toggleArrow(); 
 }
-</script></body>
-    </html>
+</script>
+</body>
+</html>
