@@ -426,6 +426,14 @@ body.auth-active .menu-btn span { background: #ffffff; }
   window.pendingCredential = null; 
 
   // DOM Refs
+
+  // ===== FIX 2: Cleanup interrupted registration state =====
+  const pendingId = sessionStorage.getItem(STATE_KEY);
+
+  if (pendingId && !auth.currentUser) {
+  // Registration was interrupted (tab killed / app backgrounded)
+    sessionStorage.removeItem(STATE_KEY);
+  }
   const emailInput = document.getElementById('emailInput');
   const emailArrowBtn = document.getElementById('emailArrowBtn');
   const emailIconStatic = document.getElementById('emailIconStatic');
