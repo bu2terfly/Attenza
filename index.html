@@ -3,7 +3,7 @@
 <head>  
     <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="styles.css">  
-    <link rel="stylesheet" href="menu.css"> <!-- Put the menu CSS here (from your menu page). Avoid global body overrides in that file. -->
+    <link rel="stylesheet" href="menu.css"> <!-- Menu CSS (scoped) -->
     <meta name="theme-color" content="#8b7cc8">  
     <link rel="apple-touch-icon" href="./icons/icon-192.png">  
     <meta charset="UTF-8">  
@@ -25,8 +25,45 @@
     <style>
       /* keep body hidden until firebase auth shows it (original behavior) */
       body { visibility: hidden; }
+
       /* helper class to prevent background scroll when menu is open */
       .no-scroll { overflow: hidden !important; height: 100vh !important; }
+
+      /*
+        IMPORTANT SAFETY NOTE (tiny, safe change):
+        The menu stylesheet (menu.css) is scoped to #view-menu to avoid global overrides.
+        However the search-results overlay (#result-overlay-container) intentionally
+        sits outside #view-menu and uses the same theme variables. To ensure the overlay
+        gets the color/spacing tokens without letting menu.css reset global fonts or layout,
+        we expose only the theme variables globally here (no resets, no font changes).
+      */
+      :root {
+        --bg-body: #F9F8F6;
+        --bg-white: #ffffff;
+        --bg-gray-light: #f9fafb;
+        --bg-card: #ffffff;
+        --text-main: #18181b;
+        --text-muted: #71717a;
+        --text-light: #9ca3af;
+        --brand-purple: #6E62E5;
+        --brand-purple-light: rgba(110, 98, 229, 0.05);
+        --brand-subtle: #EEF2FF;
+        --brand-purple-text: #6E62E5;
+        --border-color: #f3f4f6;
+        --border-light: #E4E4E7;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --radius-xl: 16px;
+        --radius-lg: 12px;
+        --radius-md: 8px;
+        --radius-pill: 100px;
+        --safe-bottom: env(safe-area-inset-bottom, 20px);
+
+        /* Result card tokens (used by the top-level overlay) */
+        --primary-accent: #6E62E5;
+        --primary-soft: #EEF2FF;
+        --shadow-float: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        --shadow-dropdown: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
     </style>
 
     <title>ATTENZA - for Dispur College</title>  
@@ -492,7 +529,7 @@
         <div class="month-year-select">
             <span class="edit-icon" aria-hidden="true">
                 <svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="m19 20.25c0-.402-.356-.75-.75-.75-2.561 0-11.939 0-14.5 0-.394 0-.75.348-.75.75s.356.75.75.75h14.5c.394 0 .75-.348.75-.75zm-7.403-3.398 9.124-9.125c.171-.171.279-.423.279-.684 0-.229-.083-.466-.28-.662l-3.115-3.104c-.185-.185-.429-.277-.672-.277s-.486.092-.672.277l-9.143 9.103c-.569 1.763-1.555 4.823-1.626 5.081-.02.075-.029.15-.029.224 0 .461.349.848.765.848.511 0 .991-.189 5.369-1.681zm-3.27-3.342 2.137 2.137-3.168 1.046zm.955-1.166 7.651-7.616 2.335 2.327-7.637 7.638z" />
+                    <path d="m19 20.25c0-.402-.356-.75-.75-.75-2.561 0-11.939 0-14.5 0-.394 0-.75.348-.75.75s.356.75.75.75h14.5c.394 0 .75-.348.75-.75zm-7.403-3.398 9.124-9.125c.171-.171.279-.423.279-.684 0-.229-.083-.466-.28-.662l-3.115-3.104c-.185-.185-.429-.277-.672-.277s-.486.092-.672.277l-9.143 9.103c-.569 1.763-1.555 4.823-1.626 5.081-.02.075-.029.15-.029.224 0 .461.349.848.765.848.511 0 .991-.189 5.369-1.681mz"/>
                 </svg>
             </span>
             <select id="monthYearSelect" aria-label="Month and year"></select>
@@ -779,9 +816,7 @@ Once you connect Gemini and your attendance backend, this will show real, detail
 <!-- flatpickr (kept as external CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<!-- Inline menu wiring & behavior (search box, overlay, dropdown) -->
-
-<!-- Original app.js (keep your single JS file here) -->
+<!-- Original app.js (single JS file - contains menu wiring & app logic) -->
 <script src="app.js"></script>
 
 </body>
