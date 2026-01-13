@@ -1,7 +1,7 @@
 /* ==================================================
    Attenza - styles.css
    Fixed & consolidated version (ready to paste)
-   - Removed body position:fixed; overflow:hidden to allow scrolling
+   - Removed body overflow:hidden to allow scrolling
    - Merged duplicate :root variables
    - Kept all original selectors and UI tokens
    ================================================== */
