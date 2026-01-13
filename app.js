@@ -1,4 +1,4 @@
-// Header expand/collapse
+// Header expand/collaps
 const expandArrow = document.getElementById('expandArrow');
 const expandedContent = document.getElementById('expandedContent');
 const header = document.getElementById('header');
