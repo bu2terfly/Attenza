@@ -2,7 +2,15 @@
 
 /* --- GLOBAL RESET --- */ * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; width: 100vw; overflow: hidden; position: fixed; }
+#view-menu {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow-y: auto;
+  background: var(--bg-body);
+  z-index: 9999;
+}
 
 a { text-decoration: none; color: inherit; }
 
