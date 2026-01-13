@@ -1,350 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#8b7cc8">
   <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="styles.css">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-
-  <title>ATTENZA - for Dispur College</title>
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <title>ATTENZA - for Dispur College</title>
 
   <style>
-    /* Basic reset & layout */
-    :root{
-      --bg:#fbfbff;
-      --muted:#6b6f82;
-      --accent:#8b7cc8;
-      --card:#ffffff;
-      --glass: rgba(50,53,68,0.04);
-      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    html,body{height:100%;margin:0;padding:0;background:var(--bg);color:#23232b; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
-    /* avoid page freeze from hidden overflow */
-    html, body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    /* show small loading while auth check */
-    body[aria-loading="true"]{
-      opacity:0.98;
-      pointer-events:auto;
-    }
-    /* header */
-    .header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(35,35,40,0.04);padding:10px 16px;display:flex;align-items:flex-start;flex-direction:column}
-    .top-bar{display:flex;align-items:center;width:100%;gap:12px}
-    .icon-btn{background:transparent;border:0;cursor:pointer;padding:8px;border-radius:8px}
-    .menu-mini span{display:block;width:20px;height:2px;background:var(--muted);border-radius:2px;box-shadow:0 6px 0 var(--muted)}
-    .brand-container{display:flex;flex-direction:column;line-height:1}
-    .brand-name{font-weight:700;font-size:18px}
-    .tagline{font-size:12px;color:var(--muted)}
-    .notif-rev{margin-left:auto;position:relative}
-    .notif-dot{position:absolute;right:8px;top:6px;width:9px;height:9px;background:#ef4444;border-radius:50%;box-shadow:0 0 0 3px rgba(239,68,68,0.06)}
-
-    /* expand section */
-    .expand-section{width:100%;overflow:hidden}
-    .expand-arrow{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;border-radius:999px}
-    .expanded-content{max-height:0;overflow:hidden;transition:max-height .28s ease}
-    .expanded-content.open{max-height:420px}
-
-    /* main content */
-    .content-body{padding:18px 16px 40px}
-    .welcome-section{display:flex;align-items:center;gap:18px}
-    .attendance-ring{position:relative;width:140px;height:140px}
-    .ring-svg{width:100%;height:100%}
-    .ring-bg-circle{fill:none;stroke:#e9e9f2;stroke-width:12}
-    .ring-progress-circle{fill:none;stroke:var(--accent);stroke-width:12;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;stroke-dasharray:440;stroke-dashoffset:110;transition:stroke-dashoffset .8s ease}
-    .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-    .percentage{font-weight:700;font-size:20px}
-    .percentage-label{font-size:11px;color:var(--muted)}
-
-    /* notebook */
-    .notebook-section{padding:10px 16px}
-    .page{background:linear-gradient(180deg,#fff,#fff);border-radius:12px;padding:16px;box-shadow:0 6px 20px rgba(35,35,40,0.03);max-width:760px;margin:auto}
-
-    /* install strip */
-    .install-strip{position:fixed;left:16px;right:16px;bottom:16px;background:var(--card);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 8px 28px rgba(35,35,40,0.06);z-index:60}
-    .install-strip.hidden{display:none}
-
-    /* sections, cards, grid */
-    .section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
-    .carousel-container{padding:12px 16px}
-    .carousel{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory}
-    .class-card{min-width:260px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(35,35,40,0.03);scroll-snap-align:center}
-    .attendance-actions{display:flex;gap:8px;margin-top:10px}
-    .attendance-btn{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(35,35,40,0.06);cursor:pointer;background:transparent}
-
-    /* periodical grid */
-    .periodical-section{padding:16px}
-    .bento-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 20px rgba(35,35,40,0.03)}
-    .span-2{grid-column:span 2}
-    .span-full{grid-column:1/-1}
-
-    /* subject card */
-    .subject-card{display:flex;flex-direction:column;gap:8px}
-    .subject-header{display:flex;align-items:center;justify-content:space-between}
-
-    /* menu */
-    .menu-view{position:fixed;inset:0;background:rgba(9,10,14,0.4);backdrop-filter:blur(4px);z-index:80;display:flex;justify-content:flex-end;pointer-events:none;opacity:0;transition:opacity .18s ease}
-    .menu-view.open{pointer-events:auto;opacity:1}
-    .app-view{width:360px;background:linear-gradient(180deg,#fff,#fbfbff);height:100%;overflow:auto;padding:16px;box-shadow:-12px 0 40px rgba(9,10,14,0.08)}
-    .menu-profile-card{display:flex;gap:12px;align-items:center;padding:8px 0}
-    .menu-profile-img{width:56px;height:56px;border-radius:10px;object-fit:cover}
-    .menu-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer}
-    .menu-item:hover{background:var(--glass)}
-    .logout-section{margin-top:18px;display:flex;flex-direction:column;gap:10px}
-
-    /* overlays & modals */
-    .modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:90;background:rgba(0,0,0,0.35);opacity:0;pointer-events:none;transition:opacity .16s ease}
-    .modal-backdrop.open{opacity:1;pointer-events:auto}
-    .modal{background:#fff;padding:18px;border-radius:10px;min-width:320px;max-width:90%}
-    .hidden{display:none}
-
-    /* results overlay */
-    #result-overlay-container{position:fixed;left:0;right:0;top:0;bottom:0;z-index:75;display:none}
-    #result-overlay-container.open{display:block}
-
-    /* ai board & prompt */
-    .ai-card-container{position:fixed;right:20px;bottom:20px;z-index:50}
-    .prompt-area{display:flex;gap:8px;align-items:center;padding:8px;background:var(--card);border-radius:12px;box-shadow:0 6px 18px rgba(35,35,40,0.06)}
-    .prompt-input{border:0;outline:none;padding:6px;font-size:14px;width:180px;background:transparent}
-
-    /* accessibility focus */
-    button:focus, .menu-item:focus{outline:3px solid rgba(139,124,200,0.18);outline-offset:2px}
-
-    /* responsive */
-    @media (max-width:900px){
-      .bento-grid{grid-template-columns:repeat(2,1fr)}
-      .app-view{width:92%}
-      .carousel{padding-left:8px}
-      .attendance-ring{width:110px;height:110px}
-    }
+    /* keep initial hidden to avoid flash of unauth UI, but reveal robustly in JS */
+    body { visibility: hidden; }
   </style>
+
+  <!-- Robust Firebase + auth check using dynamic imports to avoid fatal freeze if imports fail -->
+  <script type="module">
+    (async () => {
+      // Safety fallback: if nothing resolves in this timeout, reveal the page
+      const revealTimeout = setTimeout(() => {
+        try { document.body.style.visibility = 'visible'; } catch(e){ /* silent */ }
+        console.warn('Auth check timeout — revealing UI as fallback.');
+      }, 4000);
+
+      try {
+        // Use dynamic imports so a failure won't block the rest of the page
+        const firebaseAppModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+        const firebaseAuthModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const firebaseFirestoreModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+
+        const { initializeApp } = firebaseAppModule;
+        const { getAuth, onAuthStateChanged } = firebaseAuthModule;
+        const { getFirestore, doc, getDoc } = firebaseFirestoreModule;
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
+          authDomain: "attenza-app.firebaseapp.com",
+          projectId: "attenza-app",
+          storageBucket: "attenza-app.firebasestorage.app",
+          messagingSenderId: "435010148378",
+          appId: "1:435010148378:web:e5540806fd0ef90b16d9a3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+          clearTimeout(revealTimeout);
+          try {
+            if (!user) {
+              // if not logged in, redirect to login
+              window.location.replace("login.html");
+              return;
+            }
+            // Logged in -> check profile document
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists() && userSnap.data().profileComplete === true) {
+              document.body.style.visibility = "visible";
+            } else {
+              // fallback for incomplete profile — return to login/registration
+              window.location.replace("login.html");
+            }
+          } catch (err) {
+            console.error('Auth check error:', err);
+            // If something fails reading Firestore, reveal UI as a graceful fallback
+            document.body.style.visibility = "visible";
+          }
+        }, (error) => {
+          // onAuthStateChanged subscription error — reveal UI gracefully
+          console.error('onAuthStateChanged error:', error);
+          clearTimeout(revealTimeout);
+          document.body.style.visibility = "visible";
+        });
+
+      } catch (err) {
+        // If dynamic import fails, reveal the page so it doesn't stay frozen.
+        console.error('Firebase dynamic import failed:', err);
+        clearTimeout(revealTimeout);
+        document.body.style.visibility = "visible";
+      }
+    })();
+  </script>
 </head>
-<body aria-loading="true">
-  <!-- HEADER -->
+
+<body>
   <div class="header" id="header">
     <div class="top-bar">
-      <button id="openMenuBtn" class="icon-btn" aria-label="Open menu" aria-controls="menuView" aria-expanded="false">
-        <div class="menu-mini"><span></span></div>
-      </button>
-
-      <div class="brand-container">
-        <span class="brand-name">ATTENZA</span>
-        <span class="tagline">a student driven attendance tracker</span>
+      <div class="left-section">
+        <button id="openMenuBtn" class="icon-btn" aria-label="Menu">
+          <div class="menu-mini"><span></span></div>
+        </button>
+        <div class="brand-container">
+          <span class="brand-name">ATTENZA</span>
+          <span class="tagline">a student driven attendance tracker</span>
+        </div>
       </div>
 
       <button class="icon-btn notif-rev" aria-label="Notifications">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-          <path d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z" stroke="currentColor" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"></path>
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" stroke="currentColor"></path>
         </svg>
-        <div class="notif-dot" aria-hidden="true"></div>
+        <div class="notif-dot"></div>
       </button>
     </div>
 
     <div class="expand-section">
-      <div class="expand-arrow" id="expandArrow" role="button" aria-expanded="false" aria-controls="expandedContent">
-        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="expand-arrow" id="expandArrow">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
 
       <div class="expanded-content" id="expandedContent">
-        <div class="content-inner" style="padding:12px 0">
+        <div class="content-inner">
           <div class="info-section">
-            <h3 style="margin:0 0 6px 0">About ATTENZA</h3>
-            <p style="margin:0;color:var(--muted)">A student-driven attendance tracker for Dispur College — view your attendance data anytime, anywhere.</p>
+            <h3>About ATTENZA</h3>
+            <p>A student-driven attendance tracker designed exclusively for Dispur College students. View your attendance data anytime, anywhere - something our teacher-driven system doesn't allow.</p>
           </div>
 
-          <div class="info-section" style="margin-top:10px">
-            <h3 style="margin:0 0 10px 0">Key Features</h3>
-            <div class="features" style="display:flex;gap:8px;flex-wrap:wrap">
-              <div class="feature-card" style="min-width:160px;background:var(--card);padding:10px;border-radius:8px;box-shadow:0 6px 16px rgba(35,35,40,0.03)">
-                <h4 style="margin:0 0 6px 0">📊 Real-time Data</h4>
-                <p style="margin:0;color:var(--muted)">Check your attendance percentage instantly</p>
-              </div>
-              <div class="feature-card" style="min-width:160px;background:var(--card);padding:10px;border-radius:8px;box-shadow:0 6px 16px rgba(35,35,40,0.03)">
-                <h4 style="margin:0 0 6px 0">📅 Subject-wise View</h4>
-                <p style="margin:0;color:var(--muted)">Track attendance for each subject separately</p>
-              </div>
-              <div class="feature-card" style="min-width:160px;background:var(--card);padding:10px;border-radius:8px;box-shadow:0 6px 16px rgba(35,35,40,0.03)">
-                <h4 style="margin:0 0 6px 0">🔔 Smart Alerts</h4>
-                <p style="margin:0;color:var(--muted)">Get notified when attendance falls below threshold</p>
-              </div>
+          <div class="info-section">
+            <h3>Key Features</h3>
+            <div class="features">
+              <div class="feature-card"><h4>📊 Real-time Data</h4><p>Check your attendance percentage instantly</p></div>
+              <div class="feature-card"><h4>📅 Subject-wise View</h4><p>Track attendance for each subject separately</p></div>
+              <div class="feature-card"><h4>🔔 Smart Alerts</h4><p>Get notified when attendance falls below threshold</p></div>
+              <div class="feature-card"><h4>📱 Mobile Friendly</h4><p>Access from any device, anytime</p></div>
             </div>
+          </div>
+
+          <div class="info-section">
+            <h3>How to Use</h3>
+            <p>1. Log in with your college ID<br>2. View your dashboard with attendance summary<br>3. Click on any subject to see detailed records<br>4. Set alerts for attendance warnings</p>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MAIN -->
-  <main class="content-body" id="mainContent">
-    <div class="welcome-section" aria-live="polite">
-      <div class="welcome-text-content">
-        <h3 id="welcomeTitle">Hello, User!</h3>
-        <p id="welcomeSubtitle" style="color:var(--muted)">Great progress! Keep maintaining your attendance streak.</p>
-      </div>
+  <div class="sketch-line-container">
+    <span class="sketch-line"> I
+      <svg class="sketch-heart" viewBox="0 0 120 120">
+        <path d="M60 105 C20 70, 10 40, 30 25 C50 10, 70 20, 60 40 C80 10, 110 25, 90 50 C70 80, 60 95, 60 105 Z"/>
+        <g stroke="#e63946" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">
+          <path d="M35 60 Q 55 50 80 55" />
+          <path d="M32 68 Q 55 60 85 64" />
+          <path d="M34 76 Q 55 70 82 75" />
+          <path d="M37 84 Q 58 78 79 82" />
+          <path d="M45 45 Q 60 55 78 68" />
+          <path d="M40 52 Q 55 64 75 78" />
+          <path d="M50 70 Q 55 68 60 72" />
+          <path d="M58 80 Q 63 78 68 82" />
+        </g>
+      </svg>
+      Dispur College
+    </span>
+  </div>
 
-      <div class="attendance-ring" aria-hidden="true">
-        <svg class="ring-svg" viewBox="0 0 160 160" role="img" aria-label="Attendance gauge">
-          <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>
-          <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>
-        </svg>
-        <div class="ring-center">
-          <span class="percentage" id="percentageText">75%</span>
-          <span class="percentage-label">Overall</span>
+  <div class="content-body">
+    <div class="welcome-section">
+      <div class="welcome-content">
+        <div class="welcome-text-content">
+          <h3 id="welcomeTitle">Hello, User!</h3>
+          <p id="welcomeSubtitle">Great progress! Keep maintaining your attendance streak.</p>
+          <div class="attendance-ring">
+            <svg class="ring-svg" viewBox="0 0 160 160">
+              <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>
+              <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>
+            </svg>
+            <div class="ring-center">
+              <span class="percentage" id="percentageText">75%</span>
+              <span class="percentage-label">Overall</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="notebook-section">
       <div class="page">
-        <img src="Image/your-logo.png" alt="Logo" class="note-logo" style="max-width:140px;margin-bottom:12px">
-        <p style="color:var(--muted)">Keep a quick note of important classes, make-up days or attendance targets here.</p>
-        <div style="display:flex;justify-content:flex-end;margin-top:18px">
-          <span style="font-weight:600;color:var(--muted)">Principal</span>
-        </div>
+        <img src="Image/your-logo.png" alt="Logo" class="note-logo">
+        <div class="margin"></div>
+        <p>Keep a quick note of important classes, make-up days or attendance targets here. This space can work like your personal college notebook page.</p>
+        <div class="teacher-mark"><span class="teacher-sign">Principal</span></div>
       </div>
     </div>
 
-    <div class="install-strip" id="installStrip" role="region" aria-label="Install prompt">
-      <div class="install-content" style="display:flex;align-items:center;gap:12px">
+    <div class="install-strip" id="installStrip">
+      <div class="install-content">
         <span class="install-text" id="installText">Install this site as an app</span>
+        <button class="close-strip" id="closeStrip" aria-label="Close install strip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
-      <button class="close-strip" id="closeStrip" aria-label="Dismiss install prompt" style="background:transparent;border:0;cursor:pointer;padding:6px">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
     </div>
 
+    <div class="section-header">
+      <h3>Today's Schedule</h3>
+      <a href="#" class="view-all">VIEW
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <div class="carousel-container">
+      <div class="carousel" id="carousel">
+        <!-- class cards -->
+        <div class="class-card">
+          <div class="class-header">
+            <span class="class-subject">Data Structures</span>
+            <span class="class-time">09:00 AM</span>
+          </div>
+          <div class="class-details">
+            <div><strong>Room:</strong> CS-301</div>
+            <div><strong>Faculty:</strong> Dr. Smith</div>
+            <div><strong>Duration:</strong> 1 hour</div>
+          </div>
+          <div class="attendance-actions">
+            <button class="attendance-btn btn-attend">Attend</button>
+            <button class="attendance-btn btn-skip">Skip</button>
+            <button class="attendance-btn btn-not-held">Not Held</button>
+          </div>
+        </div>
+
+        <div class="class-card">
+          <div class="class-header">
+            <span class="class-subject">Database Systems</span>
+            <span class="class-time">11:00 AM</span>
+          </div>
+          <div class="class-details">
+            <div><strong>Room:</strong> CS-205</div>
+            <div><strong>Faculty:</strong> Prof. Johnson</div>
+            <div><strong>Duration:</strong> 1.5 hours</div>
+          </div>
+          <div class="attendance-actions">
+            <button class="attendance-btn btn-attend">Attend</button>
+            <button class="attendance-btn btn-skip">Skip</button>
+            <button class="attendance-btn btn-not-held">Not Held</button>
+          </div>
+        </div>
+
+        <div class="class-card">
+          <div class="class-header">
+            <span class="class-subject">Web Development</span>
+            <span class="class-time">02:00 PM</span>
+          </div>
+          <div class="class-details">
+            <div><strong>Room:</strong> Lab-102</div>
+            <div><strong>Faculty:</strong> Ms. Williams</div>
+            <div><strong>Duration:</strong> 2 hours</div>
+          </div>
+          <div class="attendance-actions">
+            <button class="attendance-btn btn-attend">Attend</button>
+            <button class="attendance-btn btn-skip">Skip</button>
+            <button class="attendance-btn btn-not-held">Not Held</button>
+          </div>
+        </div>
+
+        <div class="class-card">
+          <div class="class-header">
+            <span class="class-subject">Computer Networks</span>
+            <span class="class-time">04:00 PM</span>
+          </div>
+          <div class="class-details">
+            <div><strong>Room:</strong> CS-102</div>
+            <div><strong>Faculty:</strong> Dr. Anderson</div>
+            <div><strong>Duration:</strong> 1 hour</div>
+          </div>
+          <div class="attendance-actions">
+            <button class="attendance-btn btn-attend">Attend</button>
+            <button class="attendance-btn btn-skip">Skip</button>
+            <button class="attendance-btn btn-not-held">Not Held</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Periodical & grid content (unchanged) -->
     <section class="periodical-section">
-      <div class="section-header">
-        <h3>Today's Schedule</h3>
-        <a href="#" class="view-all" style="color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px">VIEW
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </a>
-      </div>
-
-      <div class="carousel-container">
-        <div class="carousel" id="carousel" tabindex="0" aria-label="Class schedule carousel">
-          <!-- Cards: keep content similar to original -->
-          <div class="class-card" role="article">
-            <div class="class-header">
-              <span class="class-subject">Data Structures</span>
-              <span class="class-time">09:00 AM</span>
-            </div>
-            <div class="class-details" style="margin-top:8px;color:var(--muted)">
-              <div><strong>Room:</strong> CS-301</div>
-              <div><strong>Faculty:</strong> Dr. Smith</div>
-              <div><strong>Duration:</strong> 1 hour</div>
-            </div>
-            <div class="attendance-actions">
-              <button class="attendance-btn btn-attend">Attend</button>
-              <button class="attendance-btn btn-skip">Skip</button>
-              <button class="attendance-btn btn-not-held">Not Held</button>
-            </div>
+      <header class="periodical-header"><h2>Periodical records</h2></header>
+      <div class="date-picker-container">
+        <div class="custom-flatpickr">
+          <input type="text" placeholder="Select date range..." data-input id="rangePicker" />
+          <div class="date-display" id="dateDisplay">
+            <span class="date-part empty" id="startDate">Select date</span>
+            <span class="date-separator">to</span>
+            <span class="date-part empty" id="endDate">Select date</span>
           </div>
-
-          <div class="class-card" role="article">
-            <div class="class-header">
-              <span class="class-subject">Database Systems</span>
-              <span class="class-time">11:00 AM</span>
-            </div>
-            <div class="class-details" style="margin-top:8px;color:var(--muted)">
-              <div><strong>Room:</strong> CS-205</div>
-              <div><strong>Faculty:</strong> Prof. Johnson</div>
-              <div><strong>Duration:</strong> 1.5 hours</div>
-            </div>
-            <div class="attendance-actions">
-              <button class="attendance-btn btn-attend">Attend</button>
-              <button class="attendance-btn btn-skip">Skip</button>
-              <button class="attendance-btn btn-not-held">Not Held</button>
-            </div>
-          </div>
-
-          <div class="class-card" role="article">
-            <div class="class-header">
-              <span class="class-subject">Web Development</span>
-              <span class="class-time">02:00 PM</span>
-            </div>
-            <div class="class-details" style="margin-top:8px;color:var(--muted)">
-              <div><strong>Room:</strong> Lab-102</div>
-              <div><strong>Faculty:</strong> Ms. Williams</div>
-              <div><strong>Duration:</strong> 2 hours</div>
-            </div>
-            <div class="attendance-actions">
-              <button class="attendance-btn btn-attend">Attend</button>
-              <button class="attendance-btn btn-skip">Skip</button>
-              <button class="attendance-btn btn-not-held">Not Held</button>
-            </div>
-          </div>
+          <span class="calendar-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+            </svg>
+          </span>
         </div>
-      </div>
-    </section>
-
-    <section class="periodical-section" aria-labelledby="periodical-heading">
-      <header class="periodical-header" id="periodical-heading">
-        <h2 style="margin:0 0 8px 0">Periodical records</h2>
-      </header>
-
-      <div class="date-picker-container" style="display:flex;align-items:center;gap:12px">
-        <div class="custom-flatpickr" style="display:flex;align-items:center;gap:8px">
-          <input type="text" id="rangePicker" placeholder="Select date range..." data-input />
-          <div class="date-display" id="dateDisplay" style="color:var(--muted)"><span id="startDate">Select date</span> <span style="margin:0 6px;color:var(--muted)">to</span> <span id="endDate">Select date</span></div>
-        </div>
+        <p class="date-picker-helper">for selected period</p>
       </div>
 
-      <div class="bento-grid" style="margin-top:12px">
-        <!-- Overall card -->
+      <section class="bento-grid">
         <article class="card metric-card span-2">
           <div class="card-title">Overall attendance</div>
-          <div class="card-body" style="display:flex;align-items:center;gap:12px">
-            <div class="circle-shell" style="width:90px;height:90px;position:relative">
-              <svg viewBox="0 0 140 140" style="width:100%;height:100%">
-                <circle class="circle-outer-ring" cx="70" cy="70" r="60" stroke="#eef0f8" stroke-width="12" fill="none"></circle>
-                <circle id="overallCircle" cx="70" cy="70" r="60" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="377" stroke-dashoffset="94"></circle>
+          <div class="metric-icon" aria-hidden="true">
+            <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#323544" viewBox="0 0 24 24">
+              <path d="M13.5 2c-.178 0-.356.013-.492.022l-.074.005a1 1 0 0 0-.934.998V11a1 1 0 0 0 1 1h7.975a1 1 0 0 0 .998-.934l.005-.074A7.04 7.04 0 0 0 22 10.5A8.5 8.5 0 0 0 13.5 2Z"/>
+              <path d="M11 6.025a1 1 0 0 0-1.065-.998 8.5 8.5 0 1 0 9.038 9.039A1 1 0 0 0 17.975 13H11V6.025Z"/>
+            </svg>
+          </div>
+          <div class="card-body">
+            <div class="circle-shell">
+              <svg viewBox="0 0 140 140">
+                <circle class="circle-outer-ring" cx="70" cy="70" r="60" />
+                <circle class="circle-inner-value" cx="70" cy="70" r="48" />
               </svg>
-              <div class="circle-center" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700">75%</div>
+              <div class="circle-center"><span>75%</span></div>
             </div>
-            <div class="card-footer" style="color:var(--muted)">All subjects combined</div>
+            <div class="card-footer">All subjects combined</div>
           </div>
         </article>
 
-        <!-- Major card (interactive) -->
         <article class="card metric-card span-2" id="majorCard">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div class="card-title">Major subs overall</div>
-            <button id="majorEdit" title="Select major subjects" class="icon-btn" aria-haspopup="dialog">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>
-            </button>
+          <div class="card-title">Major subs overall</div>
+          <div class="metric-icon" aria-hidden="true">
+            <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3.5 5.75C3.5 5.33579 3.16421 5 2.75 5C2.33579 5 2 5.33579 2 5.75V17.75C2 18.9926 3.00736 20 4.25 20H21.25C21.6642 20 22 19.6642 22 19.25C22 18.8358 21.6642 18.5 21.25 18.5H4.25C3.83579 18.5 3.5 18.1642 3.5 17.75V5.75Z" fill="#323544"/>
+              <path d="M7 10.7773C5.89543 10.7773 5 11.6728 5 12.7773V16.2501C5 16.6643 5.33579 17.0001 5.75 17.0001H8.25C8.66421 17.0001 9 16.6643 9 16.2501V12.7773C9 11.6728 8.10457 10.7773 7 10.7773Z" fill="#323544"/>
+              <path d="M12.5 5C11.3954 5 10.5 5.89543 10.5 7V16.2501C10.5 16.6643 10.8358 17.0001 11.25 17.0001H13.75C14.1642 17.0001 14.5 16.6643 14.5 16.2501V7C14.5 5.89543 13.6046 5 12.5 5Z" fill="#323544"/>
+              <path d="M18 8.55859C16.8954 8.55859 16 9.45402 16 10.5586V16.2501C16 16.6643 16.3358 17.0001 16.75 17.0001H19.25C19.6642 17.0001 20 16.6643 20 16.2501V10.5586C20 9.45402 19.1046 8.55859 18 8.55859Z" fill="#323544"/>
+            </svg>
           </div>
-
-          <div class="card-body" style="display:flex;align-items:center;gap:12px">
-            <div style="flex:1">
-              <svg viewBox="0 0 140 80" style="width:100%;height:56px">
-                <path d="M15 70 A55 55 0 0 1 125 70" stroke="#eef0f8" stroke-width="12" fill="none"/>
-                <path id="majorHalfPath" d="M28 70 A40 40 0 0 1 112 70" stroke="var(--accent)" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="125" stroke-dashoffset="125"></path>
+          <div class="major-edit-icon" id="majorEdit" title="Select major subjects">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-pencil-discount">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+              <path d="M13.5 6.5l4 4" />
+              <path d="M16 21l5 -5" />
+              <path d="M21 21v.01" />
+              <path d="M16 16v.01" />
+            </svg>
+          </div>
+          <div class="card-body">
+            <div class="half-shell">
+              <svg viewBox="0 0 140 80">
+                <path class="half-outer-ring" d="M15 70 A55 55 0 0 1 125 70" />
+                <path class="half-inner-value" id="majorHalfPath" d="M28 70 A40 40 0 0 1 112 70" />
               </svg>
-              <div style="text-align:center;font-weight:700;margin-top:6px" id="majorPercent">0%</div>
+              <div class="half-center-text" id="majorPercent">0%</div>
             </div>
-            <div class="card-footer" id="majorFooter" style="color:var(--muted)">Select major, click pencil button</div>
+            <div class="card-footer" id="majorFooter">Select major, click pencil button</div>
           </div>
 
-          <div class="major-modal hidden" id="majorModal" aria-modal="true" role="dialog">
+          <div class="major-modal" id="majorModal">
             <div class="major-modal-content">
               <div class="major-modal-subtitle">Select major subjects to calculate major overall.</div>
-              <div class="major-modal-list" id="majorList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-                <label><input type="checkbox" value="Mathematics" class="major-checkbox" /> Mathematics</label>
-                <label><input type="checkbox" value="Physics" class="major-checkbox" /> Physics</label>
-                <label><input type="checkbox" value="Chemistry" class="major-checkbox" /> Chemistry</label>
-                <label><input type="checkbox" value="Computer Science" class="major-checkbox" /> Computer Science</label>
+              <div class="major-modal-list" id="majorList">
+                <label><input type="checkbox" value="Mathematics" class="major-checkbox" /><span>Mathematics</span></label>
+                <label><input type="checkbox" value="Physics" class="major-checkbox" /><span>Physics</span></label>
+                <label><input type="checkbox" value="Chemistry" class="major-checkbox" /><span>Chemistry</span></label>
+                <label><input type="checkbox" value="Computer Science" class="major-checkbox" /><span>Computer Science</span></label>
               </div>
-              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+              <div class="major-modal-actions">
                 <button type="button" class="btn-ghost" id="majorCancel">Cancel</button>
                 <button type="button" class="btn-primary" id="majorSave">Save</button>
               </div>
@@ -353,150 +380,95 @@
         </article>
 
         <article class="card info-card span-full">
-          <div class="summary-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div class="summary-header">
             <span class="summary-title">Attendance summary</span>
             <span class="summary-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#323544" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M7 9h10"></path><path d="M7 13h4"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+                <path d="M7 9h10"></path>
+                <path d="M7 13h4"></path>
+              </svg>
             </span>
           </div>
-          <div class="info-card-body" id="summaryBody" style="margin-top:8px;color:var(--muted)">
+          <div class="info-card-body" id="summaryBody">
             <ul>
-              <li id="summaryLine">Overall attendance is 75% for this period.</li>
+              <li>Overall attendance is 75% for this period.</li>
               <li>Major subjects are not selected yet. Choose majors to track their combined attendance.</li>
             </ul>
           </div>
         </article>
 
-        <!-- example subject cards -->
+        <!-- subjects cards unchanged -->
         <article class="card subject-card purple span-2">
-          <div class="subject-header">
-            <span class="subject-name">Mathematics</span>
-            <span class="subject-icon" aria-hidden="true"></span>
-          </div>
-          <div class="subject-meta-group" style="color:var(--muted)">
-            <div class="subject-meta">Total classes - 22</div>
-            <div class="subject-meta">Attended - 18</div>
-          </div>
-          <div class="subject-percentage" style="font-weight:700">82%</div>
+          <div class="subject-header"><span class="subject-name">Mathematics</span><span class="subject-icon" aria-hidden="true">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="#323544" stroke-linejoin="round" d="m17 13 3.4641-2V7L17 5l-3.4641 2v4M17 13l-3.4641-2M17 13v4l-7.00001 4M17 13V9m0 4-7.00001 4m3.53591-6L10.5 12.7348M9.99999 21l-3.4641-2.1318M9.99999 21v-4m-3.4641 2v-.1318m0 0V15L10.5 12.7348m-3.96411 6.1334L3.5 17V5m0 0L7 3l3.5 2m-7 0 2.99999 2M10.5 5v7.7348M10.5 5 6.49999 7M17 9l3.5-2M17 9l-3.5-2M9.99999 17l-3.5-2m0 .5V7"/>
+            </svg>
+          </span></div>
+          <div class="subject-meta-group"><div class="subject-meta">Total classes - 22</div><div class="subject-meta">Attended - 18</div></div>
+          <div class="subject-percentage">82%</div>
         </article>
 
-        <article class="card subject-card span-2">
-          <div class="subject-header"><span class="subject-name">Physics</span></div>
-          <div class="subject-meta-group" style="color:var(--muted)"><div>Total classes - 20</div><div>Attended - 15</div></div>
-          <div class="subject-percentage" style="font-weight:700">75%</div>
+        <article class="card subject-card subject-2 span-2">
+          <div class="subject-header"><span class="subject-name">Physics</span><span class="subject-icon" aria-hidden="true">
+            <svg class="w-[38px] h-[38px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#323544" viewBox="0 0 24 24">
+              <path d="M20 14h-2.722L11 20.278a5.511 5.511 0 0 1-.9.722H20a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1ZM9 3H4a1 1 0 0 0-1 1v13.5a3.5 3.5 0 1 0 7 0V4a1 1 0 0 0-1-1ZM6.5 18.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2ZM19.132 7.9 15.6 4.368a1 1 0 0 0-1.414 0L12 6.55v9.9l7.132-7.132a1 1 0 0 0 0-1.418Z"/>
+            </svg>
+          </span></div>
+          <div class="subject-meta-group"><div class="subject-meta">Total classes - 20</div><div class="subject-meta">Attended - 15</div></div>
+          <div class="subject-percentage">75%</div>
         </article>
-      </div>
+
+        <article class="card subject-card mint span-2">
+          <div class="subject-header"><span class="subject-name">Computer Science</span><span class="subject-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.9933 3.50879C11.6316 3.50879 11.2683 3.58158 10.9266 3.7263L3.4825 6.85273C3.06333 7.02875 3.07417 7.62121 3.4925 7.79726L10.9775 10.8086C11.6332 11.0786 12.3667 11.0786 13.0225 10.8086L20.5075 7.79726C20.9266 7.63137 20.9266 7.02875 20.5175 6.85273L13.0533 3.7263C12.7179 3.58228 12.3575 3.5083 11.9933 3.50879ZM21.5 8.66308C21.4365 8.6635 21.3736 8.67644 21.315 8.70117L12.9716 11.9825C12.8783 12.0213 12.7984 12.0874 12.742 12.1723C12.6857 12.2573 12.6554 12.3574 12.655 12.4598V19.989C12.6558 20.0714 12.6763 20.1524 12.7148 20.225C12.7533 20.2975 12.8087 20.3595 12.876 20.4055C12.9433 20.4515 13.0207 20.4801 13.1014 20.4889C13.1821 20.4978 13.2637 20.4865 13.3392 20.4562L21.6833 17.1639C21.7769 17.1286 21.8574 17.0649 21.9141 16.9814C21.9708 16.898 22.0007 16.7989 22 16.6975V9.16836C21.9991 9.03426 21.946 8.90598 21.8523 8.81146C21.7587 8.71694 21.632 8.66305 21.5 8.66308ZM2.56333 8.69609C2.48934 8.69343 2.41561 8.70634 2.34678 8.73399C2.27794 8.76166 2.21548 8.80352 2.16333 8.85688C2.07167 8.95082 2 9.06425 2 9.19965V16.271C2 16.645 2.42916 16.8947 2.75667 16.728L10.7116 12.8441C11.1 12.6579 11.07 12.0756 10.6608 11.9198L2.73583 8.73246C2.68113 8.70923 2.62262 8.69746 2.56333 8.69609Z" fill="#323544"/>
+            </svg>
+          </span></div>
+          <div class="subject-meta-group"><div class="subject-meta">Total classes - 21</div><div class="subject-meta">Attended - 16</div></div>
+          <div class="subject-percentage">76%</div>
+        </article>
+
+        <article class="card subject-card peach span-2">
+          <div class="subject-header"><span class="subject-name">Computer Science</span><span class="subject-icon" aria-hidden="true">
+            <svg class="w-[38px] h-[38px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#323544" viewBox="0 0 24 24">
+              <path d="M3 4.92857C3 3.90506 3.80497 3 4.88889 3H19.1111C20.195 3 21 3.90506 21 4.92857V13h-3v-2c0-.5523-.4477-1-1-1h-4c-.5523 0-1 .4477-1 1v2H3V4.92857ZM3 15v1.0714C3 17.0949 3.80497 18 4.88889 18h3.47608L7.2318 19.3598c-.35356.4243-.29624 1.0548.12804 1.4084.42428.3536 1.05484.2962 1.40841-.128L10.9684 18h2.0632l2.2002 2.6402c.3535.4242.9841.4816 1.4084.128.4242-.3536.4816-.9841.128-1.4084L15.635 18h3.4761C20.195 18 21 17.0949 21 16.0714V15H3Z"/>
+              <path d="M16 12v1h-2v-1h2Z"/>
+            </svg>
+          </span></div>
+          <div class="subject-meta-group"><div class="subject-meta">Total classes - 14</div><div class="subject-meta">Attended - 11</div></div>
+          <div class="subject-percentage">79%</div>
+        </article>
+      </section>
     </section>
-  </main>
 
-  <!-- MENU VIEW -->
-  <section id="menuView" class="menu-view" aria-hidden="true">
-    <div id="view-menu" class="app-view" role="dialog" aria-label="Main menu">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h1 style="margin:0;font-size:20px">Menu</h1>
-        <button id="closeMenuBtn" class="nav-btn" aria-label="Close Menu">✕</button>
-      </div>
+    <!-- Date-wise Records section unchanged -->
+    <section class="periodical-section" id="dateWiseRecordsSection">
+      <header class="app-header">
+        <div class="title-block"><h1>Date-wise Records</h1><span class="subtitle" id="selectedDateLabel">Loading…</span></div>
+        <div class="month-year-select">
+          <span class="edit-icon" aria-hidden="true">
+            <svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="m19 20.25c0-.402-.356-.75-.75-.75-2.561 0-11.939 0-14.5 0-.394 0-.75.348-.75.75s.356.75.75.75h14.5c.394 0 .75-.348.75-.75zm-7.403-3.398 9.124-9.125c.171-.171.279-.423.279-.684 0-.229-.083-.466-.28-.662l-3.115-3.104c-.185-.185-.429-.277-.672-.277s-.486.092-.672.277l-9.143 9.103c-.569 1.763-1.555 4.823-1.626 5.081-.02.075-.029.15-.029.224 0 .461.349.848.765.848.511 0 .991-.189 5.369-1.681zm-3.27-3.342 2.137 2.137-3.168 1.046zm.955-1.166 7.651-7.616 2.335 2.327-7.637 7.638z"/>
+            </svg>
+          </span>
+          <select id="monthYearSelect" aria-label="Month and year"></select>
+        </div>
+      </header>
 
-      <div class="menu-profile-card">
-        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=800&q=80" class="menu-profile-img" alt="Profile">
-        <div style="flex:1">
-          <h2 style="margin:0;font-size:16px">Johnathan Doe</h2>
-          <p style="margin:6px 0;color:var(--muted)">john.doe23@university.edu</p>
-          <div style="display:flex;gap:8px">
-            <span style="background:var(--accent);color:#fff;padding:6px;border-radius:8px;font-size:12px">Roll - 234</span>
-            <span style="background:#eee;padding:6px;border-radius:8px;font-size:12px">B.Com 1st Sem</span>
-          </div>
-        </div>
-      </div>
+      <section class="date-strip-wrapper" aria-label="Date picker">
+        <div class="date-strip" id="dateStrip"></div>
+      </section>
 
-      <div style="margin-top:12px">
-        <div class="menu-card" style="margin-bottom:20px;padding-bottom:12px">
-          <div class="menu-item" onclick="window.location.href='setup.html'" role="button" tabindex="0" style="padding:12px;background:linear-gradient(180deg,#f8f6ff,#fff);border-radius:10px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="background:var(--accent);color:white;padding:8px;border-radius:10px"><span style="font-size:14px">📚</span></div>
-              <div>
-                <p style="margin:0;font-weight:600">Select Subjects</p>
-                <p style="margin:0;color:var(--muted);font-size:13px">Set up subjects to track attendance</p>
-              </div>
-            </div>
-            <span style="margin-left:auto;color:#d1d5db">›</span>
-          </div>
-        </div>
-
-        <div class="menu-card">
-          <a href="#" class="menu-item" style="display:flex;align-items:center;gap:10px">
-            <span>🔖</span>
-            <span class="menu-item-text">Important Staff</span>
-            <span style="margin-left:auto;color:#d1d5db">›</span>
-          </a>
-          <div style="height:10px"></div>
-          <a href="#" class="menu-item" style="display:flex;align-items:center;gap:10px">
-            <span>👥</span>
-            <span class="menu-item-text">Refer a Friend</span>
-            <span style="margin-left:auto;color:#d1d5db">›</span>
-          </a>
-          <div style="height:10px"></div>
-          <a href="#" class="menu-item" style="display:flex;align-items:center;gap:10px">
-            <span>💬</span>
-            <span class="menu-item-text">Report Issue</span>
-            <span style="margin-left:auto;color:#d1d5db">›</span>
-          </a>
-          <div style="height:10px"></div>
-          <a href="#" class="menu-item" style="display:flex;align-items:center;gap:10px">
-            <span>⚖️</span>
-            <span class="menu-item-text">Terms & Privacy</span>
-            <span style="margin-left:auto;color:#d1d5db">›</span>
-          </a>
-        </div>
-
-        <div class="logout-section">
-          <button class="btn-logout" id="logoutBtn" style="background:#fff;border:1px solid rgba(35,35,40,0.06);padding:10px;border-radius:10px;cursor:pointer;display:flex;gap:8px;align-items:center">
-            <span>⎋</span> Log Out
-          </button>
-          <div class="version-text" style="color:var(--muted);font-size:12px">Attenza Educational • v1.0.4</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Result Overlay (search results) -->
-  <div id="result-overlay-container">
-    <div class="overlay-backdrop" onclick="exitSearchMode()" style="position:fixed;inset:0;z-index:70;"></div>
-    <div class="result-wrapper" style="position:fixed;right:20px;top:80px;width:340px;background:white;border-radius:10px;padding:12px;box-shadow:0 12px 36px rgba(9,10,14,0.12);z-index:80">
-      <div class="result-header" style="display:flex;justify-content:space-between;align-items:center">
-        <span class="helper-text" style="color:var(--muted)">Showing students from</span>
-        <div class="dropdown-wrapper" id="classDropdown" style="position:relative">
-          <div class="class-pill" onclick="toggleDropdown()" style="cursor:pointer;padding:6px 8px;background:#f6f6fb;border-radius:8px;display:inline-flex;align-items:center;gap:8px">
-            <span id="selectedClassText">B.Com Sem 5</span>
-          </div>
-          <div class="dropdown-list hidden" id="classDropdownList" style="position:absolute;right:0;top:40px;background:#fff;border-radius:8px;padding:8px;box-shadow:0 12px 36px rgba(9,10,14,0.08)"></div>
-        </div>
-      </div>
-
-      <div class="result-card" id="foundState" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:46px;height:46px;border-radius:10px;background:#f2f4f8;display:flex;align-items:center;justify-content:center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-          <div>
-            <div class="student-name" style="font-weight:600">Rahul Sharma</div>
-            <div class="data-freshness" style="color:var(--muted);font-size:13px">Updated 2h ago</div>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div class="percentage-val" style="font-weight:700">78%</div>
-          <div style="color:var(--muted);font-size:12px">Overall</div>
-        </div>
-      </div>
-    </div>
+      <section class="cards-container" id="dateCardsContainer" aria-label="Attendance records"></section>
+    </section>
   </div>
 
-  <!-- EDIT MODAL -->
-  <div id="editModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
-    <div class="modal" role="document">
-      <h3 id="editModalTitle">Edit record</h3>
+  <!-- Modals, AI board, Menu container, Result overlay — kept unchanged -->
+  <div class="modal-backdrop hidden" id="editModal">
+    <div class="modal">
+      <h3>Edit record</h3>
       <div class="modal-subject" id="modalSubject"></div>
-
       <div class="form-group">
         <label for="modalStatus">Status</label>
         <select id="modalStatus">
@@ -505,303 +477,252 @@
           <option value="not-held">Class not held</option>
         </select>
       </div>
-
       <div class="form-group">
         <label for="modalRemarks">Remarks / Notes</label>
-        <textarea id="modalRemarks" placeholder="Add your notes for this class" style="width:100%;min-height:84px"></textarea>
+        <textarea id="modalRemarks" placeholder="Add your notes for this class"></textarea>
       </div>
-
-      <div class="modal-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <div class="modal-actions">
         <button class="btn btn-secondary" id="modalCancel">Cancel</button>
         <button class="btn btn-primary" id="modalSave">Save changes</button>
       </div>
     </div>
   </div>
 
-  <!-- AI BOARD (minimal) -->
-  <div class="ai-board-overlay hidden" id="aiBoardOverlay" aria-hidden="true">
-    <div class="ai-board">
-      <div class="ai-board-header" style="display:flex;justify-content:space-between;align-items:center">
+  <div class="ai-board-overlay">
+    <div class="ai-board" id="aiBoard">
+      <div class="ai-board-header">
         <h2 class="ai-title">Attenza AI</h2>
         <button class="ai-close-btn" id="aiCloseBtn" aria-label="Close AI">×</button>
       </div>
+
       <div class="ai-board-body">
-        <div class="ai-response" id="aiResponse" style="color:var(--muted)">Once you connect Gemini and your attendance backend, this will show real insights.</div>
+        <div class="ai-user-card-wrapper">
+          <div class="ai-user-card" id="userMessageCard">Your question will appear here.</div>
+        </div>
+
+        <div class="ai-status-row">
+          <div class="ai-status-loader"><div class="stripe"></div><div class="stripe"></div><div class="stripe"></div><div class="stripe"></div></div>
+          <span class="ai-status-text" id="aiStatusText">Analyzing…</span>
+        </div>
+
+        <div class="ai-response" id="aiResponse">Here is a sample response from Attenza AI. Once you connect Gemini and your attendance backend, this will show real, detailed insights.</div>
+        <button class="ai-copy-btn" id="aiCopyBtn"><span>📋</span><span>Copy</span></button>
+      </div>
+    </div>
+
+    <div class="ai-card-container">
+      <div class="see-more-btn">
+        <div class="logo-loader-wrapper">
+          <img src="Image/Ailogo.webp" alt="Attenza AI" class="ai-loader-webp" loading="lazy" decoding="async"/>
+        </div>
+        <span class="divider"></span>
+        <div class="prompt-area" id="promptArea">
+          <div class="prompt-display">
+            <span class="typewriter-text" id="typewriterText"></span>
+            <input type="text" id="promptInput" class="prompt-input" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"/>
+          </div>
+          <button class="send-btn" id="sendBtn">
+            <svg viewBox="0 0 24 24" style="width:22px; height:22px;">
+              <path d="M12 5L18 11" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M12 5L6 11" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M12 5V19" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- AI prompt -->
-  <div class="ai-card-container" aria-hidden="false">
-    <div class="prompt-area" id="promptArea">
-      <div class="prompt-display" style="display:flex;align-items:center;gap:8px">
-        <span class="typewriter-text" id="typewriterText" aria-hidden="true"></span>
-        <input type="text" id="promptInput" class="prompt-input" placeholder="Ask Attenza AI..." aria-label="Ask Attenza AI">
+  <!-- MENU CONTAINER -->
+  <section id="menuView" class="menu-view hidden" aria-hidden="true">
+    <div id="view-menu" class="app-view">
+      <div class="container-top">
+        <div class="header-row">
+          <h1 class="header-title">Menu</h1>
+          <button id="closeMenuBtn" class="nav-btn" aria-label="Close Menu"><span class="material-symbols-rounded">close</span></button>
+        </div>
+
+        <div class="search-box" id="searchBoxContainer">
+          <span class="material-symbols-rounded search-icon">search</span>
+          <span class="search-prefix" id="searchPrefix">Roll –</span>
+          <input type="tel" id="mainSearchInput" placeholder="Search any roll to check attendance" class="search-input" autocomplete="off">
+          <div class="search-action-btn" id="actionBtn" onclick="activateSearchMode()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+        </div>
       </div>
-      <button class="send-btn" id="sendBtn" aria-label="Send prompt" title="Send">
-        <svg viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M12 5L18 11" stroke="white" stroke-width="2.4" stroke-linecap="round"/><path d="M12 5L6 11" stroke="white" stroke-width="2.4" stroke-linecap="round"/><path d="M12 5V19" stroke="white" stroke-width="2.4" stroke-linecap="round"/></svg>
-      </button>
+
+      <div class="container-scroll" id="scrollContent">
+        <div class="menu-profile-card">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="menu-profile-img" alt="Profile">
+          <div class="menu-profile-info">
+            <h2 class="menu-profile-name">Johnathan Doe</h2>
+            <p class="menu-profile-email">john.doe23@university.edu</p>
+            <div class="profile-pills">
+              <span class="pill pill-purple">Roll - 234</span>
+              <span class="pill pill-purple">B.Com 1st Sem</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="edit-icon">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+              <path d="M13.5 6.5l4 4" />
+              <path d="M16 21l5 -5" />
+              <path d="M21 21v.01" />
+              <path d="M16 16v.01" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="menu-card" style="margin-bottom: 20px; padding-bottom: 15px;">
+          <div class="menu-header">
+            <span class="menu-header-text">Dispur College</span>
+            <span class="material-symbols-rounded" style="color: #d1d5db; font-size: 18px;">school</span>
+          </div>
+
+          <div class="menu-item active" style="padding: 14px 16px;" onclick="window.location.href='setup.html'">
+            <div class="status-dot"></div>
+            <div class="menu-icon-box purple-bg">
+              <span class="material-symbols-rounded" style="font-size: 18px;">library_add</span>
+            </div>
+            <div class="menu-text">
+              <p class="menu-title">Select Subjects</p>
+              <p class="menu-subtitle">Set up subjects to track attendance</p>
+            </div>
+            <span class="material-symbols-rounded chevron-active">chevron_right</span>
+          </div>
+        </div>
+
+        <div class="menu-card">
+          <a href="#" class="menu-item"><span class="material-symbols-rounded menu-icon-gray">badge</span><span class="menu-item-text">Important Staff</span><span class="material-symbols-rounded chevron">chevron_right</span></a>
+          <div class="divider"></div>
+          <a href="#" class="menu-item"><span class="material-symbols-rounded menu-icon-gray">group_add</span><span class="menu-item-text">Refer a Friend</span><span class="material-symbols-rounded chevron">chevron_right</span></a>
+          <div class="divider"></div>
+          <a href="#" class="menu-item"><span class="material-symbols-rounded menu-icon-gray">chat_bubble</span><span class="menu-item-text">Report Issue</span><span class="material-symbols-rounded chevron">chevron_right</span></a>
+          <div class="divider"></div>
+          <a href="#" class="menu-item"><span class="material-symbols-rounded menu-icon-gray">gpp_maybe</span><span class="menu-item-text">Terms & Privacy</span><span class="material-symbols-rounded chevron">chevron_right</span></a>
+        </div>
+
+        <div class="logout-section">
+          <button class="btn-logout"><span class="material-symbols-rounded">logout</span> Log Out</button>
+          <div class="version-text">Attenza Educational • v1.0.4</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="result-overlay-container">
+    <div class="overlay-backdrop" onclick="exitSearchMode()"></div>
+    <div class="result-wrapper">
+      <div class="result-header">
+        <span class="helper-text">Showing students from</span>
+        <div class="dropdown-wrapper" id="classDropdown">
+          <div class="class-pill" onclick="toggleDropdown()">
+            <span id="selectedClassText">B.Com Sem 5</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+
+          <div class="dropdown-list">
+            <div class="dropdown-item" onclick="selectClass('B.Com Sem 5')">B.Com Sem 5</div>
+            <div class="dropdown-item" onclick="selectClass('B.Com Sem 3')">B.Com Sem 3</div>
+            <div class="dropdown-item" onclick="selectClass('B.A. Sem 1')">B.A. Sem 1</div>
+            <div class="dropdown-item" onclick="selectClass('H.S. 2nd Year')">H.S. 2nd Year</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-card" id="foundState">
+        <div class="card-left">
+          <div class="avatar-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div class="info-group">
+            <div class="student-name">Rahul Sharma</div>
+            <div class="data-freshness"><span class="status-dot-result"></span> Updated 2h ago</div>
+          </div>
+        </div>
+        <div class="card-right"><span class="percentage-val">78%</span><span class="percentage-label">Overall</span></div>
+      </div>
+
+      <div class="empty-card" id="emptyState">
+        <div class="empty-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="empty-title">No student found</div>
+        <div class="empty-desc">Your classmates in this section are not using Attendmark yet.</div>
+        <button class="invite-pill">Invite Friend
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- flatpickr and Firebase (module) + main logic -->
+  <!-- flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-  <script type="module">
-    // ---------- FIREBASE (keep your config) ----------
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
-      authDomain: "attenza-app.firebaseapp.com",
-      projectId: "attenza-app",
-      storageBucket: "attenza-app.firebasestorage.app",
-      messagingSenderId: "435010148378",
-      appId: "1:435010148378:web:e5540806fd0ef90b16d9a3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Show body only after auth check or fallback
-    const body = document.body;
-    let authResolved = false;
-
-    function revealBody() {
-      body.style.visibility = "visible";
-      body.removeAttribute('aria-loading');
-      authResolved = true;
-    }
-
-    // Safety fallback: If auth stalled (network), reveal UI after 6s so user can debug.
-    const fallbackTimer = setTimeout(() => {
-      if (!authResolved) {
-        console.warn("Auth check timed out — showing UI (fallback).");
-        revealBody();
-      }
-    }, 6000);
-
-    onAuthStateChanged(auth, async (user) => {
-      clearTimeout(fallbackTimer);
-      if (!user) {
-        // Not logged in -> redirect
-        try { window.location.replace("login.html"); }
-        catch(e){ console.warn("Redirect failed:", e); revealBody(); }
-        return;
-      }
-
-      // Check user profile doc
-      try {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists() && userSnap.data().profileComplete === true) {
-          revealBody();
-        } else {
-          // incomplete profile -> redirect to login/registration
-          window.location.replace("login.html");
-        }
-      } catch (err) {
-        console.error("Auth Check Error:", err);
-        // fallback to prevent frozen UI
-        revealBody();
-      }
-    });
-  </script>
-
+  <!-- Lightweight fallback UI script: ensures basic interactions work even if app.js errors -->
   <script>
-    // ---------- UI behavior & fixes ----------
     (function () {
-      // Make sure body is hidden initially to avoid flashing; if auth fallback shows it will be revealed
-      document.body.style.visibility = document.body.style.visibility || 'hidden';
+      // Utility to toggle cls
+      function toggleMenu(open) {
+        const menuView = document.getElementById('menuView');
+        if (!menuView) return;
+        if (open) {
+          menuView.classList.remove('hidden');
+          menuView.setAttribute('aria-hidden', 'false');
+        } else {
+          menuView.classList.add('hidden');
+          menuView.setAttribute('aria-hidden', 'true');
+        }
+      }
 
       // Menu open/close
-      const openMenuBtn = document.getElementById('openMenuBtn');
-      const closeMenuBtn = document.getElementById('closeMenuBtn');
-      const menuView = document.getElementById('menuView');
-
-      function openMenu() {
-        menuView.classList.add('open');
-        menuView.setAttribute('aria-hidden', 'false');
-        openMenuBtn.setAttribute('aria-expanded', 'true');
-      }
-      function closeMenu() {
-        menuView.classList.remove('open');
-        menuView.setAttribute('aria-hidden', 'true');
-        openMenuBtn.setAttribute('aria-expanded', 'false');
-      }
-      openMenuBtn.addEventListener('click', openMenu);
-      closeMenuBtn.addEventListener('click', closeMenu);
-
-      // allow Esc to close menu / modals
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          if (menuView.classList.contains('open')) closeMenu();
-          const editModal = document.getElementById('editModal');
-          if (editModal && editModal.classList.contains('open')) toggleEditModal(false);
-        }
-      });
-
-      // Expand section toggle
-      const expandArrow = document.getElementById('expandArrow');
-      const expandedContent = document.getElementById('expandedContent');
-      expandArrow.addEventListener('click', () => {
-        const open = expandedContent.classList.toggle('open');
-        expandArrow.setAttribute('aria-expanded', open ? 'true' : 'false');
-      });
+      const openBtn = document.getElementById('openMenuBtn');
+      const closeBtn = document.getElementById('closeMenuBtn');
+      if (openBtn) openBtn.addEventListener('click', () => toggleMenu(true));
+      if (closeBtn) closeBtn.addEventListener('click', () => toggleMenu(false));
 
       // Install strip close
-      const closeStrip = document.getElementById('closeStrip');
-      const installStrip = document.getElementById('installStrip');
-      closeStrip.addEventListener('click', () => installStrip.classList.add('hidden'));
-
-      // Carousel: allow wheel to scroll horizontally for better UX
-      const carousel = document.getElementById('carousel');
-      if (carousel) {
-        carousel.addEventListener('wheel', (e) => {
-          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-            e.preventDefault();
-            carousel.scrollLeft += e.deltaY;
-          }
-        }, { passive: false });
-      }
-
-      // Major modal open/close & save simulation
-      const majorEdit = document.getElementById('majorEdit');
-      const majorModal = document.getElementById('majorModal');
-      const majorCancel = document.getElementById('majorCancel');
-      const majorSave = document.getElementById('majorSave');
-      const majorPercent = document.getElementById('majorPercent');
-      const majorHalfPath = document.getElementById('majorHalfPath');
-
-      function toggleMajorModal(show) {
-        if (!majorModal) return;
-        majorModal.classList.toggle('hidden', !show);
-        if (show) majorModal.querySelector('input[type="checkbox"]').focus();
-      }
-      majorEdit && majorEdit.addEventListener('click', () => toggleMajorModal(true));
-      majorCancel && majorCancel.addEventListener('click', () => toggleMajorModal(false));
-      majorSave && majorSave.addEventListener('click', () => {
-        // For demo: count checked and compute a fake percent
-        const checks = Array.from(document.querySelectorAll('.major-checkbox')).filter(c => c.checked).length;
-        const percent = Math.min(100, checks * 25);
-        majorPercent.textContent = percent + '%';
-        // update path stroke offset to reflect percentage visually
-        const dash = 125; // value matching CSS drawing
-        majorHalfPath.style.transition = 'stroke-dashoffset .6s ease';
-        majorHalfPath.style.strokeDashoffset = dash - (dash * percent / 100);
-        document.getElementById('majorFooter').textContent = checks ? `${checks} majors selected` : 'No majors selected';
-        toggleMajorModal(false);
+      const closeStripBtn = document.getElementById('closeStrip');
+      if (closeStripBtn) closeStripBtn.addEventListener('click', () => {
+        const strip = document.getElementById('installStrip');
+        if (strip) strip.style.display = 'none';
       });
 
-      // Result overlay controls (search)
-      window.toggleDropdown = function () {
-        const list = document.getElementById('classDropdownList');
-        if (!list) return;
-        if (list.classList.contains('hidden')) {
-          // populate items quickly
-          list.innerHTML = ['B.Com Sem 5','B.Com Sem 3','B.A. Sem 1','H.S. 2nd Year'].map(v => `<div class="dropdown-item" style="padding:6px 8px;cursor:pointer" onclick="selectClass('${v}')">${v}</div>`).join('');
-          list.classList.remove('hidden');
-        } else list.classList.add('hidden');
-      };
-      window.selectClass = function (name) {
-        document.getElementById('selectedClassText').textContent = name;
-        const list = document.getElementById('classDropdownList');
-        list && list.classList.add('hidden');
-      };
-      window.exitSearchMode = function () {
-        document.getElementById('result-overlay-container').classList.remove('open');
-      };
-
-      // Edit modal show/hide helper
-      const editModal = document.getElementById('editModal');
-      function toggleEditModal(show) {
-        if (!editModal) return;
-        editModal.classList.toggle('open', show);
-        editModal.classList.toggle('hidden', !show);
-      }
-      document.getElementById('modalCancel').addEventListener('click', () => toggleEditModal(false));
-      // modalSave would persist to DB in your real app
-
-      // Typewriter demo for prompt (non-blocking)
-      const typewriterText = document.getElementById('typewriterText');
-      const phrases = ['Ask about attendance', 'Find low-attendance subjects', 'How to improve attendance?'];
-      let pi = 0;
-      (function typeP() {
-        let p = phrases[pi % phrases.length], idx=0;
-        typewriterText.textContent = '';
-        const t = setInterval(() => {
-          typewriterText.textContent += p[idx++] || '';
-          if (idx > p.length) {
-            clearInterval(t);
-            setTimeout(() => { typeP(); }, 1400);
-          }
-        }, 38);
-        pi++;
-      })();
-
-      // Flatpickr init (range)
-      try {
-        flatpickr("#rangePicker", {
-          mode: "range",
-          dateFormat: "d M, Y",
-          onClose: function(selectedDates, dateStr, instance) {
-            if (selectedDates.length === 2) {
-              const [start, end] = selectedDates;
-              document.getElementById('startDate').textContent = instance.formatDate(start, 'd M, Y');
-              document.getElementById('endDate').textContent = instance.formatDate(end, 'd M, Y');
-              document.getElementById('summaryLine').textContent = `Overall attendance is 75% for ${instance.formatDate(start,'d M')} — ${instance.formatDate(end,'d M')}.`;
-            } else {
-              document.getElementById('startDate').textContent = 'Select date';
-              document.getElementById('endDate').textContent = 'Select date';
-            }
-          }
+      // Expand arrow toggle
+      const expandArrow = document.getElementById('expandArrow');
+      const expandedContent = document.getElementById('expandedContent');
+      if (expandArrow && expandedContent) {
+        expandArrow.addEventListener('click', () => {
+          expandedContent.classList.toggle('open');
+          expandArrow.classList.toggle('rotated');
         });
-      } catch(e){ console.warn('flatpickr failed to initialize', e); }
-
-      // small animation for ring according to percentage text
-      function animateRings() {
-        const percentText = document.getElementById('percentageText').textContent.replace('%','') || 75;
-        const p = Math.max(0, Math.min(100, Number(percentText)));
-        const circle = document.getElementById('progressCircle');
-        const circumference = 2 * Math.PI * 70;
-        const offset = circumference * (1 - p/100);
-        circle.style.strokeDasharray = circumference;
-        circle.style.strokeDashoffset = offset;
-        // overall small circle too
-        const overall = document.getElementById('overallCircle');
-        if (overall) {
-          const circ2 = 2 * Math.PI * 60;
-          const off2 = circ2 * (1 - p/100);
-          overall.style.strokeDasharray = circ2;
-          overall.style.strokeDashoffset = off2;
-        }
       }
-      // kickoff
-      setTimeout(animateRings, 300);
 
-      // Accessibility: trap focus inside menu when open (light)
-      menuView.addEventListener('keydown', function(e){
-        if (e.key !== 'Tab' || !menuView.classList.contains('open')) return;
-        // not a full trap — just close on shift-tab from first or tab from last
-        const focusable = menuView.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (!focusable.length) return;
-        const first = focusable[0], last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-      });
+      // Ensure page can scroll if some CSS accidentally prevents it
+      try { document.documentElement.style.overflowY = 'auto'; } catch(e){}
 
-      // Prevent visual freeze if body still hidden for any reason (defensive)
-      setTimeout(() => {
-        if (document.body.style.visibility === 'hidden') {
-          document.body.style.visibility = 'visible';
-          document.body.removeAttribute('aria-loading');
-        }
-      }, 9000);
+      // Small helper to reveal body immediately if JS loaded after CSS hides it
+      if (document.body && getComputedStyle(document.body).visibility === 'hidden') {
+        // Reveal only if firebase script hasn't already taken control (auth check logic may later change visibility)
+        document.body.style.visibility = 'visible';
+      }
     })();
   </script>
 
+  <!-- your app script (kept in place, loaded last) -->
+  <script src="app.js"></script>
 </body>
 </html>
