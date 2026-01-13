@@ -2,12 +2,7 @@
 <html lang="en">  
 <head>  
     <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="styles.css">
-    <!-- Menu styles are kept separate to preserve your main stylesheet -->
-    <link rel="stylesheet" href="menu.css">
-    <!-- Material Symbols (used by the integrated menu) -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-
+    <link rel="stylesheet" href="styles.css">  
     <meta name="theme-color" content="#8b7cc8">  
     <link rel="apple-touch-icon" href="./icons/icon-192.png">  
     <meta charset="UTF-8">  
@@ -26,7 +21,7 @@
     </style>
 
     <title>ATTENZA - for Dispur College</title>  
-        
+    
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -44,14 +39,19 @@
       const auth = getAuth(app);
 
       onAuthStateChanged(auth, (user) => {
-        if (!user) {
-          window.location.replace("login.html");
-        } else {
-          document.body.style.visibility = "visible";
-        }
-      });
+      if (!user) {
+        window.location.replace("login.html");
+      } else {
+        document.body.style.visibility = "visible";
+      }
+    });
     </script>
 
+    <!-- Added for menu -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <link rel="stylesheet" href="menu.css">
+    
 </head>  
 
 <body>  
@@ -62,29 +62,28 @@
                 <div class="menu-mini"><span></span></div>  
             </button>  
             <div class="brand-container">  
-                <span class="brand-name">ATTENZA</span>  
-                <span class="tagline">a student driven attendance tracker</span>  
-            </div>  
+            <span class="brand-name">ATTENZA</span>  
+            <span class="tagline">a student driven attendance tracker</span>  
         </div>  
-
-        <button class="icon-btn notif-rev" aria-label="Notifications">  
-            <svg  
-                viewBox="0 0 24 24"  
-                fill="none"  
-                xmlns="http://www.w3.org/2000/svg"  
-                aria-hidden="true"  
-            >  
-                <path  
-                    d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"  
-                    stroke-width="2.25"  
-                    stroke-linejoin="round"  
-                    stroke-linecap="round"  
-                    stroke="currentColor"  
-                ></path>  
-            </svg>  
-            <div class="notif-dot"></div>  
-        </button>  
     </div>  
+
+    <button class="icon-btn notif-rev" aria-label="Notifications">  
+        <svg  
+            viewBox="0 0 24 24"  
+            fill="none"  
+            xmlns="http://www.w3.org/2000/svg"  
+            aria-hidden="true"  
+        >  
+            <path  
+                d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"  
+                stroke-width="2.25"  
+                stroke-linejoin="round"  
+                stroke-linecap="round"  
+                stroke="currentColor"  
+            ></path>  
+        </svg>  
+        <div class="notif-dot"></div>  
+    </button>  
 </div>  
 
 <div class="expand-section">  
@@ -134,6 +133,7 @@
     </div>  
 </div>
 
+</div>  
 <div class="sketch-line-container">  
     <span class="sketch-line">  
         I  
@@ -143,36 +143,43 @@
                      C50 10, 70 20, 60 40  
                      C80 10, 110 25, 90 50  
                      C70 80, 60 95, 60 105 Z"/>  
-            <g stroke="#e63946" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">  
-                <path d="M35 60 Q 55 50 80 55" />  
-                <path d="M32 68 Q 55 60 85 64" />  
-                <path d="M34 76 Q 55 70 82 75" />  
-                <path d="M37 84 Q 58 78 79 82" />  
-                <path d="M45 45 Q 60 55 78 68" />  
-                <path d="M40 52 Q 55 64 75 78" />  
-                <path d="M50 70 Q 55 68 60 72" />  
-                <path d="M58 80 Q 63 78 68 82" />  
-            </g>  
-        </svg>  
-        Dispur College  
-    </span>
-</div>  
+<g stroke="#e63946"  
+           stroke-width="4"  
+           fill="none"  
+           stroke-linecap="round"  
+           stroke-linejoin="round"  
+           opacity="0.9">  
 
+            <path d="M35 60 Q 55 50 80 55" />  
+            <path d="M32 68 Q 55 60 85 64" />  
+            <path d="M34 76 Q 55 70 82 75" />  
+            <path d="M37 84 Q 58 78 79 82" />  
+
+            <path d="M45 45 Q 60 55 78 68" />  
+            <path d="M40 52 Q 55 64 75 78" />  
+
+            <path d="M50 70 Q 55 68 60 72" />  
+            <path d="M58 80 Q 63 78 68 82" />  
+        </g>  
+    </svg>  
+    Dispur College  
+</span>
+
+</div>  
 <div class="content-body">  
     <div class="welcome-section">  
         <div class="welcome-content">  
             <div class="welcome-text-content">  
                 <h3 id="welcomeTitle">Hello, User!</h3>  
                 <p id="welcomeSubtitle">Great progress! Keep maintaining your attendance streak.</p>  
-                <div class="attendance-ring">  
-                    <svg class="ring-svg" viewBox="0 0 160 160">  
-                        <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>  
-                        <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>  
-                    </svg>  
-                    <div class="ring-center">  
-                        <span class="percentage" id="percentageText">75%</span>  
-                        <span class="percentage-label">Overall</span>  
-                    </div>  
+<div class="attendance-ring">  
+                <svg class="ring-svg" viewBox="0 0 160 160">  
+                    <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>  
+                    <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>  
+                </svg>  
+                <div class="ring-center">  
+                    <span class="percentage" id="percentageText">75%</span>  
+                    <span class="percentage-label">Overall</span>  
                 </div>  
             </div>  
         </div>  
@@ -518,7 +525,6 @@
 </section>
 
 </div>  
-
 <div class="modal-backdrop hidden" id="editModal">
     <div class="modal">
         <h3>Edit record</h3>
@@ -544,42 +550,41 @@
         </div>
     </div>
 </div>
-
 <div class="ai-board-overlay">  
     <div class="ai-board" id="aiBoard">  
         <div class="ai-board-header">  
             <h2 class="ai-title">Attenza AI</h2>  
             <button class="ai-close-btn" id="aiCloseBtn" aria-label="Close AI">×</button>  
         </div>  
-        <div class="ai-board-body">  
-            <div class="ai-user-card-wrapper">  
-                <div class="ai-user-card" id="userMessageCard">  
-                    Your question will appear here.  
-                </div>  
+<div class="ai-board-body">  
+        <div class="ai-user-card-wrapper">  
+            <div class="ai-user-card" id="userMessageCard">  
+                Your question will appear here.  
             </div>  
+        </div>  
 
-            <div class="ai-status-row">  
-                <div class="ai-status-loader">  
-                    <div class="stripe"></div>  
-                    <div class="stripe"></div>  
-                    <div class="stripe"></div>  
-                    <div class="stripe"></div>  
-                </div>  
-                <span class="ai-status-text" id="aiStatusText">Analyzing…</span>  
+        <div class="ai-status-row">  
+            <div class="ai-status-loader">  
+                <div class="stripe"></div>  
+                <div class="stripe"></div>  
+                <div class="stripe"></div>  
+                <div class="stripe"></div>  
             </div>  
+            <span class="ai-status-text" id="aiStatusText">Analyzing…</span>  
+        </div>  
 
-            <div class="ai-response" id="aiResponse">
-                Here is a sample response from Attenza AI.
+        <div class="ai-response" id="aiResponse">
 
-                Once you connect Gemini and your attendance backend, this will show real, detailed insights.
-            </div>
+Here is a sample response from Attenza AI.
 
-            <button class="ai-copy-btn" id="aiCopyBtn">  
-                <span>📋</span>  
-                <span>Copy</span>  
-            </button>  
-        </div>
-    </div>
+Once you connect Gemini and your attendance backend, this will show real, detailed insights.
+</div>
+
+<button class="ai-copy-btn" id="aiCopyBtn">  
+            <span>📋</span>  
+            <span>Copy</span>  
+        </button>  
+    </div>  
 </div>
 
 <div class="ai-card-container">
@@ -625,12 +630,10 @@
   </div>
 </div>
 
-<!-- ===== Integrated Menu Markup (kept separate and inactive until user opens it) =====
-     The menu's CSS should live in menu.css and JS in menu.js (both referenced above/below)
-     so your main styles.js and styles.css remain untouched and separable.
--->
-<!-- Begin menu markup (exact UI you provided) -->
-<div id="view-menu" class="app-view" aria-hidden="true" style="display:none;">
+</div>  
+
+<!-- Integrated menu view -->
+<div id="menu-view" class="app-view">
     <div class="container-top">
         <div class="header-row">
             <h1 class="header-title">Menu</h1>
@@ -645,7 +648,7 @@
             
             <input type="tel" id="mainSearchInput" placeholder="Search any roll to check attendance" class="search-input" autocomplete="off">
             
-            <div class="search-action-btn" id="actionBtn" onclick="activateSearchMode()">
+            <div class="search-action-btn" id="actionBtn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -723,76 +726,73 @@
             <div class="version-text">Attenza Educational • v1.0.4</div>
         </div>
     </div>
+</div>
 
-    <div id="result-overlay-container">
-        <div class="overlay-backdrop" onclick="exitSearchMode()"></div>
+<div id="result-overlay-container">
+    <div class="overlay-backdrop"></div>
 
-        <div class="result-wrapper">
-            <div class="result-header">
-                <span class="helper-text">Showing students from</span>
-                
-                <div class="dropdown-wrapper" id="classDropdown">
-                    <div class="class-pill" onclick="toggleDropdown()">
-                        <span id="selectedClassText">B.Com Sem 5</span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
+    <div class="result-wrapper">
+        <div class="result-header">
+            <span class="helper-text">Showing students from</span>
+            
+            <div class="dropdown-wrapper" id="classDropdown">
+                <div class="class-pill">
+                    <span id="selectedClassText">B.Com Sem 5</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
 
-                    <div class="dropdown-list">
-                        <div class="dropdown-item" onclick="selectClass('B.Com Sem 5')">B.Com Sem 5</div>
-                        <div class="dropdown-item" onclick="selectClass('B.Com Sem 3')">B.Com Sem 3</div>
-                        <div class="dropdown-item" onclick="selectClass('B.A. Sem 1')">B.A. Sem 1</div>
-                        <div class="dropdown-item" onclick="selectClass('H.S. 2nd Year')">H.S. 2nd Year</div>
+                <div class="dropdown-list">
+                    <div class="dropdown-item">B.Com Sem 5</div>
+                    <div class="dropdown-item">B.Com Sem 3</div>
+                    <div class="dropdown-item">B.A. Sem 1</div>
+                    <div class="dropdown-item">H.S. 2nd Year</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-card" id="foundState">
+            <div class="card-left">
+                <div class="avatar-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <div class="info-group">
+                    <div class="student-name">Rahul Sharma</div>
+                    <div class="data-freshness">
+                        <span class="status-dot-result"></span>
+                        Updated 2h ago
                     </div>
                 </div>
             </div>
-
-            <div class="result-card" id="foundState">
-                <div class="card-left">
-                    <div class="avatar-box">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    </div>
-                    <div class="info-group">
-                        <div class="student-name">Rahul Sharma</div>
-                        <div class="data-freshness">
-                            <span class="status-dot-result"></span>
-                            Updated 2h ago
-                        </div>
-                    </div>
-                </div>
-                <div class="card-right">
-                    <span class="percentage-val">78%</span>
-                    <span class="percentage-label">Overall</span>
-                </div>
+            <div class="card-right">
+                <span class="percentage-val">78%</span>
+                <span class="percentage-label">Overall</span>
             </div>
+        </div>
 
-            <div class="empty-card" id="emptyState">
-                <div class="empty-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                </div>
-                <div class="empty-title">No student found</div>
-                <div class="empty-desc">Your classmates in this section are not using Attendmark yet.</div>
-                
-                <button class="invite-pill">
-                    Invite Friend
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                    </svg>
-                </button>
+        <div class="empty-card" id="emptyState">
+            <div class="empty-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             </div>
+            <div class="empty-title">No student found</div>
+            <div class="empty-desc">Your classmates in this section are not using Attendmark yet.</div>
+            
+            <button class="invite-pill">
+                Invite Friend
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+            </button>
         </div>
     </div>
 </div>
-<!-- End menu markup -->
 
 <!-- flatpickr (kept as external CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<!-- main app JS -->
+<!-- your JavaScript (moved to external file) -->
 <script src="app.js"></script>
-<!-- menu script (kept separate for separability; it will wire the menu open/close/search behaviors) -->
-
 </body>  
 </html>
