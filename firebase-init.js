@@ -1,8 +1,10 @@
-// firebase-init.js
+// js/firebase-init.js
+// Use same Firebase version you currently use in your project
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// --- Firebase config (from your screenshot) ---
 export const firebaseConfig = {
   apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
   authDomain: "attenza-app.firebaseapp.com",
@@ -12,6 +14,9 @@ export const firebaseConfig = {
   appId: "1:435010148378:web:e5540806fd0ef90b16d9a3"
 };
 
+// Initialize Firebase app and services
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const googleProvider = new GoogleAuthProvider();
+
