@@ -373,10 +373,8 @@ body.auth-active .menu-btn span { background: #ffffff; }
 
 <script type="module">
   // --- FIREBASE IMPORTS ---
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { 
-    getAuth, 
-    GoogleAuthProvider, 
+  import { auth, db } from './firebase-init.js';
+  import {
     signInWithPopup, 
     fetchSignInMethodsForEmail, 
     signInWithEmailAndPassword, 
@@ -390,8 +388,7 @@ body.auth-active .menu-btn span { background: #ffffff; }
     updateProfile,
     getAdditionalUserInfo
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { 
-    getFirestore, 
+  import {  
     doc, 
     getDoc, 
     setDoc, 
@@ -401,22 +398,6 @@ body.auth-active .menu-btn span { background: #ffffff; }
     collection 
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
-  // --- FIREBASE CONFIGURATION ---
-  const firebaseConfig = {
-    apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
-    authDomain: "attenza-app.firebaseapp.com",
-    projectId: "attenza-app",
-    storageBucket: "attenza-app.firebasestorage.app",
-    messagingSenderId: "435010148378",
-    appId: "1:435010148378:web:e5540806fd0ef90b16d9a3"
-  };
-
-  // Initialize Services
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const googleProvider = new GoogleAuthProvider();
 
   // Globals
   let verificationInterval = null;
