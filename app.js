@@ -852,6 +852,9 @@ function openMenu() {
   if (menu) {
     menu.style.left = "0";
   }
+
+  // 🔒 LOCK HOME PAGE SCROLL
+  document.body.classList.add("no-scroll");
 }
 
 function closeMenu() {
@@ -859,6 +862,9 @@ function closeMenu() {
   if (menu) {
     menu.style.left = "-100%";
   }
+
+  // 🔓 UNLOCK HOME PAGE SCROLL
+  document.body.classList.remove("no-scroll");
 }
 
 // ==== LISTEN FROM MENU IFRAME ====
