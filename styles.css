@@ -4,6 +4,12 @@
         box-sizing: border-box;  
     }  
 
+    body.no-scroll {
+        overflow: hidden;
+        height: 100vh;
+        touch-action: none;
+    }
+
     body {  
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;  
         background: #f5f3ef;  
