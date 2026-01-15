@@ -247,6 +247,9 @@
 
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* small helper for hidden states */
+        .hidden { display: none !important; }
     </style>
 </head>
 
@@ -268,7 +271,7 @@
                 
                 <input type="tel" id="mainSearchInput" placeholder="Search any roll to check attendance" class="search-input" autocomplete="off">
                 
-                <div class="search-action-btn" id="actionBtn" onclick="activateSearchMode()">
+                <div class="search-action-btn" id="actionBtn" onclick="startRollSearch()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
@@ -279,34 +282,34 @@
 
         <div class="container-scroll" id="scrollContent">
             <div class="menu-profile-card">
-                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="menu-profile-img" alt="Profile">
+                <img id="profileImage" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="menu-profile-img" alt="Profile">
                 <div class="menu-profile-info">
-                    <h2 class="menu-profile-name">Johnathan Doe</h2>
-                    <p class="menu-profile-email">john.doe23@university.edu</p>
+                    <h2 class="menu-profile-name" id="profileName">Johnathan Doe</h2>
+                    <p class="menu-profile-email" id="profileEmail">john.doe23@university.edu</p>
                     
                     <div class="profile-pills">
-                        <span class="pill pill-purple">Roll - 234</span>
-                        <span class="pill pill-purple">B.Com 1st Sem</span>
+                        <span class="pill pill-purple" id="profileRoll">Roll - 234</span>
+                        <span class="pill pill-purple" id="profileClass">B.Com 1st Sem</span>
                     </div>
 
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="edit-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /><path d="M16 21l5 -5" /><path d="M21 21v.01" /><path d="M16 16v.01" /></svg> 
+                    <svg id="profileEditBtn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="edit-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /><path d="M16 21l5 -5" /><path d="M21 21v.01" /><path d="M16 16v.01" /></svg> 
                 </div>
             </div>
 
             <div class="menu-card" style="margin-bottom: 20px; padding-bottom: 15px;">
                 <div class="menu-header">
-                    <span class="menu-header-text">Dispur College</span>
+                    <span class="menu-header-text" id="menuCollegeLabel">Dispur College</span>
                     <span class="material-symbols-rounded" style="color: #d1d5db; font-size: 18px;">school</span>
                 </div>
 
-                <div class="menu-item active" style="padding: 14px 16px;" onclick="window.location.href='setup.html'">
+                <div id="subjectCard" class="menu-item active" style="padding: 14px 16px;" onclick="openSetupPage()">
                     <div class="status-dot"></div>
                     <div class="menu-icon-box purple-bg">
                         <span class="material-symbols-rounded" style="font-size: 18px;">library_add</span>
                     </div>
                     <div class="menu-text">
-                        <p class="menu-title">Select Subjects</p>
-                        <p class="menu-subtitle">Set up subjects to track attendance</p>
+                        <p class="menu-title" id="subjectCardTitle">Select Subjects</p>
+                        <p class="menu-subtitle" id="subjectCardSubtitle">Set up subjects to track attendance</p>
                     </div>
                     <span class="material-symbols-rounded chevron-active">chevron_right</span>
                 </div>
@@ -339,7 +342,7 @@
             </div>
 
             <div class="logout-section">
-                <button class="btn-logout">
+                <button id="logoutBtn" class="btn-logout">
                     <span class="material-symbols-rounded">logout</span>
                     Log Out
                 </button>
@@ -361,42 +364,42 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
 
-                    <div class="dropdown-list">
-                        <div class="dropdown-item" onclick="selectClass('B.Com Sem 5')">B.Com Sem 5</div>
-                        <div class="dropdown-item" onclick="selectClass('B.Com Sem 3')">B.Com Sem 3</div>
-                        <div class="dropdown-item" onclick="selectClass('B.A. Sem 1')">B.A. Sem 1</div>
-                        <div class="dropdown-item" onclick="selectClass('H.S. 2nd Year')">H.S. 2nd Year</div>
+                    <div class="dropdown-list" id="classDropdownList">
+                        <div class="dropdown-item" data-value="B.Com Sem 5" onclick="selectClass('B.Com Sem 5')">B.Com Sem 5</div>
+                        <div class="dropdown-item" data-value="B.Com Sem 3" onclick="selectClass('B.Com Sem 3')">B.Com Sem 3</div>
+                        <div class="dropdown-item" data-value="B.A. Sem 1" onclick="selectClass('B.A. Sem 1')">B.A. Sem 1</div>
+                        <div class="dropdown-item" data-value="H.S. 2nd Year" onclick="selectClass('H.S. 2nd Year')">H.S. 2nd Year</div>
                     </div>
                 </div>
             </div>
 
-            <div class="result-card" id="foundState">
+            <div class="result-card" id="foundState" style="display:none;">
                 <div class="card-left">
-                    <div class="avatar-box">
+                    <div class="avatar-box" id="resultAvatar">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     </div>
                     <div class="info-group">
-                        <div class="student-name">Rahul Sharma</div>
-                        <div class="data-freshness">
+                        <div class="student-name" id="resultName">Rahul Sharma</div>
+                        <div class="data-freshness" id="resultFreshness">
                             <span class="status-dot-result"></span>
-                            Updated 2h ago
+                            Updated just now
                         </div>
                     </div>
                 </div>
                 <div class="card-right">
-                    <span class="percentage-val">78%</span>
+                    <span class="percentage-val" id="resultPercent">78%</span>
                     <span class="percentage-label">Overall</span>
                 </div>
             </div>
 
-            <div class="empty-card" id="emptyState">
+            <div class="empty-card" id="emptyState" style="display:none;">
                 <div class="empty-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 </div>
                 <div class="empty-title">No student found</div>
                 <div class="empty-desc">Your classmates in this section are not using Attendmark yet.</div>
                 
-                <button class="invite-pill">
+                <button class="invite-pill" onclick="inviteFriend()">
                     Invite Friend
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="18" cy="5" r="3"></circle>
@@ -410,108 +413,509 @@
         </div>
     </div>
 
-    <script>
-        const searchInput = document.getElementById('mainSearchInput');
-        const searchBox = document.getElementById('searchBoxContainer');
-        const actionBtn = document.getElementById('actionBtn');
-        const scrollContent = document.getElementById('scrollContent'); // This gets blurred
-        const overlayContainer = document.getElementById('result-overlay-container');
+    <!-- Firebase + Menu logic -->
+    <script type="module">
+      // Firebase v10 imports (same config as other files)
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+      import { getFirestore, doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- SEARCH INPUT LOGIC ---
-        if (searchInput) {
-            searchInput.addEventListener('focus', () => {
-                searchBox.classList.add('active');
-            });
+      // Keep your firebaseConfig consistent with the rest of the app
+      const firebaseConfig = {
+        apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
+        authDomain: "attenza-app.firebaseapp.com",
+        projectId: "attenza-app",
+        storageBucket: "attenza-app.firebasestorage.app",
+        messagingSenderId: "435010148378",
+        appId: "1:435010148378:web:e5540806fd0ef90b16d9a3"
+      };
 
-            searchInput.addEventListener('blur', () => {
-                if (searchInput.value.length === 0) {
-                    searchBox.classList.remove('active');
-                }
-            });
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-            searchInput.addEventListener('input', (e) => {
-                // Strictly numeric
-                const val = e.target.value.replace(/[^0-9]/g, '');
-                e.target.value = val;
+      // DOM refs
+      const profileNameEl = document.getElementById('profileName');
+      const profileEmailEl = document.getElementById('profileEmail');
+      const profileRollEl = document.getElementById('profileRoll');
+      const profileClassEl = document.getElementById('profileClass');
+      const profileImageEl = document.getElementById('profileImage');
+      const menuCollegeLabel = document.getElementById('menuCollegeLabel');
 
-                if (val.length > 0) {
-                    actionBtn.classList.add('visible');
-                } else {
-                    actionBtn.classList.remove('visible');
-                }
-            });
+      const subjectCardTitle = document.getElementById('subjectCardTitle');
+      const subjectCardSubtitle = document.getElementById('subjectCardSubtitle');
+      const subjectCardEl = document.getElementById('subjectCard');
+
+      const searchInput = document.getElementById('mainSearchInput');
+      const searchBox = document.getElementById('searchBoxContainer');
+      const actionBtn = document.getElementById('actionBtn');
+      const scrollContent = document.getElementById('scrollContent'); // This gets blurred
+      const overlayContainer = document.getElementById('result-overlay-container');
+
+      const foundStateEl = document.getElementById('foundState');
+      const emptyStateEl = document.getElementById('emptyState');
+      const resultNameEl = document.getElementById('resultName');
+      const resultFreshnessEl = document.getElementById('resultFreshness');
+      const resultPercentEl = document.getElementById('resultPercent');
+
+      const selectedClassTextEl = document.getElementById('selectedClassText');
+      const classDropdownList = document.getElementById('classDropdownList');
+
+      const profileEditBtn = document.getElementById('profileEditBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      // local cache keys
+      const PROFILE_CACHE_KEY = 'att_menu_profile_cache_v1';
+      const PROFILE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+      // current signed in user info
+      let currentUser = null;
+      let currentProfile = null; // profile data from Firestore
+
+      // Helper: post message to parent (iframe integration)
+      function postToParent(msg) {
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage(msg, "*");
+          }
+        } catch (e) {
+          console.warn("postMessage failed", e);
+        }
+      }
+
+      // Auth watcher: populate profile when available
+      onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        if (!user) {
+          // Clear to defaults
+          setProfilePlaceholders();
+          // notify parent that menu found no auth (parent should route to login)
+          postToParent({ type: 'MENU_NO_AUTH' });
+          return;
         }
 
-        // --- TRANSITION LOGIC ---
-        function activateSearchMode() {
-            // Blur just the content, not the header
-            scrollContent.classList.add('content-blurred');
-            
-            // Show Overlay
-            overlayContainer.style.display = 'flex';
-            
-            // Dismiss keyboard
-            if (searchInput) searchInput.blur();
+        // Load profile: prefer cache then Firestore
+        const cached = readProfileCache();
+        if (cached && cached.uid === user.uid) {
+          applyProfileToUI(cached.data, /*fromCache*/ true);
+        } else {
+          setProfilePlaceholders();
         }
 
-        function exitSearchMode() {
-            // Unblur content
-            scrollContent.classList.remove('content-blurred');
-            
-            // Hide Overlay
-            overlayContainer.style.display = 'none';
-            
-            // Cleanup inputs
-            if (searchInput) searchInput.value = '';
-            actionBtn.classList.remove('visible');
-            searchBox.classList.remove('active');
+        // Always try to fetch fresh profile from Firestore (non-blocking)
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const snap = await getDoc(userDocRef);
+          if (snap.exists()) {
+            currentProfile = snap.data();
+            // merge uid
+            const profileData = { ...currentProfile, uid: user.uid };
+            saveProfileCache(profileData);
+            applyProfileToUI(profileData, /*fromCache*/ false);
+          } else {
+            // no user doc yet (maybe profile not complete)
+            setProfilePlaceholders({ email: user.email, name: user.displayName || '' });
+            // let parent handle showing registration if needed
+            postToParent({ type: 'MENU_AUTH_NO_PROFILE', uid: user.uid });
+          }
+        } catch (e) {
+          console.error("Failed to fetch user profile:", e);
+        }
+      });
+
+      // Set friendly placeholders when no profile available
+      function setProfilePlaceholders(pre = {}) {
+        profileNameEl.textContent = pre.name || "Guest User";
+        profileEmailEl.textContent = pre.email || "Not signed in";
+        profileRollEl.textContent = "Roll - —";
+        profileClassEl.textContent = "Class - —";
+        profileImageEl.src = getDefaultDp();
+        menuCollegeLabel.textContent = "College";
+        subjectCardTitle.textContent = "Select Subjects";
+        subjectCardSubtitle.textContent = "Set up subjects to track attendance";
+      }
+
+      function getDefaultDp() {
+        // Use local asset if present; fallback to neutral avatar
+        return "./Image/default-profile.png"; // if not present, browser will try; UI already uses an unsplash fallback
+      }
+
+      function applyProfileToUI(profile, fromCache=false) {
+        if (!profile) return;
+        // fields we expect: name, email, rollNumber, college, course_or_class, section
+        profileNameEl.textContent = profile.name || (currentUser && currentUser.displayName) || "Student";
+        profileEmailEl.textContent = profile.email || (currentUser && currentUser.email) || "";
+        profileRollEl.textContent = profile.rollNumber ? `Roll - ${profile.rollNumber}` : "Roll - —";
+        const classText = profile.course_or_class ? `${profile.course_or_class}${profile.section ? ' · ' + profile.section : ''}` : "Class - —";
+        profileClassEl.textContent = classText;
+        menuCollegeLabel.textContent = profile.college || "College";
+        // profile picture - if user has e.g. photoURL in profile use it. Otherwise keep default.
+        if (profile.photoURL) {
+          profileImageEl.src = profile.photoURL;
+        } else if (currentUser && currentUser.photoURL) {
+          profileImageEl.src = currentUser.photoURL;
+        } else {
+          // keep existing src; try default
+          profileImageEl.src = getDefaultDp();
         }
 
-        // --- DROPDOWN LOGIC ---
-        function toggleDropdown() {
-            document.getElementById('classDropdown').classList.toggle('active');
+        // If user has selected subjects (either in a field or a subcollection indicator), change subject card copy.
+        // We'll check a few plausible places:
+        let subjectsExist = false;
+        if (Array.isArray(profile.selectedSubjects) && profile.selectedSubjects.length > 0) subjectsExist = true;
+        if (profile.subjectCount && Number(profile.subjectCount) > 0) subjectsExist = true;
+        // fallback: if there's a 'majors' or 'subjects' field
+        if (profile.majors && Array.isArray(profile.majors) && profile.majors.length > 0) subjectsExist = true;
+
+        if (subjectsExist) {
+          subjectCardTitle.textContent = "Your Subjects";
+          subjectCardSubtitle.textContent = "Manage subjects to track attendance";
+        } else {
+          subjectCardTitle.textContent = "Select Subjects";
+          subjectCardSubtitle.textContent = "Set up subjects to track attendance";
         }
 
-        function selectClass(className) {
-            document.getElementById('selectedClassText').textContent = className;
-            document.getElementById('classDropdown').classList.remove('active');
+        // Store currentProfile
+        currentProfile = profile;
 
-            const foundState = document.getElementById('foundState');
-            const emptyState = document.getElementById('emptyState');
-
-            if (className === 'B.Com Sem 5') {
-                foundState.style.display = 'flex';
-                emptyState.style.display = 'none';
-            } else {
-                foundState.style.display = 'none';
-                emptyState.style.display = 'block';
-            }
+        // Update the default scope in the dropdown to user's class if available
+        if (profile.course_or_class) {
+          selectedClassTextEl.textContent = profile.course_or_class + (profile.section ? ' · ' + profile.section : '');
         }
+      }
 
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('classDropdown');
-            if (dropdown && !dropdown.contains(event.target) && !event.target.closest('.class-pill')) {
-                dropdown.classList.remove('active');
-            }
+      // Save profile to localStorage cache
+      function saveProfileCache(profileObj) {
+        try {
+          const payload = { uid: profileObj.uid || (currentUser && currentUser.uid), ts: Date.now(), data: profileObj };
+          localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(payload));
+        } catch (e) { console.warn("Profile cache save failed", e); }
+      }
+
+      // Read profile cache if still fresh
+      function readProfileCache() {
+        try {
+          const raw = localStorage.getItem(PROFILE_CACHE_KEY);
+          if (!raw) return null;
+          const obj = JSON.parse(raw);
+          if (!obj || !obj.ts) return null;
+          if ((Date.now() - obj.ts) > PROFILE_CACHE_TTL_MS) {
+            localStorage.removeItem(PROFILE_CACHE_KEY);
+            return null;
+          }
+          return obj;
+        } catch (e) {
+          console.warn("Profile cache read failed", e);
+          return null;
+        }
+      }
+
+      // Open setup page: send message to parent so the parent app can route/handle navigation
+      function openSetupPage() {
+        postToParent({ type: "NAVIGATE", to: "setup" });
+      }
+
+      // Profile edit button -> notify parent to open profile edit (no UI changes inside iframe)
+      profileEditBtn.addEventListener('click', () => {
+        postToParent({ type: "NAVIGATE", to: "edit_profile" });
+      });
+
+      // Logout
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await signOut(auth);
+          // Notify parent to update UI / redirect to login
+          postToParent({ type: "USER_SIGNED_OUT" });
+        } catch (e) {
+          console.error("Sign out failed", e);
+        }
+      });
+
+      // Dropdown handling
+      function toggleDropdown() {
+        document.getElementById('classDropdown').classList.toggle('active');
+      }
+
+      function selectClass(className) {
+        selectedClassTextEl.textContent = className;
+        document.getElementById('classDropdown').classList.remove('active');
+
+        // If user selected a class from dropdown, re-run last search if any
+        // No auto-fetch by default; user must input roll then press search
+      }
+
+      document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('classDropdown');
+        if (dropdown && !dropdown.contains(event.target) && !event.target.closest('.class-pill')) {
+          dropdown.classList.remove('active');
+        }
+      });
+
+      // Input logic for search field
+      if (searchInput) {
+        searchInput.addEventListener('focus', () => {
+          searchBox.classList.add('active');
         });
 
-        // --- CLOSE MENU (postMessage to parent) ---
-        function closeMenu() {
-          try {
-            if (window.parent && window.parent !== window) {
-              window.parent.postMessage({ type: "CLOSE_MENU" }, "*");
-            } else {
-              // not inside an iframe: fallback hide
-              const overlay = document.getElementById('view-menu');
-              if (overlay) overlay.style.display = 'none';
+        searchInput.addEventListener('blur', () => {
+          if (searchInput.value.length === 0) {
+            searchBox.classList.remove('active');
+          }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+          // Strictly numeric: roll numbers
+          const val = e.target.value.replace(/[^0-9]/g, '');
+          e.target.value = val;
+
+          if (val.length > 0) {
+            actionBtn.classList.add('visible');
+          } else {
+            actionBtn.classList.remove('visible');
+          }
+        });
+      }
+
+      // Start roll search: UI + DB query
+      async function startRollSearch() {
+        const roll = (searchInput && searchInput.value && searchInput.value.trim()) ? searchInput.value.trim() : null;
+        if (!roll) {
+          // nothing to do but open overlay
+          activateSearchMode();
+          return;
+        }
+
+        // Activate overlay & blur UI
+        activateSearchMode();
+
+        // Build query scope: default to currentProfile college & class; if not available, only roll filter (broad)
+        let college = currentProfile && currentProfile.college ? currentProfile.college : null;
+        let course_or_class = currentProfile && currentProfile.course_or_class ? currentProfile.course_or_class : null;
+
+        // If the user changed selectedClassText to some custom string, try to use that (simple heuristic)
+        const selectedClassText = selectedClassTextEl.textContent;
+        if (selectedClassText && selectedClassText !== "" && selectedClassText !== "Select class") {
+          // attempt to parse primary token (e.g., "B.Com Sem 5" -> use as course_or_class)
+          course_or_class = selectedClassText;
+        }
+
+        try {
+          // Query users collection: where rollNumber == roll AND college == college AND course_or_class == course_or_class
+          // Firestore requires composite indexes for multiple where clauses in some combinations; this query is standard and should work if fields are indexed.
+          const usersCol = collection(db, 'users');
+
+          let q;
+          if (college && course_or_class) {
+            q = query(usersCol, where('rollNumber', '==', roll), where('college', '==', college), where('course_or_class', '==', course_or_class), limit(1));
+          } else if (college) {
+            q = query(usersCol, where('rollNumber', '==', roll), where('college', '==', college), limit(1));
+          } else {
+            q = query(usersCol, where('rollNumber', '==', roll), limit(1));
+          }
+
+          const qsnap = await getDocs(q);
+          if (qsnap.empty) {
+            // nothing found
+            showEmptyState();
+            return;
+          }
+
+          // we have at least one match: take the first
+          const foundDoc = qsnap.docs[0];
+          const foundData = foundDoc.data();
+          const foundUid = foundDoc.id;
+
+          // populate result card
+          fillResultCard(foundUid, foundData);
+        } catch (err) {
+          console.error("Roll search failed", err);
+          // On error, show empty state
+          showEmptyState();
+        }
+      }
+
+      // Activate search mode visually
+      function activateSearchMode() {
+        scrollContent.classList.add('content-blurred');
+        overlayContainer.style.display = 'flex';
+        if (searchInput) searchInput.blur();
+      }
+
+      // Exit search mode
+      function exitSearchMode() {
+        scrollContent.classList.remove('content-blurred');
+        overlayContainer.style.display = 'none';
+        if (searchInput) {
+          searchInput.value = '';
+          searchBox.classList.remove('active');
+        }
+        actionBtn.classList.remove('visible');
+        // hide results
+        foundStateEl.style.display = 'none';
+        emptyStateEl.style.display = 'none';
+      }
+
+      // Show empty state
+      function showEmptyState() {
+        foundStateEl.style.display = 'none';
+        emptyStateEl.style.display = 'block';
+      }
+
+      // Fetch and display summary for a user (robust: tries multiple possible doc locations)
+      async function fetchSummaryForUserUid(uid) {
+        // Try common places for a "summary" document:
+        // 1) users/{uid}/summary (doc named 'summary' inside subcollection 'summary')
+        // 2) users/{uid}/summary (document id 'summary' directly under user path — implemented as subcollection)
+        // 3) fallback to fields inside users/{uid} like overallPercent / totalClasses / attendedClasses
+        // We'll attempt doc(db, 'users', uid, 'summary', 'summary') and doc(db,'users', uid, 'summary')
+        try {
+          // attempt sub-doc path: users/{uid}/summary/summary
+          const tryPaths = [
+            ["users", uid, "summary", "summary"],
+            ["users", uid, "summary"], // if you used doc('users', uid, 'summary') as a document id (rare)
+            ["users", uid] // fallback to main user doc fields
+          ];
+
+          for (const path of tryPaths) {
+            try {
+              const ref = doc(db, ...path);
+              const s = await getDoc(ref);
+              if (s.exists()) {
+                // return document data plus doc metadata
+                return { docId: s.id, data: s.data(), path: path.join('/') };
+              }
+            } catch (innerErr) {
+              // ignore and continue trying other paths
             }
-          } catch (e) {
-            // fallback
+          }
+        } catch (e) {
+          console.warn("fetchSummaryForUserUid error:", e);
+        }
+        return null;
+      }
+
+      // Compute a usable overall percent from summary-like data
+      function computePercentFromSummary(summaryObj) {
+        if (!summaryObj) return { percent: null, updatedAtText: null };
+
+        const d = summaryObj.data || {};
+        // direct overallPercent
+        if (typeof d.overallPercent === 'number') {
+          const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
+          return { percent: Math.round(d.overallPercent), updatedAtText: tsText };
+        }
+
+        // total/attended fields
+        const attended = (typeof d.attendedClasses === 'number') ? d.attendedClasses : (typeof d.attended === 'number' ? d.attended : null);
+        const total = (typeof d.totalClasses === 'number') ? d.totalClasses : (typeof d.total === 'number' ? d.total : null);
+        if (attended !== null && total !== null && total > 0) {
+          const percent = Math.round((attended / total) * 100);
+          const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
+          return { percent, updatedAtText: tsText };
+        }
+
+        // fallback: try if user doc contains small summary fields (e.g., overall)
+        if (typeof d.overall === 'number') {
+          return { percent: Math.round(d.overall), updatedAtText: d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now' };
+        }
+
+        return { percent: null, updatedAtText: null };
+      }
+
+      // Convert Firestore serverTimestamp or JS Date to relative string
+      function relativeTimeFromTimestamp(ts) {
+        try {
+          // ts may be a JS Date, string, number, or Firestore Timestamp-like object { seconds, nanoseconds }
+          let date;
+          if (!ts) return 'Updated just now';
+          if (ts.seconds && typeof ts.seconds === 'number') {
+            date = new Date(ts.seconds * 1000);
+          } else if (typeof ts.toDate === 'function') {
+            date = ts.toDate();
+          } else {
+            date = new Date(ts);
+          }
+          const diff = Date.now() - date.getTime();
+          const minutes = Math.floor(diff / 60000);
+          if (minutes < 1) return 'Updated just now';
+          if (minutes < 60) return `Updated ${minutes}m ago`;
+          const hours = Math.floor(minutes / 60);
+          if (hours < 24) return `Updated ${hours}h ago`;
+          const days = Math.floor(hours / 24);
+          return `Updated ${days}d ago`;
+        } catch (e) {
+          return 'Updated';
+        }
+      }
+
+      // Fill the found result card (reads summary if available)
+      async function fillResultCard(foundUid, foundData) {
+        try {
+          const displayName = foundData.name || foundData.displayName || (foundData.email ? foundData.email.split('@')[0] : 'Student');
+          resultNameEl.textContent = displayName;
+
+          // Try to get summary
+          const summaryObj = await fetchSummaryForUserUid(foundUid);
+          const computed = computePercentFromSummary(summaryObj);
+
+          if (computed && computed.percent !== null) {
+            resultPercentEl.textContent = computed.percent + "%";
+            resultFreshnessEl.textContent = computed.updatedAtText || "Updated just now";
+          } else {
+            // No computed percent: show fallback
+            resultPercentEl.textContent = "—";
+            // if foundData has updatedAt
+            const updatedAt = foundData.updatedAt || foundData.updatedAtAt || null;
+            resultFreshnessEl.textContent = updatedAt ? relativeTimeFromTimestamp(updatedAt) : 'Updated just now';
+          }
+
+          // If foundData.email or photo exist, optionally show them (we only update the name / percent)
+          foundStateEl.style.display = 'flex';
+          emptyStateEl.style.display = 'none';
+        } catch (e) {
+          console.error("fillResultCard failed", e);
+          showEmptyState();
+        }
+      }
+
+      // Invite friend (simple action: tell parent to handle invite)
+      function inviteFriend() {
+        postToParent({ type: 'INVITE_FRIEND' });
+      }
+
+      // Close menu (postMessage to parent)
+      function closeMenu() {
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: "CLOSE_MENU" }, "*");
+          } else {
             const overlay = document.getElementById('view-menu');
             if (overlay) overlay.style.display = 'none';
           }
+        } catch (e) {
+          const overlay = document.getElementById('view-menu');
+          if (overlay) overlay.style.display = 'none';
         }
-    </script>
+      }
 
+      // Expose functions globally used by UI elements in the HTML (existing handlers)
+      window.toggleDropdown = toggleDropdown;
+      window.selectClass = selectClass;
+      window.startRollSearch = startRollSearch;
+      window.activateSearchMode = activateSearchMode;
+      window.exitSearchMode = exitSearchMode;
+      window.openSetupPage = openSetupPage;
+      window.closeMenu = closeMenu;
+      window.inviteFriend = inviteFriend;
+
+      // Safety: if script loads while user already signed in, try to populate via cached profile
+      (function tryApplyCachedProfileImmediately() {
+        const c = readProfileCache();
+        if (c && c.data) {
+          applyProfileToUI(c.data, true);
+        }
+      })();
+
+    </script>
 </body>
 </html>
