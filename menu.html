@@ -462,7 +462,7 @@
       const profileEditBtn = document.getElementById('profileEditBtn');
       const logoutBtn = document.getElementById('logoutBtn');
 
-      // --- CACHE KEYS (Original) ---
+      // --- CACHE KEYS ---
       const PROFILE_CACHE_KEY = 'att_menu_profile_cache_v1';
       const PROFILE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -470,7 +470,7 @@
       let currentUser = null;
       let currentProfile = null;
 
-      // --- HELPER: IFRAME COMMUNICATION (Original) ---
+      // --- HELPER: IFRAME COMMUNICATION ---
       function postToParent(msg) {
         try {
           if (window.parent && window.parent !== window) {
@@ -481,25 +481,24 @@
         }
       }
 
-      // --- AUTH LISTENER ---
+      // --- AUTH & DATA LOADING ---
       onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         if (!user) {
           setProfilePlaceholders();
           postToParent({ type: 'MENU_NO_AUTH' });
-          window.location.replace("login.html"); // Added safety redirect
           return;
         }
 
-        // 1. Load from Cache first (Original Logic)
+        // 1. Load from Cache first
         const cached = readProfileCache();
         if (cached && cached.uid === user.uid) {
-          applyProfileToUI(cached.data, /*fromCache*/ true);
+          applyProfileToUI(cached.data);
         } else {
           setProfilePlaceholders();
         }
 
-        // 2. Fetch Fresh Data
+        // 2. Fetch Fresh Data (Profile + Setup Status)
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const snap = await getDoc(userDocRef);
@@ -508,19 +507,18 @@
             currentProfile = snap.data();
             const profileData = { ...currentProfile, uid: user.uid };
             
-            // [MODIFICATION START] Check for Setup Data (Metadata/Summary)
-            // We check this to decide between "Select Subjects" vs "Manage Subjects"
-            let hasSetupData = false;
+            // [CHECK FOR SETUP DATA]
+            // We check users/{uid}/metadata/summary to see if setup is done
+            let isSetupDone = false;
             try {
-                const summaryRef = doc(db, 'users', user.uid, 'metadata', 'summary');
-                const summarySnap = await getDoc(summaryRef);
-                if (summarySnap.exists()) hasSetupData = true;
-            } catch(err) { console.log("Summary check skipped"); }
-            
-            // Pass this status to the UI function
+                const setupRef = doc(db, 'users', user.uid, 'metadata', 'summary');
+                const setupSnap = await getDoc(setupRef);
+                if (setupSnap.exists()) isSetupDone = true;
+            } catch(e) { console.log("Setup check failed", e); }
+
+            // Pass this status to UI function
             saveProfileCache(profileData);
-            applyProfileToUI(profileData, /*fromCache*/ false, hasSetupData);
-            // [MODIFICATION END]
+            applyProfileToUI(profileData, isSetupDone);
 
           } else {
             setProfilePlaceholders({ email: user.email, name: user.displayName || '' });
@@ -546,8 +544,8 @@
         return "/Image/avatar.jpg"; 
       }
 
-      // [MODIFICATION] Added `hasSetupData` parameter
-      function applyProfileToUI(profile, fromCache=false, hasSetupData=false) {
+      // [UPDATED] Added setupStatus parameter
+      function applyProfileToUI(profile, setupStatus = false) {
         if (!profile) return;
         
         profileNameEl.textContent = profile.name || (currentUser && currentUser.displayName) || "Student";
@@ -558,19 +556,15 @@
         menuCollegeLabel.textContent = profile.college || "College";
         profileImageEl.src = getDefaultDp();
 
-        // [MODIFICATION START] Logic to toggle card text
-        // If we found the summary doc OR the profile has subject count info
-        let subjectsExist = hasSetupData;
-        if (!subjectsExist && profile.subjectCount && Number(profile.subjectCount) > 0) subjectsExist = true;
-
-        if (subjectsExist) {
+        // [LOGIC] Switch text based on Setup Status
+        // If passed explicit true, or if profile has legacy subject counts
+        if (setupStatus || (profile.subjectCount && Number(profile.subjectCount) > 0)) {
           subjectCardTitle.textContent = "Manage Subjects";
           subjectCardSubtitle.textContent = "Update attendance or edit subjects";
         } else {
           subjectCardTitle.textContent = "Select Subjects";
           subjectCardSubtitle.textContent = "Set up subjects to track attendance";
         }
-        // [MODIFICATION END]
 
         currentProfile = profile;
 
@@ -579,7 +573,6 @@
         }
       }
 
-      // --- CACHE FUNCTIONS (Original) ---
       function saveProfileCache(profileObj) {
         try {
           const payload = { uid: profileObj.uid || (currentUser && currentUser.uid), ts: Date.now(), data: profileObj };
@@ -604,20 +597,23 @@
         }
       }
 
-      // [MODIFICATION START] NAVIGATION FIX
+      // [UPDATED] Full Page Navigation
       function openSetupPage() {
-        // Keep original iframe message just in case
+        // Post message for legacy support
         postToParent({ type: "NAVIGATE", to: "setup" });
-        // ADDED: Actually navigate the window
+        
+        // Full standard navigation (reloads page at new URL)
         window.location.assign("setup.html");
       }
-      // [MODIFICATION END]
 
+      // Profile edit button
       profileEditBtn.addEventListener('click', () => {
         postToParent({ type: "NAVIGATE", to: "edit_profile" });
-        // Optional: window.location.assign("profile.html");
+        // If you want full navigation for this too, uncomment below:
+        // window.location.assign("profile.html");
       });
 
+      // Logout
       logoutBtn.addEventListener('click', async () => {
         try {
           await signOut(auth);
@@ -628,7 +624,7 @@
         }
       });
 
-      // --- DROPDOWN LOGIC (Original) ---
+      // --- SEARCH & UI LOGIC (Original) ---
       function toggleDropdown() {
         document.getElementById('classDropdown').classList.toggle('active');
       }
@@ -645,7 +641,6 @@
         }
       });
 
-      // --- SEARCH LOGIC (Original) ---
       if (searchInput) {
         searchInput.addEventListener('focus', () => {
           searchBox.classList.add('active');
@@ -660,8 +655,12 @@
         searchInput.addEventListener('input', (e) => {
           const val = e.target.value.replace(/[^0-9]/g, '');
           e.target.value = val;
-          if (val.length > 0) actionBtn.classList.add('visible');
-          else actionBtn.classList.remove('visible');
+
+          if (val.length > 0) {
+            actionBtn.classList.add('visible');
+          } else {
+            actionBtn.classList.remove('visible');
+          }
         });
       }
 
@@ -730,11 +729,11 @@
         emptyStateEl.style.display = 'block';
       }
 
-      // --- SUMMARY & RESULT LOGIC (Original) ---
       async function fetchSummaryForUserUid(uid) {
         try {
+          // [UPDATED] Prioritize the new path used by setup.html
           const tryPaths = [
-            ["users", uid, "metadata", "summary"], // [MODIFICATION] This is where setup.html writes
+            ["users", uid, "metadata", "summary"],
             ["users", uid, "summary", "summary"],
             ["users", uid] 
           ];
@@ -757,18 +756,28 @@
       function computePercentFromSummary(summaryObj) {
         if (!summaryObj) return { percent: null, updatedAtText: null };
         const d = summaryObj.data || {};
-
-        // [MODIFICATION] Support for setup.html structure (pastTotalClasses)
-        const total = d.pastTotalClasses || d.totalClasses || d.total || 0;
-        const attended = d.pastAttendedClasses || d.attendedClasses || d.attended || 0;
+        
+        // Try direct calculation first (setup.html style)
+        const pastT = d.pastTotalClasses || 0;
+        const pastA = d.pastAttendedClasses || 0;
+        
+        // Fallback to legacy fields
+        const total = (pastT > 0) ? pastT : (d.totalClasses || d.total || 0);
+        const attended = (pastT > 0) ? pastA : (d.attendedClasses || d.attended || 0);
 
         if (total > 0) {
-           const percent = Math.round((attended / total) * 100);
-           const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
-           return { percent, updatedAtText: tsText };
+          const percent = Math.round((attended / total) * 100);
+          const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
+          return { percent, updatedAtText: tsText };
         }
-        
-        return { percent: 0, updatedAtText: 'No data' };
+
+        // Last resort: overallPercent field
+        if (typeof d.overallPercent === 'number') {
+           const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
+           return { percent: Math.round(d.overallPercent), updatedAtText: tsText };
+        }
+
+        return { percent: null, updatedAtText: null };
       }
 
       function relativeTimeFromTimestamp(ts) {
@@ -808,7 +817,7 @@
             resultFreshnessEl.textContent = computed.updatedAtText || "Updated just now";
           } else {
             resultPercentEl.textContent = "—";
-            const updatedAt = foundData.updatedAt || null;
+            const updatedAt = foundData.updatedAt || foundData.updatedAtAt || null;
             resultFreshnessEl.textContent = updatedAt ? relativeTimeFromTimestamp(updatedAt) : 'Updated just now';
           }
 
@@ -829,16 +838,19 @@
           if (window.parent && window.parent !== window) {
             window.parent.postMessage({ type: "CLOSE_MENU" }, "*");
           } else {
-             // Fallback if no parent
-             if(window.history.length > 1) window.history.back();
-             else window.location.assign('index.html');
+            // [UPDATED] Full back navigation
+            if(window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.assign('index.html');
+            }
           }
         } catch (e) {
-             window.location.assign('index.html');
+          window.location.assign('index.html');
         }
       }
 
-      // --- EXPOSE TO WINDOW (Original + New Fixes) ---
+      // --- EXPOSE GLOBAL FUNCTIONS (Required for HTML Buttons) ---
       window.toggleDropdown = toggleDropdown;
       window.selectClass = selectClass;
       window.startRollSearch = startRollSearch;
@@ -848,14 +860,16 @@
       window.closeMenu = closeMenu;
       window.inviteFriend = inviteFriend;
 
-      // Safe immediate execution for cache
+      // Safe initialization
       (function tryApplyCachedProfileImmediately() {
         const c = readProfileCache();
         if (c && c.data) {
-          applyProfileToUI(c.data, true);
+          applyProfileToUI(c.data);
         }
       })();
+
     </script>
+
           
 </body>
 </html>
