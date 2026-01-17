@@ -413,12 +413,12 @@
     </div>
 
     <script type="module">
-      // Firebase v10 imports (same config as other files)
+      // --- FIREBASE IMPORTS (Original) ---
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
       import { getFirestore, doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-      // Keep your firebaseConfig consistent with the rest of the app
+      // --- CONFIGURATION ---
       const firebaseConfig = {
         apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
         authDomain: "attenza-app.firebaseapp.com",
@@ -432,7 +432,7 @@
       const auth = getAuth(app);
       const db = getFirestore(app);
 
-      // DOM refs
+      // --- DOM REFERENCES ---
       const profileNameEl = document.getElementById('profileName');
       const profileEmailEl = document.getElementById('profileEmail');
       const profileRollEl = document.getElementById('profileRoll');
@@ -447,7 +447,7 @@
       const searchInput = document.getElementById('mainSearchInput');
       const searchBox = document.getElementById('searchBoxContainer');
       const actionBtn = document.getElementById('actionBtn');
-      const scrollContent = document.getElementById('scrollContent'); // This gets blurred
+      const scrollContent = document.getElementById('scrollContent');
       const overlayContainer = document.getElementById('result-overlay-container');
 
       const foundStateEl = document.getElementById('foundState');
@@ -462,15 +462,15 @@
       const profileEditBtn = document.getElementById('profileEditBtn');
       const logoutBtn = document.getElementById('logoutBtn');
 
-      // local cache keys
+      // --- CACHE KEYS (Original) ---
       const PROFILE_CACHE_KEY = 'att_menu_profile_cache_v1';
       const PROFILE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-      // current signed in user info
+      // --- STATE ---
       let currentUser = null;
-      let currentProfile = null; // profile data from Firestore
+      let currentProfile = null;
 
-      // Helper: post message to parent (iframe integration)
+      // --- HELPER: IFRAME COMMUNICATION (Original) ---
       function postToParent(msg) {
         try {
           if (window.parent && window.parent !== window) {
@@ -481,18 +481,17 @@
         }
       }
 
-      // Auth watcher: populate profile when available
+      // --- AUTH LISTENER ---
       onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         if (!user) {
-          // Clear to defaults
           setProfilePlaceholders();
-          // notify parent that menu found no auth (parent should route to login)
           postToParent({ type: 'MENU_NO_AUTH' });
+          window.location.replace("login.html"); // Added safety redirect
           return;
         }
 
-        // Load profile: prefer cache then Firestore
+        // 1. Load from Cache first (Original Logic)
         const cached = readProfileCache();
         if (cached && cached.uid === user.uid) {
           applyProfileToUI(cached.data, /*fromCache*/ true);
@@ -500,20 +499,31 @@
           setProfilePlaceholders();
         }
 
-        // Always try to fetch fresh profile from Firestore (non-blocking)
+        // 2. Fetch Fresh Data
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const snap = await getDoc(userDocRef);
+          
           if (snap.exists()) {
             currentProfile = snap.data();
-            // merge uid
             const profileData = { ...currentProfile, uid: user.uid };
+            
+            // [MODIFICATION START] Check for Setup Data (Metadata/Summary)
+            // We check this to decide between "Select Subjects" vs "Manage Subjects"
+            let hasSetupData = false;
+            try {
+                const summaryRef = doc(db, 'users', user.uid, 'metadata', 'summary');
+                const summarySnap = await getDoc(summaryRef);
+                if (summarySnap.exists()) hasSetupData = true;
+            } catch(err) { console.log("Summary check skipped"); }
+            
+            // Pass this status to the UI function
             saveProfileCache(profileData);
-            applyProfileToUI(profileData, /*fromCache*/ false);
+            applyProfileToUI(profileData, /*fromCache*/ false, hasSetupData);
+            // [MODIFICATION END]
+
           } else {
-            // no user doc yet (maybe profile not complete)
             setProfilePlaceholders({ email: user.email, name: user.displayName || '' });
-            // let parent handle showing registration if needed
             postToParent({ type: 'MENU_AUTH_NO_PROFILE', uid: user.uid });
           }
         } catch (e) {
@@ -521,7 +531,6 @@
         }
       });
 
-      // Set friendly placeholders when no profile available
       function setProfilePlaceholders(pre = {}) {
         profileNameEl.textContent = pre.name || "Student";
         profileEmailEl.textContent = pre.email || "—";
@@ -534,51 +543,43 @@
       }
 
       function getDefaultDp() {
-        // STRICTLY use the local asset with root slash (for iframe compatibility)
         return "/Image/avatar.jpg"; 
       }
 
-      function applyProfileToUI(profile, fromCache=false) {
+      // [MODIFICATION] Added `hasSetupData` parameter
+      function applyProfileToUI(profile, fromCache=false, hasSetupData=false) {
         if (!profile) return;
         
-        // --- TEXT FIELDS WITH FALLBACKS ---
         profileNameEl.textContent = profile.name || (currentUser && currentUser.displayName) || "Student";
         profileEmailEl.textContent = profile.email || (currentUser && currentUser.email) || "—";
         profileRollEl.textContent = profile.rollNumber ? `Roll - ${profile.rollNumber}` : "Roll - —";
         const classText = profile.course_or_class ? `${profile.course_or_class}${profile.section ? ' · ' + profile.section : ''}` : "Class - —";
         profileClassEl.textContent = classText;
         menuCollegeLabel.textContent = profile.college || "College";
-        
-        // --- STRICT IMAGE LOGIC ---
-        // Completely ignores Google photoURL or Database photoURL.
-        // Always uses the local default image.
         profileImageEl.src = getDefaultDp();
 
-        // If user has selected subjects (either in a field or a subcollection indicator), change subject card copy.
-        let subjectsExist = false;
-        if (Array.isArray(profile.selectedSubjects) && profile.selectedSubjects.length > 0) subjectsExist = true;
-        if (profile.subjectCount && Number(profile.subjectCount) > 0) subjectsExist = true;
-        // fallback: if there's a 'majors' or 'subjects' field
-        if (profile.majors && Array.isArray(profile.majors) && profile.majors.length > 0) subjectsExist = true;
+        // [MODIFICATION START] Logic to toggle card text
+        // If we found the summary doc OR the profile has subject count info
+        let subjectsExist = hasSetupData;
+        if (!subjectsExist && profile.subjectCount && Number(profile.subjectCount) > 0) subjectsExist = true;
 
         if (subjectsExist) {
-          subjectCardTitle.textContent = "Your Subjects";
-          subjectCardSubtitle.textContent = "Manage subjects to track attendance";
+          subjectCardTitle.textContent = "Manage Subjects";
+          subjectCardSubtitle.textContent = "Update attendance or edit subjects";
         } else {
           subjectCardTitle.textContent = "Select Subjects";
           subjectCardSubtitle.textContent = "Set up subjects to track attendance";
         }
+        // [MODIFICATION END]
 
-        // Store currentProfile
         currentProfile = profile;
 
-        // Update the default scope in the dropdown to user's class if available
         if (profile.course_or_class) {
           selectedClassTextEl.textContent = profile.course_or_class + (profile.section ? ' · ' + profile.section : '');
         }
       }
 
-      // Save profile to localStorage cache
+      // --- CACHE FUNCTIONS (Original) ---
       function saveProfileCache(profileObj) {
         try {
           const payload = { uid: profileObj.uid || (currentUser && currentUser.uid), ts: Date.now(), data: profileObj };
@@ -586,7 +587,6 @@
         } catch (e) { console.warn("Profile cache save failed", e); }
       }
 
-      // Read profile cache if still fresh
       function readProfileCache() {
         try {
           const raw = localStorage.getItem(PROFILE_CACHE_KEY);
@@ -604,28 +604,31 @@
         }
       }
 
-      // Open setup page: send message to parent so the parent app can route/handle navigation
+      // [MODIFICATION START] NAVIGATION FIX
       function openSetupPage() {
+        // Keep original iframe message just in case
         postToParent({ type: "NAVIGATE", to: "setup" });
+        // ADDED: Actually navigate the window
+        window.location.assign("setup.html");
       }
+      // [MODIFICATION END]
 
-      // Profile edit button -> notify parent to open profile edit (no UI changes inside iframe)
       profileEditBtn.addEventListener('click', () => {
         postToParent({ type: "NAVIGATE", to: "edit_profile" });
+        // Optional: window.location.assign("profile.html");
       });
 
-      // Logout
       logoutBtn.addEventListener('click', async () => {
         try {
           await signOut(auth);
-          // Notify parent to update UI / redirect to login
           postToParent({ type: "USER_SIGNED_OUT" });
+          window.location.replace("login.html");
         } catch (e) {
           console.error("Sign out failed", e);
         }
       });
 
-      // Dropdown handling
+      // --- DROPDOWN LOGIC (Original) ---
       function toggleDropdown() {
         document.getElementById('classDropdown').classList.toggle('active');
       }
@@ -633,9 +636,6 @@
       function selectClass(className) {
         selectedClassTextEl.textContent = className;
         document.getElementById('classDropdown').classList.remove('active');
-
-        // If user selected a class from dropdown, re-run last search if any
-        // No auto-fetch by default; user must input roll then press search
       }
 
       document.addEventListener('click', function(event) {
@@ -645,7 +645,7 @@
         }
       });
 
-      // Input logic for search field
+      // --- SEARCH LOGIC (Original) ---
       if (searchInput) {
         searchInput.addEventListener('focus', () => {
           searchBox.classList.add('active');
@@ -658,46 +658,32 @@
         });
 
         searchInput.addEventListener('input', (e) => {
-          // Strictly numeric: roll numbers
           const val = e.target.value.replace(/[^0-9]/g, '');
           e.target.value = val;
-
-          if (val.length > 0) {
-            actionBtn.classList.add('visible');
-          } else {
-            actionBtn.classList.remove('visible');
-          }
+          if (val.length > 0) actionBtn.classList.add('visible');
+          else actionBtn.classList.remove('visible');
         });
       }
 
-      // Start roll search: UI + DB query
       async function startRollSearch() {
         const roll = (searchInput && searchInput.value && searchInput.value.trim()) ? searchInput.value.trim() : null;
         if (!roll) {
-          // nothing to do but open overlay
           activateSearchMode();
           return;
         }
 
-        // Activate overlay & blur UI
         activateSearchMode();
 
-        // Build query scope: default to currentProfile college & class; if not available, only roll filter (broad)
         let college = currentProfile && currentProfile.college ? currentProfile.college : null;
         let course_or_class = currentProfile && currentProfile.course_or_class ? currentProfile.course_or_class : null;
 
-        // If the user changed selectedClassText to some custom string, try to use that (simple heuristic)
         const selectedClassText = selectedClassTextEl.textContent;
-        if (selectedClassText && selectedClassText !== "" && selectedClassText !== "Select class") {
-          // attempt to parse primary token (e.g., "B.Com Sem 5" -> use as course_or_class)
+        if (selectedClassText && selectedClassText !== "" && selectedClassText !== "Select Class" && !selectedClassText.includes("Class -")) {
           course_or_class = selectedClassText;
         }
 
         try {
-          // Query users collection: where rollNumber == roll AND college == college AND course_or_class == course_or_class
-          // Firestore requires composite indexes for multiple where clauses in some combinations; this query is standard and should work if fields are indexed.
           const usersCol = collection(db, 'users');
-
           let q;
           if (college && course_or_class) {
             q = query(usersCol, where('rollNumber', '==', roll), where('college', '==', college), where('course_or_class', '==', course_or_class), limit(1));
@@ -709,33 +695,24 @@
 
           const qsnap = await getDocs(q);
           if (qsnap.empty) {
-            // nothing found
             showEmptyState();
             return;
           }
 
-          // we have at least one match: take the first
           const foundDoc = qsnap.docs[0];
-          const foundData = foundDoc.data();
-          const foundUid = foundDoc.id;
-
-          // populate result card
-          fillResultCard(foundUid, foundData);
+          fillResultCard(foundDoc.id, foundDoc.data());
         } catch (err) {
           console.error("Roll search failed", err);
-          // On error, show empty state
           showEmptyState();
         }
       }
 
-      // Activate search mode visually
       function activateSearchMode() {
         scrollContent.classList.add('content-blurred');
         overlayContainer.style.display = 'flex';
         if (searchInput) searchInput.blur();
       }
 
-      // Exit search mode
       function exitSearchMode() {
         scrollContent.classList.remove('content-blurred');
         overlayContainer.style.display = 'none';
@@ -744,30 +721,22 @@
           searchBox.classList.remove('active');
         }
         actionBtn.classList.remove('visible');
-        // hide results
         foundStateEl.style.display = 'none';
         emptyStateEl.style.display = 'none';
       }
 
-      // Show empty state
       function showEmptyState() {
         foundStateEl.style.display = 'none';
         emptyStateEl.style.display = 'block';
       }
 
-      // Fetch and display summary for a user (robust: tries multiple possible doc locations)
+      // --- SUMMARY & RESULT LOGIC (Original) ---
       async function fetchSummaryForUserUid(uid) {
-        // Try common places for a "summary" document:
-        // 1) users/{uid}/summary (doc named 'summary' inside subcollection 'summary')
-        // 2) users/{uid}/summary (document id 'summary' directly under user path — implemented as subcollection)
-        // 3) fallback to fields inside users/{uid} like overallPercent / totalClasses / attendedClasses
-        // We'll attempt doc(db, 'users', uid, 'summary', 'summary') and doc(db,'users', uid, 'summary')
         try {
-          // attempt sub-doc path: users/{uid}/summary/summary
           const tryPaths = [
+            ["users", uid, "metadata", "summary"], // [MODIFICATION] This is where setup.html writes
             ["users", uid, "summary", "summary"],
-            ["users", uid, "summary"], // if you used doc('users', uid, 'summary') as a document id (rare)
-            ["users", uid] // fallback to main user doc fields
+            ["users", uid] 
           ];
 
           for (const path of tryPaths) {
@@ -775,12 +744,9 @@
               const ref = doc(db, ...path);
               const s = await getDoc(ref);
               if (s.exists()) {
-                // return document data plus doc metadata
                 return { docId: s.id, data: s.data(), path: path.join('/') };
               }
-            } catch (innerErr) {
-              // ignore and continue trying other paths
-            }
+            } catch (innerErr) {}
           }
         } catch (e) {
           console.warn("fetchSummaryForUserUid error:", e);
@@ -788,38 +754,25 @@
         return null;
       }
 
-      // Compute a usable overall percent from summary-like data
       function computePercentFromSummary(summaryObj) {
         if (!summaryObj) return { percent: null, updatedAtText: null };
-
         const d = summaryObj.data || {};
-        // direct overallPercent
-        if (typeof d.overallPercent === 'number') {
-          const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
-          return { percent: Math.round(d.overallPercent), updatedAtText: tsText };
-        }
 
-        // total/attended fields
-        const attended = (typeof d.attendedClasses === 'number') ? d.attendedClasses : (typeof d.attended === 'number' ? d.attended : null);
-        const total = (typeof d.totalClasses === 'number') ? d.totalClasses : (typeof d.total === 'number' ? d.total : null);
-        if (attended !== null && total !== null && total > 0) {
-          const percent = Math.round((attended / total) * 100);
-          const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
-          return { percent, updatedAtText: tsText };
-        }
+        // [MODIFICATION] Support for setup.html structure (pastTotalClasses)
+        const total = d.pastTotalClasses || d.totalClasses || d.total || 0;
+        const attended = d.pastAttendedClasses || d.attendedClasses || d.attended || 0;
 
-        // fallback: try if user doc contains small summary fields (e.g., overall)
-        if (typeof d.overall === 'number') {
-          return { percent: Math.round(d.overall), updatedAtText: d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now' };
+        if (total > 0) {
+           const percent = Math.round((attended / total) * 100);
+           const tsText = d.updatedAt ? relativeTimeFromTimestamp(d.updatedAt) : 'Updated just now';
+           return { percent, updatedAtText: tsText };
         }
-
-        return { percent: null, updatedAtText: null };
+        
+        return { percent: 0, updatedAtText: 'No data' };
       }
 
-      // Convert Firestore serverTimestamp or JS Date to relative string
       function relativeTimeFromTimestamp(ts) {
         try {
-          // ts may be a JS Date, string, number, or Firestore Timestamp-like object { seconds, nanoseconds }
           let date;
           if (!ts) return 'Updated just now';
           if (ts.seconds && typeof ts.seconds === 'number') {
@@ -842,13 +795,11 @@
         }
       }
 
-      // Fill the found result card (reads summary if available)
       async function fillResultCard(foundUid, foundData) {
         try {
           const displayName = foundData.name || foundData.displayName || (foundData.email ? foundData.email.split('@')[0] : 'Student');
           resultNameEl.textContent = displayName;
 
-          // Try to get summary
           const summaryObj = await fetchSummaryForUserUid(foundUid);
           const computed = computePercentFromSummary(summaryObj);
 
@@ -856,14 +807,11 @@
             resultPercentEl.textContent = computed.percent + "%";
             resultFreshnessEl.textContent = computed.updatedAtText || "Updated just now";
           } else {
-            // No computed percent: show fallback
             resultPercentEl.textContent = "—";
-            // if foundData has updatedAt
-            const updatedAt = foundData.updatedAt || foundData.updatedAtAt || null;
+            const updatedAt = foundData.updatedAt || null;
             resultFreshnessEl.textContent = updatedAt ? relativeTimeFromTimestamp(updatedAt) : 'Updated just now';
           }
 
-          // If foundData.email or photo exist, optionally show them (we only update the name / percent)
           foundStateEl.style.display = 'flex';
           emptyStateEl.style.display = 'none';
         } catch (e) {
@@ -872,27 +820,25 @@
         }
       }
 
-      // Invite friend (simple action: tell parent to handle invite)
       function inviteFriend() {
         postToParent({ type: 'INVITE_FRIEND' });
       }
 
-      // Close menu (postMessage to parent)
       function closeMenu() {
         try {
           if (window.parent && window.parent !== window) {
             window.parent.postMessage({ type: "CLOSE_MENU" }, "*");
           } else {
-            const overlay = document.getElementById('view-menu');
-            if (overlay) overlay.style.display = 'none';
+             // Fallback if no parent
+             if(window.history.length > 1) window.history.back();
+             else window.location.assign('index.html');
           }
         } catch (e) {
-          const overlay = document.getElementById('view-menu');
-          if (overlay) overlay.style.display = 'none';
+             window.location.assign('index.html');
         }
       }
 
-      // Expose functions globally used by UI elements in the HTML (existing handlers)
+      // --- EXPOSE TO WINDOW (Original + New Fixes) ---
       window.toggleDropdown = toggleDropdown;
       window.selectClass = selectClass;
       window.startRollSearch = startRollSearch;
@@ -902,14 +848,14 @@
       window.closeMenu = closeMenu;
       window.inviteFriend = inviteFriend;
 
-      // Safety: if script loads while user already signed in, try to populate via cached profile
+      // Safe immediate execution for cache
       (function tryApplyCachedProfileImmediately() {
         const c = readProfileCache();
         if (c && c.data) {
           applyProfileToUI(c.data, true);
         }
       })();
-
     </script>
+          
 </body>
 </html>
