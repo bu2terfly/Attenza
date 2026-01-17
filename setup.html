@@ -815,7 +815,6 @@
     }
 
     // Expose finish to global scope (called by button inline)
-    window.finishSetup = finishSetup;
 
     // ---------- small UX: edit profile button ---------- 
     editProfileBtn.addEventListener('click', () => {
@@ -823,9 +822,19 @@
       window.location.replace('profile.html'); // ensure you have profile.html — change if different.
     });
 
+
+    // ... existing code ...
+
+    // Expose functions to the global window object so HTML buttons can see them
+    window.handleBackNavigation = handleBackNavigation;
+    window.completeStep1 = completeStep1;
+    window.handleSearch = handleSearch; 
+    
+    // You already have this one, but make sure it is there:
+    window.finishSetup = finishSetup;
+
     // initialize first render
     window.addEventListener('DOMContentLoaded', () => {
-      // if user already signed in, onAuthStateChanged will trigger initialLoadForUser
       renderGrid('');
       updateStep1Action();
     });
