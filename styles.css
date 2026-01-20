@@ -699,94 +699,121 @@
         color: white;
     }
 
-    /* NOTEBOOK PAGE SECTION (full-width card with 20px side space) */
+/* --- NOTEBOOK SECTION CONTAINER --- */
     .notebook-section {
-        margin: 0 -16px 32px;
-        padding: 0 20px;
+    /* Increased padding ensures the tilted corners don't get cut off */
+        padding: 20px 25px;
+        margin-bottom: 30px;
+        overflow: visible; /* Crucial: lets the paper tilt outside its box */
     }
 
+/* --- THE SHEET OF PAPER --- */
     .page {
         position: relative;
         width: 100%;
+        min-height: 200px; /* Ensures it looks like a full sheet even if empty */
+ 
+    /* Typography */
         font-family: "Gaegu", cursive;
-        font-size: 16px;
-        background: #fffdf6;
-        background-image: linear-gradient(#f5f5f0 var(--line-light, 0.85rem),
-                #ccc var(--line-dark, 0.95rem));
-        background-size: 100% var(--line-gap, 0.95rem);
-        padding: 0.7rem 0.7rem 0.8rem 5.5rem;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 0;
-        overflow: hidden;
-        line-height: 1.05rem;
+        font-size: 1.1rem; /* Slightly larger for readability */
+        color: #2c3e50;    /* Dark blue-grey text looks more premium than pure black */
+
+    /* The Paper Texture & Lines */
+        background-color: #fffdf6; /* Warm off-white paper color */
+
+    /* This creates the blue horizontal lines. 
+       We use 1.6rem spacing for both the gradient AND the line-height below */
+        background-image: linear-gradient(transparent 95%, #aebcd0 95%);
+        background-size: 100% 1.6rem;
+        line-height: 1.6rem;
+
+    /* Layout */
+        padding: 1.6rem 1.5rem 1.6rem 4.5rem; /* Left padding makes room for margin line */
+        border-radius: 2px; /* Very slight curve, paper isn't razor sharp */
+
+    /* THE PINNED EFFECT */
+        transform-origin: 15px 15px; /* The rotation pivots around the pin location */
+        transform: rotate(-2deg);    /* Lifts the right side up */
+
+    /* Premium Shadow: Soft, diffuse, looks like it's lifting off the wall */
+        box-shadow: 5px 8px 20px rgba(0, 0, 0, 0.12);
+
+    /* Clean up borders */
+        border: none;
     }
 
-    .page::before,
-    .page::after {
-        position: absolute;
-        content: "";
-        bottom: 4px;
-        width: 45%;
-        height: 7px;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
-        z-index: -1;
-        transition: 0.3s ease;
-    }
-
-    .page::before {
-        left: 18px;
-        transform: skew(-3deg) rotate(-2deg);
-    }
-
-    .page::after {
-        right: 18px;
-        transform: skew(3deg) rotate(2deg);
-    }
-
+/* --- THE RED MARGIN LINE --- */
     .margin {
         position: absolute;
-        border-left: 1px solid #d88;
-        height: 100%;
-        left: 4.3rem;
+        left: 3.5rem; /* Positioned carefully from the left */
         top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 2px solid #e63946; /* Dispur College Red */
+        opacity: 0.8; /* Slightly transparent so it blends into the paper */
     }
 
+/* --- THE 3D PIN (TOP LEFT) --- */
+    .page::before {
+        content: '';
+        position: absolute;
+        top: 5px;   /* Fine-tuned position */
+        left: 5px;
+
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+
+    /* Realistic Red Plastic Gradient */
+        background: radial-gradient(circle at 30% 30%, #ff5f6d, #b71c1c);
+
+    /* Pin Shadow */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+        z-index: 10;
+    }
+
+/* --- REMOVE OLD CORNER FOLDS --- */
+    .page::after {
+        content: none;
+    }
+
+/* --- CONTENT SPACING --- */
     .page p {
         margin: 0;
-        text-indent: 0.4rem;
-        padding-bottom: 0.4rem;
-        color: #111;
-        line-height: 1.05rem;
+    /* Ensure text aligns with the lines */
+        padding-top: 0;
     }
 
+/* --- LOGO POSITIONING --- */
     .note-logo {
         position: absolute;
-        left: 0;
+        left: 8px; /* Tucked into the margin area */
         top: 50%;
-        transform: translateY(-50%);
-        width: 75px;
-        height: 75px;
+        transform: translateY(-50%) rotate(-5deg); /* Slight rotation matches paper */
+        width: 50px; /* Adjusted size to fit margin */
+        height: 50px;
         object-fit: contain;
+        opacity: 0.8; /* Multiplied effect */
+        mix-blend-mode: multiply; /* Makes the logo look printed ON the paper */
         pointer-events: none;
     }
 
+/* --- TEACHER SIGNATURE --- */
     .teacher-mark {
         position: absolute;
-        bottom: 0.4rem;
-        right: 1rem;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        transform: rotate(-12deg);
+        bottom: 1rem;
+        right: 1.5rem;
+        transform: rotate(-8deg);
+        opacity: 0.9;
     }
 
     .teacher-sign {
         font-family: "Cedarville Cursive", cursive;
-        font-size: 20px;
-        color: #b71c1c;
-        letter-spacing: 1px;
-        transform: rotate(4deg);
+        font-size: 1.4rem;
+        color: #c62828; /* Red ink color */
+        font-weight: bold;
     }
+
 
     /* MOBILE ADJUSTMENTS */
     @media (max-width: 768px) {
