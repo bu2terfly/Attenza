@@ -711,7 +711,7 @@
     .page {
         position: relative;
         width: 100%;
-        min-height: 100px; /* Ensures it looks like a full sheet even if empty */
+        min-height: auto; /* Ensures it looks like a full sheet even if empty */
  
     /* Typography */
         font-family: "Gaegu", cursive;
@@ -801,7 +801,7 @@
 /* --- TEACHER SIGNATURE --- */
     .teacher-mark {
         position: absolute;
-        bottom: 1rem;
+        bottom: 0.5rem;
         right: 1.5rem;
         transform: rotate(-8deg);
         opacity: 0.9;
