@@ -702,7 +702,7 @@
 /* --- NOTEBOOK SECTION CONTAINER --- */
     .notebook-section {
     /* Increased padding ensures the tilted corners don't get cut off */
-        padding: 20px 25px;
+        padding: 6px 12px;
         margin-bottom: 30px;
         overflow: visible; /* Crucial: lets the paper tilt outside its box */
     }
