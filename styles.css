@@ -724,11 +724,11 @@
     /* This creates the blue horizontal lines. 
        We use 1.6rem spacing for both the gradient AND the line-height below */
         background-image: linear-gradient(transparent 95%, #aebcd0 95%);
-        background-size: 100% 1.6rem;
-        line-height: 1.6rem;
+        background-size: 100% 1.2rem;
+        line-height: 1.2rem;
 
     /* Layout */
-        padding: 1.6rem 1.5rem 1.6rem 4.5rem; /* Left padding makes room for margin line */
+        padding: 1.2rem 1.5rem 1.2rem 4.5rem; /* Left padding makes room for margin line */
         border-radius: 2px; /* Very slight curve, paper isn't razor sharp */
 
     /* THE PINNED EFFECT */
