@@ -711,7 +711,7 @@
     .page {
         position: relative;
         width: 100%;
-        min-height: 200px; /* Ensures it looks like a full sheet even if empty */
+        min-height: 100px; /* Ensures it looks like a full sheet even if empty */
  
     /* Typography */
         font-family: "Gaegu", cursive;
