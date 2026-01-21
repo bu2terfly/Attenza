@@ -35,24 +35,25 @@
 
                     viewport.style.visibility = "visible"; // Always show viewport
 
-                    if (userSnap.exists() && userSnap.data().profileComplete === true) {
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+
+                        // 1. Initialize Dashboard FIRST
+                        // We do this first so all the lists and HTML elements are generated.
+                        // We await it just in case it fetches data asynchronously.
                         if (typeof initializeDashboard === "function") {
-                            initializeDashboard(userSnap.data());
+                            await initializeDashboard(userData);
                         }
-                    } else {
-                        // User logged in but subjects not setup
-                        // Instead of redirecting, show the blurry overlay
-                        showSubjectSetupOverlay();
-                        // Still initialize dashboard to show welcome text if name available
-                        if (userSnap.exists() && typeof initializeDashboard === "function") {
-                            // Pass data even if incomplete, dashboard handles it or we overlay it
-                            initializeDashboard(userSnap.data());
+
+                        // 2. Check Profile & Apply Overlay SECOND
+                        // Now that the content exists, we blur it if profileComplete is false.
+                        if (userData.profileComplete !== true) {
+                            console.log("Profile incomplete, applying overlay...");
+                            showSubjectSetupOverlay();
                         }
                     }
                 } catch (error) {
                     console.error("Auth Check Error:", error);
-                    // On error, maybe stay here or login? 
-                    // Let's safe fail to login if it's a permission issue, but for now just log
                 }
             }
         });
@@ -73,11 +74,14 @@
                 els.forEach(el => el.classList.add('blur-content'));
             });
 
+            // Check if overlay already exists to prevent duplicates
+            if (document.querySelector('.setup-overlay-container')) return;
+
             // Create Overlay
             const overlay = document.createElement('div');
             overlay.className = 'setup-overlay-container';
 
-            // We want to repeat the hint. Let's say 3 times for coverage
+            // We repeat the hint block to make sure it covers long pages
             const hintHTML = `
                 <div class="setup-hint-block">
                     <div class="hint-title">Complete subjects selection</div>
@@ -90,11 +94,13 @@
 
             const contentBody = document.querySelector('.content-body');
             if (contentBody) {
+                // Ensure parent is relative so the absolute overlay covers it correctly
                 contentBody.style.position = 'relative';
                 contentBody.appendChild(overlay);
             }
         }
     </script>
+
 </head>
 
 <body>
