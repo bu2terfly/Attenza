@@ -470,7 +470,7 @@
         /* --- ITEM WRAPPER --- */
     .class-item {
         position: relative;
-        padding-left: 22px;
+        padding-left: 34px;
         margin-bottom: 10px;
         cursor: pointer;
         transition: all 0.3s ease; 
@@ -497,7 +497,7 @@
         padding: 5px 0;
     }
 
-    .time-compact { font-size: 0.85rem; font-weight: 600; color: #6B7280; width: 80px; }
+    .time-compact { font-size: 0.85rem; font-weight: 600; color: #6B7280; width: 60px; }
     .subject-compact { font-size: 0.9rem; font-weight: 600; color: #1F2937; flex-grow: 1; }
         
     .status-tag { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: none;} 
@@ -514,11 +514,11 @@
 
     .class-item.active .view-compact { display: none; }
     .class-item.active .view-expanded { display: block; animation: fadeIn 0.4s; }
-    .class-item.active .dot { border-color: #8B80F9; background: #8B80F9; width: 16px; height: 16px; left: -4px; top: 18px; }
+    .class-item.active .dot { border-color: #8B80F9; background: #8B80F9; width: 16px; height: 16px; left: -5px; top: 18px; }
 
     .active-card-style {
         background-color: #F9FAFB;
-        margin: 0 0 0 -5px; 
+        margin: 0 0 0 8px; 
         padding: 22px;
         border-left: 4px solid #8B80F9;
         border-radius: 0 12px 12px 0;
