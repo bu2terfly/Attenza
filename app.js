@@ -1,4 +1,3 @@
-
 import { auth, db } from './firebase-init.js';
 import {
   doc, getDoc, getDocs, collection, query, where, documentId,
@@ -26,7 +25,7 @@ window.initializeDashboard = async function (profileData) {
     // 2. Load Summary & Update Ring/Stats
     await loadSummary();
 
-    // 3. Load Today's Routine (Carousel)
+    // 3. Load Today's Routine (New Vertical Timeline)
     await loadTodayRoutine(profileData);
 
     // 4. Load Major Subjects (Local Cache + Calc)
@@ -41,11 +40,6 @@ window.initializeDashboard = async function (profileData) {
 async function loadSummary() {
   if (!currentUser) return;
 
-  // Doc path: users/{uid}/summary (as per arch)
-  // Note: We try 'users/{uid}/summary/summary' first (subcollection pattern) 
-  // or just 'users/{uid}/summary' if it's a doc. 
-  // The Setup writes to `users/{uid}/metadata/summary` (line 791 of setup.html). 
-  // Let's stick to that path since Setup uses it!
   const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
 
   try {
@@ -53,15 +47,12 @@ async function loadSummary() {
     let data = snap.exists() ? snap.data() : null;
 
     if (!data) {
-      // Fallback: Calculate from subjects if summary missing (first run)
       console.log("No summary found, assuming fresh start.");
       updateRingUI(100);
       updateQuote(100);
       return;
     }
 
-    // Calculate overall
-    // Note: Summary has pastTotalClasses, pastAttendedClasses, trackedTotal, trackedPresent
     const pastTotal = data.pastTotalClasses || 0;
     const pastPresent = data.pastAttendedClasses || 0;
     const trackTotal = data.trackedTotal || 0;
@@ -74,17 +65,8 @@ async function loadSummary() {
     updateRingUI(percentage);
     updateQuote(percentage);
 
-    // Update Periodical Subject Cards (Bento Grid)
-    // For initial load, we showing overall summary. 
-    // Wait, updateSubjectCards logic below tries to merge 'subjectStats' with 'fetchUserSubjects' (past).
-    // If we pass 'data.subjects', it contains only "tracked" stats.
-    // The previous implementation was a bit confused on merge.
-    // Let's make updateSubjectCards robust: if passed stats (like for a period), show ONLY that.
-    // But for "Overall" (initial load), we want (Past + Tracked).
-
-    // Let's build a "Global Summary Stats" object here to pass.
-
-    const allSubjects = await fetchUserSubjects(); // Name + Past
+    // Prepare stats for Periodical/Bento cards
+    const allSubjects = await fetchUserSubjects();
     const trackedSubjects = data.subjects || {};
 
     const summaryStatsForCards = {};
@@ -101,10 +83,6 @@ async function loadSummary() {
     });
 
     updateSubjectCards(summaryStatsForCards);
-
-    // Also update Major card with this full summary
-    // Logic inside updateMajorCard re-fetches things. We should optimize?
-    // For now let's just call it.
     loadMajorSubjects();
 
   } catch (e) {
@@ -142,29 +120,29 @@ function updateQuote(percentage) {
   }
 }
 
-// --- 2. Routine & Carousel Logic ---
+// --- 2. Routine Logic (Vertical Timeline) ---
 async function loadTodayRoutine(profile) {
-  const carousel = document.getElementById('carousel');
-  if (!carousel) return;
-  carousel.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Loading schedule...</div>';
+  const listWrapper = document.getElementById('dynamic-list-wrapper');
+  if (!listWrapper) return;
+  
+  listWrapper.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Loading schedule...</div>';
 
   // Fetch subjects first
   const subjects = await fetchUserSubjects();
   if (subjects.length === 0) {
-    carousel.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">No subjects set. Go to Menu > Select Subjects.</div>';
+    listWrapper.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">No subjects set. Go to Menu > Select Subjects.</div>';
     return;
   }
 
   // Determine Routine
-  let todaysSubjects = []; // Array of subject names/objects
+  let todaysSubjects = []; 
 
   if (profile.college === 'Dispur College') {
     // Fetch from Google Sheet
     try {
       todaysSubjects = await fetchDispurSheet(profile.course_or_class || profile.class, new Date());
       if (todaysSubjects.length === 0) {
-        // Fallback if sheet has no data for today (e.g. Sunday) or fetch fails
-        console.log("No routine found in sheet for today, showing all subjects as fallback optional.");
+        // Fallback
         todaysSubjects = subjects.map(s => ({ name: s.name, time: 'Daily', room: '—', faculty: '—', duration: '1 hr' }));
       }
     } catch (err) {
@@ -172,7 +150,7 @@ async function loadTodayRoutine(profile) {
       todaysSubjects = subjects.map(s => ({ name: s.name, time: 'Daily', room: '—', faculty: '—', duration: '1 hr' }));
     }
   } else {
-    // Default: Show ALL subjects for the user
+    // Default
     todaysSubjects = subjects.map(s => ({
       name: s.name,
       time: 'Daily',
@@ -182,13 +160,12 @@ async function loadTodayRoutine(profile) {
     }));
   }
 
-  // Sort or Organize? For now just list them
-
-  // Render Cards
-  carousel.innerHTML = '';
-  todaysSubjects.forEach(sub => {
-    const card = createClassCard(sub);
-    carousel.appendChild(card);
+  // Render Vertical Items
+  listWrapper.innerHTML = '';
+  todaysSubjects.forEach((sub, index) => {
+    const safeId = `item-${index}`; 
+    const itemEl = createVerticalClassItem(sub, safeId);
+    listWrapper.appendChild(itemEl);
   });
 
   // Setup Listener for Today's Attendance Status
@@ -199,27 +176,18 @@ async function loadTodayRoutine(profile) {
 async function fetchDispurSheet(userClass, dateObj) {
   const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWCOvXokdqJy8pGPqf9JZdejf20T-V8SzeOMbdHb9-PhiWJXS-W4NDk0l3DA7ywq12FZXmRfoJ_WPK/pub?gid=0&single=true&output=csv";
 
-  // Day Name (e.g., "Monday")
   const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
   console.log("Fetching routine for:", dayName, userClass);
 
   const response = await fetch(SHEET_URL);
   const text = await response.text();
 
-  // Parse CSV (Simple split by line and comma)
-  // Handle potential quotes in CSV if complex, but assuming simple format as per desc.
   const rows = text.split('\n').map(r => r.trim()).filter(r => r).map(row => {
-    // Handle comma inside quotes? For simple routine, maybe not needed.
-    // Let's stick to split(',') for now.
     return row.split(',').map(c => c.trim());
   });
 
-  // Structure: College | Class | Day | StartTime | Subject | Faculty | RoomNo
-  // Index: 0, 1, 2, 3, 4, 5, 6
-
   const todays = rows.filter(r => {
     if (r.length < 5) return false;
-    // Case-insensitive comparison
     const sheetCollege = (r[0] || "").toLowerCase();
     const sheetClass = (r[1] || "").toLowerCase();
     const sheetDay = (r[2] || "").toLowerCase();
@@ -238,7 +206,7 @@ async function fetchDispurSheet(userClass, dateObj) {
   }));
 }
 
-// Fetch all subjects from users/{uid}/subjects
+// Fetch all subjects
 async function fetchUserSubjects() {
   if (!currentUser) return [];
   try {
@@ -251,31 +219,49 @@ async function fetchUserSubjects() {
   }
 }
 
-function createClassCard(subject) {
+// Create HTML for Vertical Timeline Item (Replaces createClassCard)
+function createVerticalClassItem(subject, domId) {
   const div = document.createElement('div');
-  div.className = 'class-card';
-  div.dataset.subjectName = subject.name; // For finding it later
+  div.className = 'class-item';
+  div.id = domId;
+  div.dataset.subjectName = subject.name; 
+
+  // On Click: Toggle Expand/Compact
+  div.onclick = () => toggleItemUI(div);
+
+  // Parse time (e.g. "09:00 AM - 10:00 AM" -> "09:00 AM")
+  const shortTime = subject.time ? subject.time.split('-')[0].trim() : '—';
 
   div.innerHTML = `
-        <div class="class-header">  
-            <span class="class-subject">${subject.name}</span>  
-            <span class="class-time">${subject.time}</span>  
-        </div>  
-        <div class="class-details">  
-            <div><strong>Room:</strong> ${subject.room || '—'}</div>  
-            <div><strong>Faculty:</strong> ${subject.faculty || '—'}</div>  
-            <div><strong>Duration:</strong> ${subject.duration || '1 hr'}</div>  
-        </div>  
-        <div class="attendance-actions">  
-            <button class="attendance-btn btn-attend" onclick="markAttendance('${subject.name}', 'present')">Attend</button>  
-            <button class="attendance-btn btn-skip" onclick="markAttendance('${subject.name}', 'absent')">Skip</button>  
-            <button class="attendance-btn btn-not-held" onclick="markAttendance('${subject.name}', 'not-held')">Not Held</button>  
+        <div class="dot"></div>
+        
+        <div class="view-compact">
+            <span class="time-compact">${shortTime}</span>
+            <span class="subject-compact">${subject.name}</span>
+            <span class="status-badge-area"></span> </div>
+
+        <div class="view-expanded active-card-style">
+            <div class="row-header">
+                <div>
+                    <span class="time-text">${subject.time}</span>
+                    <h4 class="subject-text">${subject.name}</h4>
+                    <div class="details-text">${subject.room} • ${subject.faculty}</div>
+                </div>
+            </div>
+            
+            <div class="action-area" style="margin-top: 15px;">
+                 <div class="btn-container">
+                    <button class="choice-btn btn-attend" onclick="event.stopPropagation(); markAttendance('${subject.name}', 'present')">Attend</button>
+                    <button class="choice-btn btn-skip" onclick="event.stopPropagation(); markAttendance('${subject.name}', 'absent')">Skip</button>
+                    <button class="choice-btn btn-na" onclick="event.stopPropagation(); markAttendance('${subject.name}', 'not-held')">Not Held</button>
+                </div>
+            </div>
         </div>
     `;
   return div;
 }
 
-// Listen to users/{uid}/attendance/{YYYY-MM-DD}
+// Setup Listener for Today's Attendance
 function setupTodayListener(subjects) {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -288,45 +274,64 @@ function setupTodayListener(subjects) {
     const data = docSnap.data();
     const records = data.records || {};
 
-    // Update UI for each card
-    const cards = document.querySelectorAll('.class-card');
-    cards.forEach(card => {
-      const subjectName = card.dataset.subjectName;
+    // Update UI for each item in the list
+    const items = document.querySelectorAll('.class-item');
+    items.forEach(item => {
+      const subjectName = item.dataset.subjectName;
       const status = records[subjectName]?.status;
-      updateCardStatus(card, status);
+      updateCardStatus(item, status);
     });
   });
 }
 
+// Update Status (New UI Logic)
 function updateCardStatus(card, status) {
-  const btns = card.querySelectorAll('.attendance-btn');
-  btns.forEach(b => {
-    b.classList.remove('active');
-    b.style.opacity = '1';
-    b.style.transform = 'scale(1)';
-  });
+  const badgeArea = card.querySelector('.status-badge-area');
+  const actionArea = card.querySelector('.action-area');
+  const subjectName = card.dataset.subjectName;
 
-  if (!status) return; // No status yet
+  // 1. Handle "Past" visual style
+  if (status) {
+    card.classList.add('is-past');
+  } else {
+    card.classList.remove('is-past');
+  }
 
-  // Visual feedback for marked status
-  if (status === 'present') {
-    const btn = card.querySelector('.btn-attend');
-    if (btn) btn.classList.add('active'); // You might need CSS for .active
-    // For now, let's just style inline or assume existing CSS handles 'active' or focus
-    btn.style.backgroundColor = '#4ade80'; // Green
-    btn.style.color = '#fff';
-  } else if (status === 'absent') {
-    const btn = card.querySelector('.btn-skip');
-    if (btn) {
-      btn.style.backgroundColor = '#ef4444'; // Red
-      btn.style.color = '#fff';
-    }
-  } else if (status === 'not-held') {
-    const btn = card.querySelector('.btn-not-held');
-    if (btn) {
-      btn.style.backgroundColor = '#9ca3af'; // Gray
-      btn.style.color = '#fff';
-    }
+  // 2. Update Compact Badge
+  if (badgeArea) {
+      if(status === 'present') badgeArea.innerHTML = `<span class="status-tag tag-green">Present</span>`;
+      else if(status === 'absent') badgeArea.innerHTML = `<span class="status-tag tag-red">Absent</span>`;
+      else if(status === 'not-held') badgeArea.innerHTML = `<span class="status-tag tag-gray">Not Held</span>`;
+      else badgeArea.innerHTML = '';
+  }
+
+  // 3. Update Action Area (Buttons vs. Status Label)
+  if (!status) {
+      // Show Buttons
+      actionArea.innerHTML = `
+         <div class="btn-container">
+            <button class="choice-btn btn-attend" onclick="event.stopPropagation(); markAttendance('${subjectName}', 'present')">Attend</button>
+            <button class="choice-btn btn-skip" onclick="event.stopPropagation(); markAttendance('${subjectName}', 'absent')">Skip</button>
+            <button class="choice-btn btn-na" onclick="event.stopPropagation(); markAttendance('${subjectName}', 'not-held')">Not Held</button>
+        </div>
+      `;
+  } else {
+      // Show Status + Edit Link
+      let tagClass = 'tag-gray';
+      let label = status;
+      if(status === 'present') { tagClass = 'tag-green'; label = 'Attended'; }
+      if(status === 'absent') { tagClass = 'tag-red'; label = 'Skipped'; }
+      if(status === 'not-held') { label = 'Not Held'; }
+
+      // We pass '' as remarks for quick edit; modal will show blank or we could fetch if needed
+      actionArea.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="status-tag ${tagClass}">
+                ${label}
+            </span>
+            <span class="edit-status-link" onclick="event.stopPropagation(); openEditModal('${subjectName}', '${status}', '')">Change Status</span>
+        </div>
+      `;
   }
 }
 
@@ -338,7 +343,7 @@ window.markAttendance = async function (subjectName, status) {
   let remarks = "";
   if (status === 'present') {
     remarks = prompt(`Add a short remark for ${subjectName} (optional):`, "");
-    if (remarks === null) remarks = ""; // User cancelled prompt? Treat as empty remarks
+    if (remarks === null) remarks = ""; 
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -350,7 +355,7 @@ window.markAttendance = async function (subjectName, status) {
       // Read Today's Doc
       const todaySnap = await transaction.get(todayRef);
       let todayData = todaySnap.exists() ? todaySnap.data() : { date: today, records: {} };
-      if (!todayData.records) todayData.records = {}; // Ensure records object exists
+      if (!todayData.records) todayData.records = {}; 
       let oldStatus = todayData.records[subjectName]?.status;
 
       // Read Summary
@@ -362,14 +367,12 @@ window.markAttendance = async function (subjectName, status) {
       if (oldStatus === 'present') {
         summaryData.trackedTotal = (summaryData.trackedTotal || 0) - 1;
         summaryData.trackedPresent = (summaryData.trackedPresent || 0) - 1;
-        // Subject level
         if (summaryData.subjects && summaryData.subjects[subjectName]) {
           summaryData.subjects[subjectName].trackedTotal--;
           summaryData.subjects[subjectName].trackedPresent--;
         }
       } else if (oldStatus === 'absent') {
         summaryData.trackedTotal = (summaryData.trackedTotal || 0) - 1;
-        // Subject level
         if (summaryData.subjects && summaryData.subjects[subjectName]) {
           summaryData.subjects[subjectName].trackedTotal--;
         }
@@ -406,7 +409,6 @@ window.markAttendance = async function (subjectName, status) {
       transaction.set(summaryRef, summaryData, { merge: true });
     });
 
-    // UI Update handled by listener (setupTodayListener) or calculateSummary re-run
     await loadSummary();
 
   } catch (e) {
@@ -415,12 +417,8 @@ window.markAttendance = async function (subjectName, status) {
   }
 }
 
-
-// --- 4. Bento Grid Subject Cards ---
 // --- 4. Bento Grid Subject Cards ---
 function updateSubjectCards(finalStats) {
-  // finalStats expected: { "Math": { total: 20, attended: 15 } }
-
   const bentoGrid = document.querySelector('.bento-grid');
   if (!bentoGrid) return;
 
@@ -431,12 +429,6 @@ function updateSubjectCards(finalStats) {
     const total = stat.total || 0;
     const attended = stat.attended || 0;
     const percent = total > 0 ? Math.round((attended / total) * 100) : 0;
-
-    // Only show subjects that have data? Or all?
-    // If this is "Periodical", we might only show active subjects.
-    // If "Overall", show all.
-    // Let's show all that are in the stats object having > 0 total?
-    // Or just all passed.
 
     const card = createBentoCard(name, total, attended, percent);
     bentoGrid.appendChild(card);
@@ -489,13 +481,9 @@ function createBentoCard(name, total, present, percent) {
 
 // --- 5. Major Subjects (Client Side) ---
 function loadMajorSubjects() {
-  // 1. Get Majors from localStorage or User Profile
-  // Architecture says: "Stored locally in browser (localStorage)"
-  // Key: 'attenza_majors'
   const stored = localStorage.getItem('attenza_majors');
   let majors = stored ? JSON.parse(stored) : [];
 
-  // Also check if userProfile has them? Doc says "Local Cache".
   updateMajorCard(majors);
 
   // Wire up the Major Modal
@@ -506,8 +494,6 @@ function loadMajorSubjects() {
 
   if (editBtn) editBtn.onclick = () => {
     if (modal) modal.style.display = 'block';
-    // Populate Checkboxes
-    // We need list of all subjects.
     fetchUserSubjects().then(subs => {
       const list = document.getElementById('majorList');
       if (!list) return;
@@ -535,7 +521,6 @@ function loadMajorSubjects() {
   };
 }
 
-// Update Major Card UI
 async function updateMajorCard(majors, overrideStats = null) {
   const card = document.getElementById('majorCard');
   if (!card) return;
@@ -557,7 +542,6 @@ async function updateMajorCard(majors, overrideStats = null) {
   let presentM = 0;
 
   if (overrideStats) {
-    // Use provided stats (Periodical)
     majors.forEach(m => {
       if (overrideStats[m]) {
         totalM += overrideStats[m].total;
@@ -565,7 +549,6 @@ async function updateMajorCard(majors, overrideStats = null) {
       }
     });
   } else {
-    // Default: Calculate Overall (Past + Tracked)
     const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
     const summarySnap = await getDoc(summaryRef);
     const summaryData = summarySnap.exists() ? summarySnap.data() : { subjects: {} };
@@ -601,7 +584,6 @@ async function updateMajorCard(majors, overrideStats = null) {
   }
 
   if (summaryBody) {
-    // Update summary text appropriately
     const isPeriodical = !!overrideStats;
     const periodText = isPeriodical ? "this period" : "overall";
     summaryBody.innerHTML = `<ul><li>Your ${periodText} major attendance is ${percent}%.</li><li>You are safe!</li></ul>`;
@@ -609,13 +591,9 @@ async function updateMajorCard(majors, overrideStats = null) {
 }
 
 
-// --- 6. Date-Wise Records Logic (Replaces existing mock) ---
-// Note: The HTML imports 'flatpickr' and 'app.js'
-// We need to attach listeners for the date strip and edit modal.
+// --- 6. Date-Wise Records Logic ---
+const attendanceData = {}; 
 
-const attendanceData = {}; // Cache for fetched dates
-
-// Init Date Strip
 const dateStrip = document.getElementById('dateStrip');
 const cardsContainer = document.getElementById('dateCardsContainer');
 let currentSelectedDateKey = null;
@@ -689,7 +667,6 @@ function renderDateStrip(centerDate) {
 async function loadDateRecords(dateKey, btnElement) {
   currentSelectedDateKey = dateKey;
 
-  // UI Active State
   document.querySelectorAll('.date-item').forEach(b => b.classList.remove('selected'));
   if (btnElement) btnElement.classList.add('selected');
 
@@ -699,19 +676,18 @@ async function loadDateRecords(dateKey, btnElement) {
 
   if (!currentUser) return;
 
-  // Fetch from Firestore: users/{uid}/attendance/{dateKey}
   try {
     const docRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
     const snap = await getDoc(docRef);
 
-    cardsContainer.innerHTML = ''; // Clear loader
+    cardsContainer.innerHTML = ''; 
 
     if (!snap.exists() || !snap.data().records) {
       cardsContainer.innerHTML = '<div class="empty-state">No records for this date.</div>';
       return;
     }
 
-    const records = snap.data().records; // Map: { SubjectName: { status, timestamp, remarks } }
+    const records = snap.data().records; 
 
     if (Object.keys(records).length === 0) {
       cardsContainer.innerHTML = '<div class="empty-state">No classes marked.</div>';
@@ -732,7 +708,6 @@ async function loadDateRecords(dateKey, btnElement) {
 function createDateRecordCard(subjectName, record) {
   const art = document.createElement('article');
   art.className = 'record-card';
-  // Use data attributes to store data safely for the edit button
   art.dataset.subject = subjectName;
   art.dataset.status = record.status;
   art.dataset.remarks = record.remarks || '';
@@ -852,48 +827,45 @@ async function saveEditRecord(subjectName) {
 
 
 // --- Expose for HTML access ---
-// Because we are module, window functions are needed for onclick="" in HTML
 window.openMenu = function () {
   const menu = document.getElementById("menuOverlay");
   if (menu) menu.style.left = "0";
 }
 
-// ==========================================
-// === UI LOGIC (Appended) ===
-// ==========================================
+// --- New Timeline Item Expand/Collapse Logic ---
+window.toggleItemUI = function(clickedItem) {
+    const container = document.getElementById('scrollContainer');
+    const allItems = document.querySelectorAll('.class-item');
+    
+    // If already active, do nothing
+    if (clickedItem.classList.contains('active')) return; 
 
-// --- Carousel Drag Logic ---
-const carouselEl = document.getElementById('carousel');
-if (carouselEl) {
-  let isDown = false;
-  let startX;
-  let scrollLeft;
+    // Close others
+    allItems.forEach(item => item.classList.remove('active'));
+    
+    // Open this one
+    clickedItem.classList.add('active');
 
-  carouselEl.addEventListener('mousedown', (e) => {
-    isDown = true;
-    carouselEl.style.cursor = 'grabbing';
-    startX = e.pageX - carouselEl.offsetLeft;
-    scrollLeft = carouselEl.scrollLeft;
-  });
-
-  carouselEl.addEventListener('mouseleave', () => {
-    isDown = false;
-    carouselEl.style.cursor = 'grab';
-  });
-
-  carouselEl.addEventListener('mouseup', () => {
-    isDown = false;
-    carouselEl.style.cursor = 'grab';
-  });
-
-  carouselEl.addEventListener('mousemove', (e) => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - carouselEl.offsetLeft;
-    const walk = (x - startX) * 2;
-    carouselEl.scrollLeft = scrollLeft - walk;
-  });
+    // Smooth scroll to position
+    setTimeout(() => {
+        let prevItem = clickedItem.previousElementSibling;
+        if (prevItem && prevItem.classList.contains('class-item')) {
+            container.scrollTo({
+                top: prevItem.offsetTop - 10,
+                behavior: 'smooth'
+            });
+        } else {
+            container.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    }, 300);
 }
+
+// ==========================================
+// === UI LOGIC (Font Scaling, AI, etc.) ===
+// ==========================================
 
 // --- Dynamic Font Scaling ---
 function getLineCount(element) {
@@ -1067,13 +1039,8 @@ if (rangePicker && window.flatpickr) {
         if (endSpan) endSpan.innerText = selectedDates[1].toLocaleDateString();
         if (endSpan) endSpan.classList.remove('empty');
 
-        // Trigger Logic to Filter Stats
         const start = selectedDates[0];
         const end = selectedDates[1];
-        // Convert to YYYY-MM-DD for firestore keys
-        // Note: JS dates are local, split ISO string gives UTC. 
-        // Best: use simple conversion or consistent logic.
-        // Assuming keys are YYYY-MM-DD
         const toKey = (d) => {
           const offset = d.getTimezoneOffset() * 60000;
           return new Date(d.getTime() - offset).toISOString().split('T')[0];
@@ -1090,20 +1057,17 @@ window.calculatePeriodicalStats = async function (startKey, endKey) {
   if (!currentUser) return;
   console.log(`Filtering from ${startKey} to ${endKey}`);
 
-  // UI Feedback (maybe loader?)
   document.getElementById('percentageText').innerText = '...';
 
   try {
-    // Query Attendance Collection
     const attRef = collection(db, 'users', currentUser.uid, 'attendance');
     const q = query(attRef, where(documentId(), '>=', startKey), where(documentId(), '<=', endKey));
 
     const snaps = await getDocs(q);
 
-    // Aggregate
     let periodTotal = 0;
     let periodPresent = 0;
-    const subjectAgg = {}; // { 'Math': { total: 0, attended: 0 } }
+    const subjectAgg = {}; 
 
     if (snaps.empty) {
       console.log("No records in range");
@@ -1126,37 +1090,26 @@ window.calculatePeriodicalStats = async function (startKey, endKey) {
           periodTotal++;
           subjectAgg[subName].total++;
         }
-        // 'not-held' ignored for totals
       });
     });
 
-    // Update UI Parts
-
-    // 1. Overall Ring
     const overallPct = periodTotal > 0 ? Math.round((periodPresent / periodTotal) * 100) : 0;
     updateRingUI(overallPct);
 
-    // Update Label to indicate Periodical view
     const label = document.querySelector('.percentage-label');
     if (label) label.innerText = "Period";
 
-    // 2. Major Card
     const stored = localStorage.getItem('attenza_majors');
     const majors = stored ? JSON.parse(stored) : [];
     updateMajorCard(majors, subjectAgg);
 
-    // 3. Bento Grid Subjects (Only show relevant ones or show all with 0?)
-    // Let's show all that have activity, or if none, effectively clear.
-    // Better: Fetch all user subjects to keep grid stable, but fill with period data (mostly 0).
     const allUserSubs = await fetchUserSubjects();
     const finalMap = {};
     allUserSubs.forEach(s => {
-      // Fill with 0 if not in agg
       finalMap[s.name] = subjectAgg[s.name] || { total: 0, attended: 0 };
     });
     updateSubjectCards(finalMap);
 
-    // Update Summary Text Area
     const sumBody = document.getElementById('summaryBody');
     if (sumBody) {
       sumBody.innerHTML = `<ul>
@@ -1170,4 +1123,3 @@ window.calculatePeriodicalStats = async function (startKey, endKey) {
     alert("Failed to calculate periodical stats.");
   }
 }
-
