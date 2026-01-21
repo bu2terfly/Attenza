@@ -470,7 +470,7 @@
         /* --- ITEM WRAPPER --- */
     .class-item {
         position: relative;
-        padding-left: 34px;
+        padding-left: 26px;
         margin-bottom: 10px;
         cursor: pointer;
         transition: all 0.3s ease; 
@@ -518,9 +518,9 @@
 
     .active-card-style {
         background-color: #F9FAFB;
-        margin: 0 0 0 8px; 
-        padding: 22px;
-        border-left: 4px solid #8B80F9;
+        margin: 0 0 0 0px; 
+        padding: 10px 18px;
+        border-left: 6px solid #8B80F9;
         border-radius: 0 12px 12px 0;
         box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
     }
