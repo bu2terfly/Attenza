@@ -18,89 +18,94 @@
 
     <title>ATTENZA - for Dispur College</title>
 
-    <script type="module">
-        import { auth, db } from './firebase-init.js';
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <style>
+        /* 1. The Overlay Container (Hidden by default) */
+        .locked-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            /* Glassmorphism effect */
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); /* Safari support */
+            z-index: 10000;
+            /* Priority over everything */
+            display: none;
+            /* Hidden initially */
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
 
-        onAuthStateChanged(auth, async (user) => {
-            const viewport = document.body;
+        /* 2. The Setup Card inside the overlay */
+        .setup-hint-block {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(139, 124, 200, 0.25);
+            text-align: center;
+            border: 1px solid rgba(139, 124, 200, 0.2);
+            max-width: 85%;
+            width: 300px;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-            if (!user) {
-                window.location.replace("login.html");
-            } else {
-                try {
-                    const userRef = doc(db, "users", user.uid);
-                    const userSnap = await getDoc(userRef);
+        .hint-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #323544;
+            margin-bottom: 0.5rem;
+        }
 
-                    viewport.style.visibility = "visible"; // Always show viewport
+        .hint-subtitle {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
 
-                    if (userSnap.exists()) {
-                        const userData = userSnap.data();
+        .setup-btn {
+            background: #8b7cc8;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            width: 100%;
+        }
 
-                        // 1. Initialize Dashboard FIRST
-                        // We do this first so all the lists and HTML elements are generated.
-                        // We await it just in case it fetches data asynchronously.
-                        if (typeof initializeDashboard === "function") {
-                            await initializeDashboard(userData);
-                        }
+        .setup-btn:active {
+            transform: scale(0.96);
+        }
 
-                        // 2. Check Profile & Apply Overlay SECOND
-                        // Now that the content exists, we blur it if profileComplete is false.
-                        if (userData.profileComplete !== true) {
-                            console.log("Profile incomplete, applying overlay...");
-                            showSubjectSetupOverlay();
-                        }
-                    }
-                } catch (error) {
-                    console.error("Auth Check Error:", error);
-                }
+        /* 3. THE TRIGGER: When body has class 'mode-locked' */
+        body.mode-locked .locked-overlay {
+            display: flex;
+        }
+
+        body.mode-locked {
+            overflow: hidden;
+            /* Prevent scrolling when locked */
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
             }
-        });
-
-        function showSubjectSetupOverlay() {
-            // list of selectors to blur
-            const selectors = [
-                '.notebook-section',
-                '.install-strip',
-                '.section-header',
-                '.full-bleed',
-                '.periodical-section',
-                '#dateWiseRecordsSection'
-            ];
-
-            selectors.forEach(sel => {
-                const els = document.querySelectorAll(sel);
-                els.forEach(el => el.classList.add('blur-content'));
-            });
-
-            // Check if overlay already exists to prevent duplicates
-            if (document.querySelector('.setup-overlay-container')) return;
-
-            // Create Overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'setup-overlay-container';
-
-            // We repeat the hint block to make sure it covers long pages
-            const hintHTML = `
-                <div class="setup-hint-block">
-                    <div class="hint-title">Complete subjects selection</div>
-                    <div class="hint-subtitle">to track attendance in detailed stats</div>
-                    <button class="setup-btn" onclick="openMenu()">Setup Subject</button>
-                </div>
-            `;
-
-            overlay.innerHTML = hintHTML.repeat(3);
-
-            const contentBody = document.querySelector('.content-body');
-            if (contentBody) {
-                // Ensure parent is relative so the absolute overlay covers it correctly
-                contentBody.style.position = 'relative';
-                contentBody.appendChild(overlay);
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
             }
         }
-    </script>
-
+    </style>
 </head>
 
 <body>
@@ -613,6 +618,14 @@
 
     </div>
 
+    <div id="locked-overlay" class="locked-overlay">
+        <div class="setup-hint-block">
+            <div class="hint-title">Complete subjects selection</div>
+            <div class="hint-subtitle">to track attendance in detailed stats</div>
+            <button class="setup-btn" onclick="openMenu()">Setup Subject</button>
+        </div>
+    </div>
+
     <div id="menuOverlay" style="
   position: fixed;
   top: 0;
@@ -633,6 +646,48 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script type="module">
+        import { auth, db } from './firebase-init.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        onAuthStateChanged(auth, async (user) => {
+            const viewport = document.body;
+
+            if (!user) {
+                window.location.replace("login.html");
+            } else {
+                try {
+                    const userRef = doc(db, "users", user.uid);
+                    const userSnap = await getDoc(userRef);
+
+                    viewport.style.visibility = "visible"; // Always show viewport
+
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+
+                        // 1. LOCK LOGIC: Check profile immediately
+                        // This applies the CSS class that blurs everything
+                        if (userData.profileComplete !== true) {
+                            document.body.classList.add('mode-locked');
+                        } else {
+                            document.body.classList.remove('mode-locked');
+                        }
+
+                        // 2. LOAD DASHBOARD
+                        if (typeof initializeDashboard === "function") {
+                            await initializeDashboard(userData);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Auth Check Error:", error);
+                }
+            }
+        });
+        
+        // Note: The 'showSubjectSetupOverlay' function is no longer needed
+        // because we use CSS classes now.
+    </script>
     <script type="module" src="app.js"></script>
 </body>
 
