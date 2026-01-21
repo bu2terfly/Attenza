@@ -433,6 +433,18 @@
            This creates a fade from transparent to the background color at the bottom.
            pointer-events: none ensures you can still click/scroll through it.
         */
+
+    .schedule-window {
+        height: 300px; 
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+        background: transparent; 
+        box-shadow: none; 
+        border: none;
+    }
+
     .schedule-window::after {
         content: '';
         position: absolute;
