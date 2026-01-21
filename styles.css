@@ -417,11 +417,16 @@
     }
 
 
+    .schedule-edge-wrapper {
+        margin-left: -16px;
+        margin-right: -16px;
+        margin-bottom: 40px;
+    }
+
+
 
     .schedule-window {
-        height: 300px; 
-        padding-left: -16px;
-        padding-right: -16px;
+        height: 300px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
