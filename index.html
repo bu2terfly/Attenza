@@ -12,14 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-    <style>
-        body {
-            visibility: hidden;
-        }
-    </style>
 
     <title>ATTENZA - for Dispur College</title>
 
@@ -28,12 +23,10 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // This runs immediately when the page starts loading
         onAuthStateChanged(auth, async (user) => {
             const viewport = document.body;
 
             if (!user) {
-                // User not logged in? Send to login page
                 window.location.replace("login.html");
             } else {
                 try {
@@ -41,15 +34,11 @@
                     const userSnap = await getDoc(userRef);
 
                     if (userSnap.exists() && userSnap.data().profileComplete === true) {
-                        // PROFILE OK: Show your UI exactly as it is
                         viewport.style.visibility = "visible";
-
-                        // Trigger your dashboard functions (The Ring, The Carousel)
                         if (typeof initializeDashboard === "function") {
                             initializeDashboard(userSnap.data());
                         }
                     } else {
-                        // LOGGED IN BUT NEW: Send to profile setup
                         window.location.replace("setup.html");
                     }
                 } catch (error) {
@@ -220,78 +209,15 @@
             </a>
         </div>
 
-        <div class="carousel-container">
-            <div class="carousel" id="carousel">
-                <div class="class-card">
-                    <div class="class-header">
-                        <span class="class-subject">Data Structures</span>
-                        <span class="class-time">09:00 AM</span>
-                    </div>
-                    <div class="class-details">
-                        <div><strong>Room:</strong> CS-301</div>
-                        <div><strong>Faculty:</strong> Dr. Smith</div>
-                        <div><strong>Duration:</strong> 1 hour</div>
-                    </div>
-                    <div class="attendance-actions">
-                        <button class="attendance-btn btn-attend">Attend</button>
-                        <button class="attendance-btn btn-skip">Skip</button>
-                        <button class="attendance-btn btn-not-held">Not Held</button>
-                    </div>
-                </div>
+        <div class="schedule-window">
+            <div class="scroll-area" id="scrollContainer">
+                <div class="timeline-line"></div>
+                
+                <div id="dynamic-list-wrapper"></div>
 
-                <div class="class-card">
-                    <div class="class-header">
-                        <span class="class-subject">Database Systems</span>
-                        <span class="class-time">11:00 AM</span>
-                    </div>
-                    <div class="class-details">
-                        <div><strong>Room:</strong> CS-205</div>
-                        <div><strong>Faculty:</strong> Prof. Johnson</div>
-                        <div><strong>Duration:</strong> 1.5 hours</div>
-                    </div>
-                    <div class="attendance-actions">
-                        <button class="attendance-btn btn-attend">Attend</button>
-                        <button class="attendance-btn btn-skip">Skip</button>
-                        <button class="attendance-btn btn-not-held">Not Held</button>
-                    </div>
-                </div>
-
-                <div class="class-card">
-                    <div class="class-header">
-                        <span class="class-subject">Web Development</span>
-                        <span class="class-time">02:00 PM</span>
-                    </div>
-                    <div class="class-details">
-                        <div><strong>Room:</strong> Lab-102</div>
-                        <div><strong>Faculty:</strong> Ms. Williams</div>
-                        <div><strong>Duration:</strong> 2 hours</div>
-                    </div>
-                    <div class="attendance-actions">
-                        <button class="attendance-btn btn-attend">Attend</button>
-                        <button class="attendance-btn btn-skip">Skip</button>
-                        <button class="attendance-btn btn-not-held">Not Held</button>
-                    </div>
-                </div>
-
-                <div class="class-card">
-                    <div class="class-header">
-                        <span class="class-subject">Computer Networks</span>
-                        <span class="class-time">04:00 PM</span>
-                    </div>
-                    <div class="class-details">
-                        <div><strong>Room:</strong> CS-102</div>
-                        <div><strong>Faculty:</strong> Dr. Anderson</div>
-                        <div><strong>Duration:</strong> 1 hour</div>
-                    </div>
-                    <div class="attendance-actions">
-                        <button class="attendance-btn btn-attend">Attend</button>
-                        <button class="attendance-btn btn-skip">Skip</button>
-                        <button class="attendance-btn btn-not-held">Not Held</button>
-                    </div>
-                </div>
+                <div style="height: 60px;"></div> 
             </div>
         </div>
-
         <section class="periodical-section">
             <header class="periodical-header">
                 <h2>Periodical records</h2>
@@ -607,7 +533,6 @@
         <div class="ai-card-container">
             <div class="see-more-btn">
 
-                <!-- AI Loader (WebP) -->
                 <div class="logo-loader-wrapper">
                     <img src="Image/Ailogo.webp" alt="Attenza AI" class="ai-loader-webp" loading="lazy"
                         decoding="async" />
@@ -615,7 +540,6 @@
 
                 <span class="divider"></span>
 
-                <!-- Prompt Area -->
                 <div class="prompt-area" id="promptArea">
                     <div class="prompt-display">
                         <span class="typewriter-text" id="typewriterText"></span>
@@ -637,7 +561,6 @@
 
     </div>
 
-    <!-- MENU OVERLAY -->
     <div id="menuOverlay" style="
   position: fixed;
   top: 0;
@@ -657,10 +580,9 @@
         </iframe>
     </div>
 
-    <!-- flatpickr (kept as external CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <!-- your JavaScript (moved to external file) -->
     <script type="module" src="app.js"></script>
 </body>
 
 </html>
+
