@@ -33,20 +33,67 @@
                     const userRef = doc(db, "users", user.uid);
                     const userSnap = await getDoc(userRef);
 
+                    viewport.style.visibility = "visible"; // Always show viewport
+
                     if (userSnap.exists() && userSnap.data().profileComplete === true) {
-                        viewport.style.visibility = "visible";
                         if (typeof initializeDashboard === "function") {
                             initializeDashboard(userSnap.data());
                         }
                     } else {
-                        window.location.replace("setup.html");
+                        // User logged in but subjects not setup
+                        // Instead of redirecting, show the blurry overlay
+                        showSubjectSetupOverlay();
+                        // Still initialize dashboard to show welcome text if name available
+                        if (userSnap.exists() && typeof initializeDashboard === "function") {
+                            // Pass data even if incomplete, dashboard handles it or we overlay it
+                            initializeDashboard(userSnap.data());
+                        }
                     }
                 } catch (error) {
                     console.error("Auth Check Error:", error);
-                    window.location.replace("login.html");
+                    // On error, maybe stay here or login? 
+                    // Let's safe fail to login if it's a permission issue, but for now just log
                 }
             }
         });
+
+        function showSubjectSetupOverlay() {
+            // list of selectors to blur
+            const selectors = [
+                '.notebook-section',
+                '.install-strip',
+                '.section-header',
+                '.full-bleed',
+                '.periodical-section',
+                '#dateWiseRecordsSection'
+            ];
+
+            selectors.forEach(sel => {
+                const els = document.querySelectorAll(sel);
+                els.forEach(el => el.classList.add('blur-content'));
+            });
+
+            // Create Overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'setup-overlay-container';
+
+            // We want to repeat the hint. Let's say 3 times for coverage
+            const hintHTML = `
+                <div class="setup-hint-block">
+                    <div class="hint-title">Complete subjects selection</div>
+                    <div class="hint-subtitle">to track attendance in detailed stats</div>
+                    <button class="setup-btn" onclick="openMenu()">Setup Subject</button>
+                </div>
+            `;
+
+            overlay.innerHTML = hintHTML.repeat(3);
+
+            const contentBody = document.querySelector('.content-body');
+            if (contentBody) {
+                contentBody.style.position = 'relative';
+                contentBody.appendChild(overlay);
+            }
+        }
     </script>
 </head>
 
@@ -208,7 +255,7 @@
                 </svg>
             </a>
         </div>
-       
+
         <div class="full-bleed">
             <div class="schedule-window">
                 <div class="scroll-area" id="scrollContainer">
@@ -584,4 +631,3 @@
 </body>
 
 </html>
-
