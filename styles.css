@@ -459,7 +459,7 @@
 
     .timeline-line {
         position: absolute;
-        left: 24px;
+        left: 22px;
         top: 10px;
         bottom: 20px;
         width: 2px;
@@ -478,7 +478,7 @@
 
     .dot {
         position: absolute;
-        left: 4px;
+        left: -4px;
         top: 6px;
         width: 14px;
         height: 14px;
@@ -514,7 +514,7 @@
 
     .class-item.active .view-compact { display: none; }
     .class-item.active .view-expanded { display: block; animation: fadeIn 0.4s; }
-    .class-item.active .dot { border-color: #8B80F9; background: #8B80F9; width: 16px; height: 16px; left: 4px; top: 18px; }
+    .class-item.active .dot { border-color: #8B80F9; background: #8B80F9; width: 16px; height: 16px; left: -4px; top: 18px; }
 
     .active-card-style {
         background-color: #F9FAFB;
