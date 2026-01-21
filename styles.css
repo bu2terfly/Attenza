@@ -421,6 +421,7 @@
     .schedule-window {
         height: 300px; 
         padding-left: -16px;
+        padding-right: -16px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
