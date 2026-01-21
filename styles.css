@@ -417,35 +417,42 @@
     }
 
    /* --- NEW VERTICAL SCHEDULE CSS --- */
+      /* --- THE WINDOW --- */
     .schedule-window {
-        height: 380px; /* Adjusted height for mobile */
+        height: 300px; 
         display: flex;
         flex-direction: column;
         overflow: hidden;
         position: relative;
-        margin-top: 20px;
+        background: transparent; 
+        box-shadow: none; 
+        border: none;
     }
 
-/* The fade effect at bottom */
+        /* NEW: THE SCROLL HINT (GRADIENT FADE)
+           This creates a fade from transparent to the background color at the bottom.
+           pointer-events: none ensures you can still click/scroll through it.
+        */
     .schedule-window::after {
         content: '';
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        height: 60px;
-        background: linear-gradient(to bottom, rgba(253, 251, 247, 0) 0%, #F9F8F6 100%);
+        height: 60px; /* Height of the fade */
+        background: linear-gradient(to bottom, rgba(253, 251, 247, 0) 0%, rgba(253, 251, 247, 1) 100%);
         z-index: 20;
         pointer-events: none;
     }
 
+        /* --- SCROLL AREA --- */
     .scroll-area {
         overflow-y: auto;
-        padding: 10px 12px 20px 20px;
+        padding: 10px 12px 20px 20px; 
         position: relative;
         scrollbar-width: thin;
         scrollbar-color: #E5E7EB transparent;
-        scroll-behavior: smooth;
+        scroll-behavior: smooth; 
     }
 
     .timeline-line {
@@ -458,12 +465,13 @@
         z-index: 0;
     }
 
+        /* --- ITEM WRAPPER --- */
     .class-item {
         position: relative;
         padding-left: 25px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s ease; 
     }
 
     .dot {
@@ -479,48 +487,52 @@
         transition: all 0.2s;
     }
 
-/* Compact View */
+        /* --- COMPACT VIEW --- */
     .view-compact {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 5px 0;
     }
+
     .time-compact { font-size: 0.85rem; font-weight: 600; color: #6B7280; width: 80px; }
     .subject-compact { font-size: 0.9rem; font-weight: 600; color: #1F2937; flex-grow: 1; }
+        
+    .status-tag { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: none;} 
+    .tag-green { color: #15803D; background: #DCFCE7; display: inline-block; }
+    .tag-red { color: #991B1B; background: #FEE2E2; display: inline-block; }
+    .tag-gray { color: #4B5563; background: #F3F4F6; display: inline-block; }
 
-/* Expanded View */
+    .class-item.is-past .view-compact { opacity: 0.6; }
+    .class-item.is-past .subject-compact { text-decoration: line-through; }
+    .class-item.is-past .dot { background: #D1D5DB; border-color: #D1D5DB; }
+
+        /* --- EXPANDED VIEW --- */
     .view-expanded { display: none; }
 
     .class-item.active .view-compact { display: none; }
     .class-item.active .view-expanded { display: block; animation: fadeIn 0.4s; }
-    .class-item.active .dot { 
-        border-color: #8B80F9; 
-        background: #8B80F9; 
-        width: 12px; 
-        height: 12px; 
-        left: -9px; 
-        top: 18px; 
-    }
+    .class-item.active .dot { border-color: #8B80F9; background: #8B80F9; width: 12px; height: 12px; left: -9px; top: 18px; }
 
     .active-card-style {
-        background-color: #FFFFFF;
-        margin: 0 0 0 -5px;
+        background-color: #F9FAFB;
+        margin: 0 0 0 -5px; 
         padding: 15px;
         border-left: 4px solid #8B80F9;
         border-radius: 0 12px 12px 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
     }
 
     .row-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .time-text { font-size: 0.85rem; font-weight: 700; color: #6366F1; display: block; margin-bottom: 4px; }
-    .subject-text { font-size: 1.1rem; font-weight: 700; color: #111827; margin: 0; }
-    .details-text { font-size: 0.85rem; color: #6B7280; margin-top: 4px; }
+    .time-text { font-size: 0.85rem; font-weight: 700; color: #6B7280; display: block; margin-bottom: 2px; }
+    .active-time { color: #6366F1; }
+    .subject-text { font-size: 1rem; font-weight: 700; color: #111827; margin: 0; }
+    .details-text { font-size: 0.85rem; color: #6B7280; margin-top: 2px; }
 
-    .btn-container { display: flex; gap: 8px; margin-top: 15px; }
+    .btn-container { display: flex; gap: 8px; margin-top: 10px; }
     .choice-btn {
-        flex: 1; padding: 10px 0; border-radius: 8px;
-        font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        flex: 1; padding: 8px 0; border-radius: 8px;
+        font-size: 0.8rem; font-weight: 600; cursor: pointer;
         border: 1px solid transparent; background: transparent;
         transition: all 0.2s;
     }
@@ -528,24 +540,12 @@
     .btn-skip { background-color: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
     .btn-na { background-color: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
 
-    .status-tag { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; display: inline-block; }
-    .tag-green { color: #15803D; background: #DCFCE7; }
-    .tag-red { color: #991B1B; background: #FEE2E2; }
-    .tag-gray { color: #4B5563; background: #F3F4F6; }
-
     .edit-status-link {
-        font-size: 0.8rem; color: #6366F1; font-weight: 600; cursor: pointer;
+        font-size: 0.75rem; color: #6366F1; font-weight: 600; cursor: pointer;
         text-decoration: underline; margin-top: 8px; display: inline-block;
     }
 
-/* Past items fade out slightly */
-    .class-item.is-past .view-compact { opacity: 0.6; }
-    .class-item.is-past .subject-compact { text-decoration: line-through; color: #9CA3AF; }
-    .class-item.is-past .dot { background: #D1D5DB; border-color: #D1D5DB; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-
+     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     /* Subject Card Colors */
     .subject-card.lavender {
         background-color: #a2a8eb;
