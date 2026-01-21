@@ -416,26 +416,11 @@
         color: #2d3436;
     }
 
-   /* --- NEW VERTICAL SCHEDULE CSS --- */
-      /* --- THE WINDOW --- */
-    .schedule-window {
-        height: 300px; 
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        position: relative;
-        background: transparent; 
-        box-shadow: none; 
-        border: none;
-    }
 
-        /* NEW: THE SCROLL HINT (GRADIENT FADE)
-           This creates a fade from transparent to the background color at the bottom.
-           pointer-events: none ensures you can still click/scroll through it.
-        */
 
     .schedule-window {
         height: 300px; 
+        padding-left: -16px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -469,7 +454,7 @@
 
     .timeline-line {
         position: absolute;
-        left: 18px;
+        left: 16px;
         top: 10px;
         bottom: 20px;
         width: 2px;
