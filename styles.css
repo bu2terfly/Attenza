@@ -459,7 +459,7 @@
 
     .timeline-line {
         position: absolute;
-        left: 16px;
+        left: 20px;
         top: 10px;
         bottom: 20px;
         width: 2px;
@@ -470,7 +470,7 @@
         /* --- ITEM WRAPPER --- */
     .class-item {
         position: relative;
-        padding-left: 25px;
+        padding-left: 22px;
         margin-bottom: 10px;
         cursor: pointer;
         transition: all 0.3s ease; 
@@ -478,7 +478,7 @@
 
     .dot {
         position: absolute;
-        left: -8px;
+        left: -10px;
         top: 6px;
         width: 10px;
         height: 10px;
@@ -514,7 +514,7 @@
 
     .class-item.active .view-compact { display: none; }
     .class-item.active .view-expanded { display: block; animation: fadeIn 0.4s; }
-    .class-item.active .dot { border-color: #8B80F9; background: #8B80F9; width: 12px; height: 12px; left: -9px; top: 18px; }
+    .class-item.active .dot { border-color: #8B80F9; background: #8B80F9; width: 12px; height: 12px; left: -10px; top: 18px; }
 
     .active-card-style {
         background-color: #F9FAFB;
