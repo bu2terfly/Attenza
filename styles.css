@@ -417,10 +417,9 @@
     }
 
 
-    .schedule-edge-wrapper {
-        margin-left: -16px;
-        margin-right: -16px;
-        margin-bottom: 40px;
+    .full-bleed {
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
     }
 
 
