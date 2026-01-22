@@ -292,6 +292,13 @@
         max-width: 85%;
     }
 
+   .welcome-text-content h3 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2d3436;
+        margin-bottom: 6px;
+   }
+
     .attendance-ring {
         position: relative;
         width: 140px;
