@@ -21,12 +21,13 @@ window.initializeDashboard = async function (profileData) {
   const welcomeTitle = document.getElementById('welcomeTitle');
   if (welcomeTitle) welcomeTitle.innerText = `Hello, ${firstName}!`;
 
-  // 2. Set Today's Date (NEW FEATURE)
+  // 2. Set Today's Date (Short Format: 22/01/2026)
   const dateEl = document.getElementById('dynamicDateDisplay');
   if (dateEl) {
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      dateEl.innerText = new Date().toLocaleDateString('en-US', options);
+      // 'en-GB' automatically gives you dd/mm/yyyy
+      dateEl.innerText = new Date().toLocaleDateString('en-GB'); 
   }
+
 
   try {
     // 3. Load Summary & Update Ring/Stats
