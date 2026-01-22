@@ -19,7 +19,7 @@ window.initializeDashboard = async function (profileData) {
   // 1. Update Welcome Text
   const firstName = profileData.name.split(' ')[0];
   const welcomeTitle = document.getElementById('welcomeTitle');
-  if (welcomeTitle) welcomeTitle.innerText = `Hello, ${firstName}!`;
+  if (welcomeTitle) welcomeTitle.innerText = `Hey, ${firstName}!`;
 
   // 2. Set Today's Date (Short Format: 22/01/2026)
   const dateEl = document.getElementById('dynamicDateDisplay');
