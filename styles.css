@@ -290,6 +290,7 @@
 
     .welcome-text-content {
         max-width: 60%;
+        font-size: 26px;
     }
 
     .welcome-text-content h3 {
