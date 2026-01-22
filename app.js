@@ -21,14 +21,21 @@ window.initializeDashboard = async function (profileData) {
   const welcomeTitle = document.getElementById('welcomeTitle');
   if (welcomeTitle) welcomeTitle.innerText = `Hello, ${firstName}!`;
 
+  // 2. Set Today's Date (NEW FEATURE)
+  const dateEl = document.getElementById('dynamicDateDisplay');
+  if (dateEl) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      dateEl.innerText = new Date().toLocaleDateString('en-US', options);
+  }
+
   try {
-    // 2. Load Summary & Update Ring/Stats
+    // 3. Load Summary & Update Ring/Stats
     await loadSummary();
 
-    // 3. Load Today's Routine (New Vertical Timeline)
+    // 4. Load Today's Routine (Vertical Timeline)
     await loadTodayRoutine(profileData);
 
-    // 4. Load Major Subjects (Local Cache + Calc)
+    // 5. Load Major Subjects (Local Cache + Calc)
     loadMajorSubjects();
 
   } catch (e) {
@@ -105,18 +112,19 @@ function updateRingUI(percent) {
   }
 }
 
+// --- UPDATED QUOTE LOGIC (Targets Notebook) ---
 function updateQuote(percentage) {
-  const quoteElement = document.getElementById('welcomeSubtitle');
-  if (!quoteElement) return;
+  const notebookEl = document.getElementById('notebookQuote');
+  if (!notebookEl) return;
 
-  if (percentage >= 85) {
-    quoteElement.textContent = "Excellent! You're a role model for attendance.";
+  if (percentage >= 90) {
+    notebookEl.innerHTML = "Dear Diary,<br>I am absolutely crushing it! Attendance is perfect. Maybe I should ask the Principal for a medal?";
   } else if (percentage >= 75) {
-    quoteElement.textContent = "Great progress! Keep maintaining your attendance streak.";
+    notebookEl.innerHTML = "Note to self:<br>Doing great so far. Just need to keep showing up to maintain this safe zone.";
   } else if (percentage >= 65) {
-    quoteElement.textContent = "Good effort! A few more classes to reach the goal.";
+    notebookEl.innerHTML = "Reminder:<br>Things are getting a bit risky. I need to wake up earlier and stop skipping the morning classes!";
   } else {
-    quoteElement.textContent = "Time to catch up! Every class counts.";
+    notebookEl.innerHTML = "URGENT:<br>Attendance is critical! No more bunking allowed. I need to attend every single class from now on.";
   }
 }
 
