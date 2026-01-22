@@ -296,13 +296,7 @@
         font-size: 24px;
         font-weight: 600;
         color: #2d3436;
-        margin-bottom: 6px;
-    }
-
-    .welcome-text-content p {
-        font-size: 15px;
-        color: #6b6b6b;
-        line-height: 1.6;
+        margin-bottom: 4px;
     }
 
     .attendance-ring {
