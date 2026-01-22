@@ -267,35 +267,6 @@
         padding: 16px 16px;
     }
 
-    .sketch-line-container {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        margin-top: 10px;
-    }
-
-    .sketch-line {
-        font-family: "Cabin Sketch", system-ui, sans-serif;
-        font-size: 20px;
-        letter-spacing: 0.6px;
-        color: #333;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: transparent;
-    }
-
-    .sketch-heart {
-        width: 22px;
-        height: 22px;
-        stroke: #e63946;
-        stroke-width: 6;
-        fill: none;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        filter: drop-shadow(0 0 0.7px rgba(0, 0, 0, 0.25));
-        transform: translateY(1px);
-    }
 
     /* HERO / WELCOME AREA – illustration as background on right */
     .welcome-section {
@@ -307,7 +278,6 @@
         background-repeat: no-repeat;
         background-position: right bottom;
         background-size: auto 300px;
-        min-height: 300px;
     }
 
     .welcome-content {
