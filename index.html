@@ -19,7 +19,34 @@
     <title>ATTENZA - for Dispur College</title>
 
     <style>
-        /* --- LOCKED ZONE STYLING --- */
+        /* --- NEW STYLES FOR WELCOME UPDATES --- */
+        .paglu-pill {
+            display: inline-block;
+            background-color: #FFDAB9; /* Peach Color */
+            color: #323544;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-top: 4px;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .date-line {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0 0 1rem 0;
+        }
+
+        #dynamicDateDisplay {
+            color: #8b7cc8; /* Theme Purple */
+            font-weight: 700;
+        }
+
+        /* --- LOCKED ZONE STYLING (Existing) --- */
 
         /* 1. The Wrapper for content that needs locking */
         .protected-zone {
@@ -189,7 +216,11 @@
             <div class="welcome-content">
                 <div class="welcome-text-content">
                     <h3 id="welcomeTitle">Hello, User!</h3>
-                    <p id="welcomeSubtitle">Great progress! Keep maintaining your attendance streak.</p>
+                    
+                    <div class="paglu-pill">Attendance Paglu</div>
+                    
+                    <p class="date-line">Today is <span id="dynamicDateDisplay">Loading...</span></p>
+
                     <div class="attendance-ring">
                         <svg class="ring-svg" viewBox="0 0 160 160">
                             <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>
@@ -209,9 +240,8 @@
                 <img src="Image/your-logo.png" alt="Logo" class="note-logo">
                 <div class="margin"></div>
 
-                <p>
-                    Keep a quick note of important classes, make-up days or attendance targets here.
-                    This space can work like your personal college notebook page.
+                <p id="notebookQuote">
+                    Loading your attendance status...
                 </p>
 
                 <div class="teacher-mark">
@@ -676,4 +706,3 @@
 </body>
 
 </html>
-
