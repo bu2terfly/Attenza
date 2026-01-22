@@ -270,7 +270,7 @@
 
     /* HERO / WELCOME AREA – illustration as background on right */
     .welcome-section {
-        margin: 0px -16px 28px;
+        margin: -12px -16px 28px;
         padding: 16px 16px 20px;
         background-color: #f5f3ef;
         background-image: url("Image/Illustration.png");
@@ -816,6 +816,7 @@
         /* Increased padding ensures the tilted corners don't get cut off */
         padding: -6px 1px;
         margin-bottom: 30px;
+        margin-top: -16px;
         overflow: visible;
         /* Crucial: lets the paper tilt outside its box */
     }
