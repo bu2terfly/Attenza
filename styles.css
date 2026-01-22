@@ -307,6 +307,10 @@
         background-repeat: no-repeat;
         background-position: right bottom;
         background-size: auto 300px;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .welcome-content {
