@@ -22,29 +22,25 @@
         /* --- NEW STYLES FOR WELCOME UPDATES --- */
         .paglu-pill {
             display: inline-block;
-            background-color: #FFDAB9; /* Peach Color */
+    
+    /* This makes it see-through (Glass Effect) */
+            background: rgba(255, 218, 185, 0.3); 
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+    
+    /* This adds the border */
+            border: 1px solid #FFDAB9;
+    
             color: #323544;
             font-family: 'Poppins', sans-serif;
             font-size: 0.8rem;
             font-weight: 600;
             padding: 4px 14px;
-            border-radius: 20px;
+            border-radius: 50px; /* Makes it very round */
             margin-top: 4px;
             margin-bottom: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .date-line {
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.9rem;
-            color: #666;
-            margin: 0 0 1rem 0;
-        }
-
-        #dynamicDateDisplay {
-            color: #8b7cc8; /* Theme Purple */
-            font-weight: 700;
-        }
 
         /* --- LOCKED ZONE STYLING (Existing) --- */
 
