@@ -853,31 +853,13 @@
     .margin {
         position: absolute;
         /* Moved to the right (5.5rem) to make space for the bigger logo */
-        left: 5.5rem;
+        left: 5rem;
         
         top: 0;
         bottom: 0;
         width: 0;
         border-left: 2px solid #e63946;
         opacity: 0.8;
-    }
-
-    /* --- THE SVG PIN ICON (Styling for the embedded SVG) --- */
-    .pin-icon {
-        position: absolute;
-        
-        /* Fine-tuned to look "stuck" in the corner */
-        top: -8px;
-        left: 8px;
-        
-        width: 30px;
-        height: 30px;
-        
-        /* Realistic Shadow */
-        filter: drop-shadow(2px 5px 3px rgba(0,0,0,0.25));
-        
-        z-index: 30; /* Sits on top of everything */
-        pointer-events: none;
     }
 
     /* --- REMOVE OLD CSS PIN/DOT --- */
@@ -899,9 +881,9 @@
         position: absolute;
         
         /* Centered in the margin space */
-        left: 12px;
+        left: 8px;
         top: 50%;
-        transform: translateY(-50%) rotate(-5deg);
+        transform: translateY(-50%) rotate(-4deg);
         
         /* Increased Size */
         width: 70px;
