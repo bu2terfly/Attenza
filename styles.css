@@ -832,7 +832,7 @@
         color: #2c3e50;
 
         /* The Paper Texture & Lines */
-        background-color: #fffdf6;
+        background-color: #ffffff;
         background-image: linear-gradient(transparent 95%, #aebcd0 95%);
         background-size: 100% 1.2rem;
         line-height: 1.2rem;
@@ -886,8 +886,8 @@
         transform: translateY(-50%) rotate(-3deg);
         
         /* Increased Size */
-        width: 75px;
-        height: 75px;
+        width: 72px;
+        height: 72px;
         
         object-fit: contain;
         
