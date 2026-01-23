@@ -154,130 +154,132 @@
             display: flex;
         }
 
-            /* --- NEW PWA BANNER STYLES --- */
-    /* We use ID #installStrip to match your existing logic, but style it nicely */
-        #installStrip { /* Kept hidden until the App says it's ready */
-            display: blocked;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            z-index: 9999; /* Super high so it sits on top of everything */
-            cursor: pointer;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid #e5e7eb;
-            font-family: 'Poppins', sans-serif; /* Using your existing font */
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-        }
+            /* --- CORRECTED PWA BANNER (INLINE VERSION) --- */
+    #installStrip {
+        /* Logic controls this (starts hidden) */
+        display: none; 
+        
+        /* SIT IN THE PAGE FLOW, NOT FIXED */
+        position: relative; 
+        
+        /* Layout & Spacing */
+        width: 92%; /* Fits nicely on mobile with small gaps */
+        max-width: 600px; /* Doesn't get too huge on desktop */
+        margin: 24px auto; /* 24px space Top/Bottom, Center Left/Right */
+        
+        /* Design */
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px; /* Nice rounded corners */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.04); /* Soft shadow */
+        font-family: 'Poppins', sans-serif;
+        overflow: hidden; /* Keeps the gradient line inside the corners */
+    }
 
-        .banner-container {
-            max-width: 80rem;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            height: 4.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    .banner-container {
+        padding: 0 1.25rem;
+        height: 4.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
     /* Left Side: Icons & Text */
-        .left-group {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+    .left-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
 
-        .platform-icons {
-            display: flex;
-            align-items: center;
-        }
+    .platform-icons {
+        display: flex;
+        align-items: center;
+    }
 
-        .icon-circle {
-            height: 32px;
-            width: 32px;
-            border-radius: 50%;
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .icon-circle {
+        height: 32px;
+        width: 32px;
+        border-radius: 50%;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
     /* Overlap effect */
-        .icon-circle.apple { z-index: 10; position: relative; }
-        .icon-circle.android { z-index: 0; margin-left: -8px; }
+    .icon-circle.apple { z-index: 10; position: relative; }
+    .icon-circle.android { z-index: 0; margin-left: -8px; }
 
-        .fa-apple { font-size: 16px; color: #111827; }
-        .fa-android { font-size: 14px; color: #16a34a; }
+    .fa-apple { font-size: 16px; color: #111827; }
+    .fa-android { font-size: 14px; color: #16a34a; }
 
-        .text-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+    .text-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-        .title-text {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #1f2937;
-            line-height: 1.2;
-        }
+    .title-text {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1f2937;
+        line-height: 1.2;
+    }
 
-        .subtitle-text {
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 2px;
-        }
+    .subtitle-text {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 2px;
+    }
 
     /* The Button */
-        .install-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px; 
-            background-color: #edf2fc;   
-            padding: 10px 20px; 
-            border-radius: 50px; 
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+    .install-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px; 
+        background-color: #edf2fc;   
+        padding: 10px 18px; 
+        border-radius: 50px; 
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
 
-        .install-btn:hover {
-            background-color: #dde7fa;
-            transform: scale(1.02);
-        }
+    .install-btn:hover {
+        background-color: #dde7fa;
+        transform: scale(1.02);
+    }
 
-        .install-btn:active {
-            transform: scale(0.95);
-        }
+    .install-btn:active {
+        transform: scale(0.95);
+    }
 
-        .install-btn i {
-            font-size: 1rem; 
-            color: #2b4575; 
-        }
+    .install-btn i {
+        font-size: 0.9rem; 
+        color: #2b4575; 
+    }
 
-        .install-btn span {
-            font-size: 0.95rem; 
-            font-weight: 600; 
-            color: #2b4575;
-            font-family: 'Poppins', sans-serif;
-        }
+    .install-btn span {
+        font-size: 0.9rem; 
+        font-weight: 600; 
+        color: #2b4575;
+        font-family: 'Poppins', sans-serif;
+    }
 
     /* Bottom Gradient Line */
-        .gradient-line {
-            position: absolute;
-            top: 0; /* Moved to top of the bar for a nice highlight */
-            left: 0;
-            height: 3px;
-            width: 100%;
-            background: linear-gradient(to right, #3b82f6, #a855f7, #ec4899);
-        }
+    .gradient-line {
+        position: absolute;
+        top: 0; 
+        left: 0;
+        height: 3px;
+        width: 100%;
+        background: linear-gradient(to right, #3b82f6, #a855f7, #ec4899);
+    }
+
 
     </style>
 </head>
