@@ -881,9 +881,9 @@
         position: absolute;
         
         /* Centered in the margin space */
-        left: 0px;
+        left: -4px;
         top: 50%;
-        transform: translateY(-50%) rotate(-4deg);
+        transform: translateY(-50%) rotate(-3deg);
         
         /* Increased Size */
         width: 75px;
