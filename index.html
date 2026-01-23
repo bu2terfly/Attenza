@@ -30,42 +30,16 @@
             margin-bottom: 24px; /* Space above the ring */
          }
 
-/* The Date itself (Purple & Bold) */
-         #dynamicDateDisplay {
-            background: #dde4f6;       /* Light Grey Box */
-            border: 1px solid #7a8ff5; /* Tiny Border */
+        /* The Date itself (Purple & Bold) */
+        #dynamicDateDisplay {
+            background: rgba(245, 220, 216);       /* Light Grey Box */
+            border: 1px solid #fd654a; /* Tiny Border */
             color: #2b2933;            /* Purple Text */
             font-weight: 500;          /* Bold */
-    
             padding: 4px 10px;         /* Stuffing inside the pill */
             border-radius: 50px;       /* Round corners */
             font-size: 0.7rem;
          }
-
-        .paglu-pill {
-            display: inline-block;
-            align-items: center;
-            gap: 6px;
-    
-    /* This makes it see-through (Glass Effect) */
-            background: rgba(245, 220, 216); 
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-    
-    /* This adds the border */
-            border: 1px solid #fd654a;
-    
-            color: #2b2933;
-            font-size: 0.85rem;
-            font-weight: 500;
-            padding: 4px 8px;
-            border-radius: 12px; /* Makes it very round */
-            margin-top: 4px;
-            margin-bottom: 6px;
-        }
-
-
-        /* --- LOCKED ZONE STYLING (Existing) --- */
 
         /* 1. The Wrapper for content that needs locking */
         .protected-zone {
@@ -154,223 +128,221 @@
             display: flex;
         }
 
-    /* --- THE BEST APPROACH (Viewport Magic) --- */
-    #installStrip {
-        display: block; /* Logic: Starts hidden */
-        
-        /* 1. FORCE FULL WIDTH */
-        width: 100vw;
-        
-        /* 2. CENTER IT & PULL TO EDGES */
-        position: relative;
-        left: 50%;
-        right: 50%;
-        margin-left: -50vw;
-        margin-right: -50vw;
-        
-        /* 3. SPACING */
-        margin-top: 16px;
-        margin-bottom: 24px;
-        
-        /* 4. DESIGN */
-        background-color: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        border-top: 2px solid #e5e7eb;
-        border-bottom: 2px solid #e5e7eb;
-        
-        font-family: 'Poppins', sans-serif;
-        z-index: 99;
-        cursor: pointer;
-    }
+        /* --- THE BEST APPROACH (Viewport Magic) --- */
+        #installStrip {
+            display: block; /* Logic: Starts hidden */
+            
+            /* 1. FORCE FULL WIDTH */
+            width: 100vw;
+            
+            /* 2. CENTER IT & PULL TO EDGES */
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+            
+            /* 3. SPACING */
+            margin-top: 16px;
+            margin-bottom: 24px;
+            
+            /* 4. DESIGN */
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-top: 2px solid #e5e7eb;
+            border-bottom: 2px solid #e5e7eb;
+            
+            font-family: 'Poppins', sans-serif;
+            z-index: 99;
+            cursor: pointer;
+        }
 
-    /* Inner Container - Keeps your text aligned with the rest of the page */
-    .banner-container {
-        max-width: 80rem; 
-        margin: 0 auto;
-        padding: 0 1.5rem; 
-        height: 4.5rem; 
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
+        /* Inner Container - Keeps your text aligned with the rest of the page */
+        .banner-container {
+            max-width: 80rem; 
+            margin: 0 auto;
+            padding: 0 1.5rem; 
+            height: 4.5rem; 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-    /* ... Keep your .left-group, .install-btn, .icon-circle CSS below this ... */
-
-
-    /* Make sure all children use the box-sizing */
-    #installStrip *, 
-    #installStrip *::before, 
-    #installStrip *::after {
-        box-sizing: border-box;
-    }
-
-    #installStrip:hover {
-        background-color: #ffffff;
-    }
-
-    /* Container Layout */
-    .pwa-inner-container {
-        max-width: 80rem;
-        margin: 0 auto;
-        padding: 0 1rem;
-        height: 3rem; /* 64px */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    /* Left Side: Icons & Label */
-    .pwa-left-group {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .pwa-platform-icons {
-        display: flex;
-        align-items: center;
-    }
-
-    .pwa-icon-circle {
-        height: 28px;
-        width: 28px;
-        border-radius: 50%;
-        background-color: #f9fafb;
-        border: 1px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Overlap effect */
-    .pwa-icon-circle.apple { 
-        z-index: 10; 
-        position: relative; 
-    }
-    .pwa-icon-circle.android { 
-        z-index: 0; 
-        margin-left: -4px; 
-    }
-
-    /* Icon Colors */
-    .fa-apple { font-size: 14px; color: #111827; }
-    .fa-android { font-size: 12px; color: #16a34a; }
-
-    .pwa-title-text {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #1f2937;
-        letter-spacing: -0.025em;
-    }
-
-    /* Right Side: Install Button */
-    .pwa-install-btn {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background-color: #edf2fc; /* Specific pale blue */
-        padding: 6px 12px;
-        border-radius: 20px;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.1s ease;
-        pointer-events: none; /* TRICK: This makes clicks pass through to the main banner */
-    }
-
-    .pwa-install-btn i {
-        font-size: 1rem;
-        color: #2b4575; 
-    }
-
-    .pwa-install-btn span {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #2b4575; 
-        font-family: 'Poppins', sans-serif;
-        letter-spacing: -0.025em;
-        line-height: 1;
-    }
-
-    /* Bottom Gradient Line */
-    .pwa-gradient-line {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 2px;
-        width: 100%;
-        background: linear-gradient(to right, #3b82f6, #a855f7, #ec4899);
-        opacity: 0;
-        transition: opacity 0.5s ease;
-    }
-
-    #installStrip:hover .pwa-gradient-line {
-        opacity: 1;
-    }
-
-        /* From Uiverse.io by barisdogansutcu */ 
-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 10px;
-  color: white;
-  text-shadow: 2px 2px rgb(116, 116, 116);
-  text-transform: uppercase;
-  cursor: pointer;
-  border: solid 2px black;
-  letter-spacing: 1px;
-  font-weight: 600;
-  font-size: 17px;
-  background-color: hsl(49deg 98% 60%);
-  border-radius: 50px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.5s ease;
-  transform: scale(0.75);
-  margin-bottom: 6px;
-}
-
-button:active {
-  transform: scale(0.9);
-  transition: all 100ms ease;
-}
-
-button svg {
-  transition: all 0.5s ease;
-  z-index: 2;
-}
-
-.play {
-  transition: all 0.5s ease;
-  transition-delay: 300ms;
-}
-
-button:hover svg {
-  transform: scale(3) translate(50%);
-}
-
-.now {
-  position: absolute;
-  left: 0;
-  transform: translateX(-100%);
-  transition: all 0.5s ease;
-  z-index: 2;
-}
-
-button:hover .now {
-  transform: translateX(10px);
-  transition-delay: 300ms;
-}
-
-button:hover .play {
-  transform: translateX(200%);
-  transition-delay: 300ms;
-}
+        /* ... Keep your .left-group, .install-btn, .icon-circle CSS below this ... */
 
 
+        /* Make sure all children use the box-sizing */
+        #installStrip *, 
+        #installStrip *::before, 
+        #installStrip *::after {
+            box-sizing: border-box;
+        }
 
+        #installStrip:hover {
+            background-color: #ffffff;
+        }
+
+        /* Container Layout */
+        .pwa-inner-container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+            height: 3rem; /* 64px */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Left Side: Icons & Label */
+        .pwa-left-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pwa-platform-icons {
+            display: flex;
+            align-items: center;
+        }
+
+        .pwa-icon-circle {
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Overlap effect */
+        .pwa-icon-circle.apple { 
+            z-index: 10; 
+            position: relative; 
+        }
+        .pwa-icon-circle.android { 
+            z-index: 0; 
+            margin-left: -4px; 
+        }
+
+        /* Icon Colors */
+        .fa-apple { font-size: 14px; color: #111827; }
+        .fa-android { font-size: 12px; color: #16a34a; }
+
+        .pwa-title-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.025em;
+        }
+
+        /* Right Side: Install Button */
+        .pwa-install-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #edf2fc; /* Specific pale blue */
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            pointer-events: none; /* TRICK: This makes clicks pass through to the main banner */
+        }
+
+        .pwa-install-btn i {
+            font-size: 1rem;
+            color: #2b4575; 
+        }
+
+        .pwa-install-btn span {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2b4575; 
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: -0.025em;
+            line-height: 1;
+        }
+
+        /* Bottom Gradient Line */
+        .pwa-gradient-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(to right, #3b82f6, #a855f7, #ec4899);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #installStrip:hover .pwa-gradient-line {
+            opacity: 1;
+        }
+
+        /* ===== Scoped Uiverse button styles (scoped ONLY to .uiverse-btn) ===== */
+        /* From Uiverse.io by barisdogansutcu - converted from global to scoped class to avoid collisions */
+        .uiverse-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 0 10px;
+          color: white;
+          text-shadow: 2px 2px rgb(116, 116, 116);
+          text-transform: uppercase;
+          cursor: pointer;
+          border: solid 2px black;
+          letter-spacing: 1px;
+          font-weight: 600;
+          font-size: 17px;
+          background-color: hsl(49deg 98% 60%);
+          border-radius: 50px;
+          position: relative;
+          overflow: hidden;
+          transition: all 0.5s ease;
+          transform: scale(0.75);
+          margin-bottom: 4px;
+        }
+
+        .uiverse-btn:active {
+          transform: scale(0.9);
+          transition: all 100ms ease;
+        }
+
+        .uiverse-btn svg {
+          transition: all 0.5s ease;
+          z-index: 2;
+        }
+
+        .uiverse-btn .play {
+          transition: all 0.5s ease;
+          transition-delay: 300ms;
+        }
+
+        .uiverse-btn:hover svg {
+          transform: scale(3) translate(50%);
+        }
+
+        .uiverse-btn .now {
+          position: absolute;
+          left: 0;
+          transform: translateX(-100%);
+          transition: all 0.5s ease;
+          z-index: 2;
+        }
+
+        .uiverse-btn:hover .now {
+          transform: translateX(10px);
+          transition-delay: 300ms;
+        }
+
+        .uiverse-btn:hover .play {
+          transform: translateX(200%);
+          transition-delay: 300ms;
+        }
 
     </style>
 </head>
@@ -453,12 +425,13 @@ button:hover .play {
         <div class="welcome-section">
             <div class="welcome-content">
                 <div class="welcome-text-content">
-                    <button>
+                    <!-- scoped uiverse button: only this button gets uiverse styles -->
+                    <button class="uiverse-btn">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 36 36"
-                            width="26px"
-                            height="26px"
+                            width="36px"
+                            height="36px"
                             >
                             <rect width="36" height="36" x="0" y="0" fill="#fdd835"></rect>
                             <path
@@ -999,4 +972,3 @@ button:hover .play {
 </body>
 
 </html>
-
