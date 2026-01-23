@@ -154,51 +154,67 @@
             display: flex;
         }
 
-            /* --- CORRECTED PWA BANNER (INLINE VERSION) --- */
+    /* --- NEW EXACT PWA BANNER STYLES --- */
     #installStrip {
-        /* Logic controls this (starts hidden) */
+        /* Logic: Starts hidden, shows when app is ready */
         display: block; 
         
-        /* SIT IN THE PAGE FLOW, NOT FIXED */
-        position: relative; 
+        /* Font & Layout */
+        font-family: 'Poppins', sans-serif; 
+        box-sizing: border-box;
+        position: relative;
+        width: 100%;
+        margin-top: 24px; /* Adds space between Notebook and this strip */
         
-        /* Layout & Spacing */
-        width: 92%; /* Fits nicely on mobile with small gaps */
-        max-width: 600px; /* Doesn't get too huge on desktop */
-        margin: 24px auto; /* 24px space Top/Bottom, Center Left/Right */
+        /* The Glass Look */
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border-bottom: 1px solid #e5e7eb;
+        border-top: 1px solid #e5e7eb; /* Optional: Looks good with top border too */
         
-        /* Design */
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px; /* Nice rounded corners */
-        box-shadow: 0 4px 10px rgba(0,0,0,0.04); /* Soft shadow */
-        font-family: 'Poppins', sans-serif;
-        overflow: hidden; /* Keeps the gradient line inside the corners */
+        z-index: 99;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
     }
 
-    .banner-container {
-        padding: 0 1.25rem;
-        height: 4.5rem;
+    /* Make sure all children use the box-sizing */
+    #installStrip *, 
+    #installStrip *::before, 
+    #installStrip *::after {
+        box-sizing: border-box;
+    }
+
+    #installStrip:hover {
+        background-color: #ffffff;
+    }
+
+    /* Container Layout */
+    .pwa-inner-container {
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 0 1rem;
+        height: 4rem; /* 64px */
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
 
-    /* Left Side: Icons & Text */
-    .left-group {
+    /* Left Side: Icons & Label */
+    .pwa-left-group {
         display: flex;
         align-items: center;
         gap: 1rem;
     }
 
-    .platform-icons {
+    .pwa-platform-icons {
         display: flex;
         align-items: center;
     }
 
-    .icon-circle {
-        height: 32px;
-        width: 32px;
+    .pwa-icon-circle {
+        height: 28px;
+        width: 28px;
         border-radius: 50%;
         background-color: #f9fafb;
         border: 1px solid #e5e7eb;
@@ -208,77 +224,70 @@
     }
 
     /* Overlap effect */
-    .icon-circle.apple { z-index: 10; position: relative; }
-    .icon-circle.android { z-index: 0; margin-left: -8px; }
-
-    .fa-apple { font-size: 16px; color: #111827; }
-    .fa-android { font-size: 14px; color: #16a34a; }
-
-    .text-info {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+    .pwa-icon-circle.apple { 
+        z-index: 10; 
+        position: relative; 
+    }
+    .pwa-icon-circle.android { 
+        z-index: 0; 
+        margin-left: -4px; 
     }
 
-    .title-text {
-        font-size: 0.95rem;
+    /* Icon Colors */
+    .fa-apple { font-size: 14px; color: #111827; }
+    .fa-android { font-size: 12px; color: #16a34a; }
+
+    .pwa-title-text {
+        font-size: 0.875rem;
         font-weight: 600;
         color: #1f2937;
-        line-height: 1.2;
+        letter-spacing: -0.025em;
     }
 
-    .subtitle-text {
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: #9ca3af;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-top: 2px;
-    }
-
-    /* The Button */
-    .install-btn {
+    /* Right Side: Install Button */
+    .pwa-install-btn {
         display: flex;
         align-items: center;
-        gap: 8px; 
-        background-color: #edf2fc;   
-        padding: 10px 18px; 
-        border-radius: 50px; 
+        gap: 12px;
+        background-color: #edf2fc; /* Specific pale blue */
+        padding: 8px 16px;
+        border-radius: 20px;
         border: none;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: transform 0.1s ease;
+        pointer-events: none; /* TRICK: This makes clicks pass through to the main banner */
     }
 
-    .install-btn:hover {
-        background-color: #dde7fa;
-        transform: scale(1.02);
-    }
-
-    .install-btn:active {
-        transform: scale(0.95);
-    }
-
-    .install-btn i {
-        font-size: 0.9rem; 
+    .pwa-install-btn i {
+        font-size: 1rem;
         color: #2b4575; 
     }
 
-    .install-btn span {
-        font-size: 0.9rem; 
-        font-weight: 600; 
-        color: #2b4575;
+    .pwa-install-btn span {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2b4575; 
         font-family: 'Poppins', sans-serif;
+        letter-spacing: -0.025em;
+        line-height: 1;
     }
 
     /* Bottom Gradient Line */
-    .gradient-line {
+    .pwa-gradient-line {
         position: absolute;
-        top: 0; 
+        bottom: 0;
         left: 0;
-        height: 3px;
+        height: 2px;
         width: 100%;
         background: linear-gradient(to right, #3b82f6, #a855f7, #ec4899);
+        opacity: 0;
+        transition: opacity 0.5s ease;
     }
+
+    #installStrip:hover .pwa-gradient-line {
+        opacity: 1;
+    }
+
 
 
     </style>
@@ -401,30 +410,29 @@
         </div>
 
 
-        <div id="installStrip">
-            <div class="gradient-line"></div>
-            <div class="banner-container">
-                <div class="left-group">
-                    <div class="platform-icons">
-                        <div class="icon-circle apple">  
-                            <i class="fa-brands fa-apple"></i>  
+        <div id="installStrip" class="pwa-banner-component" onclick="if(document.getElementById('installBtn')) document.getElementById('installBtn').click()">
+            <div class="pwa-inner-container">
+                <div class="pwa-left-group">
+                    <div class="pwa-platform-icons">
+                        <div class="pwa-icon-circle apple">
+                            <i class="fa-brands fa-apple"></i>
                         </div>
-                        <div class="icon-circle android">
-                            <i class="fa-brands fa-android"></i>  
+                        <div class="pwa-icon-circle android">
+                            <i class="fa-brands fa-android"></i>
                         </div>
-                    </div>  
-                    
-                    <div class="text-info">
-                        <span class="title-text">Install App</span>  
-                        <span class="subtitle-text">Fast & Native</span>  
                     </div>
+                    <span class="pwa-title-text">Add to Home Screen</span>
                 </div>
-                <button class="install-btn" id="installBtn">
-                    <i class="fa-solid fa-download"></i>
-                    <span>Install</span>
-                </button>
+                <div>
+                    <button class="pwa-install-btn" id="installBtn">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Install</span>
+                    </button>
+                </div>
             </div>
+            <div class="pwa-gradient-line"></div>
         </div>
+
 
 
         <div class="protected-zone">
