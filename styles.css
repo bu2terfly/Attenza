@@ -881,7 +881,7 @@
         position: absolute;
         
         /* Centered in the margin space */
-        left: 8px;
+        left: 0px;
         top: 50%;
         transform: translateY(-50%) rotate(-4deg);
         
