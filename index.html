@@ -8,6 +8,7 @@
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&display=swap" rel="stylesheet">
@@ -152,6 +153,132 @@
         body.mode-locked .locked-overlay {
             display: flex;
         }
+
+            /* --- NEW PWA BANNER STYLES --- */
+    /* We use ID #installStrip to match your existing logic, but style it nicely */
+        #installStrip {
+            display: none; /* Kept hidden until the App says it's ready */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999; /* Super high so it sits on top of everything */
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid #e5e7eb;
+            font-family: 'Poppins', sans-serif; /* Using your existing font */
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .banner-container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 4.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+    /* Left Side: Icons & Text */
+        .left-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .platform-icons {
+            display: flex;
+            align-items: center;
+        }
+
+        .icon-circle {
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    /* Overlap effect */
+        .icon-circle.apple { z-index: 10; position: relative; }
+        .icon-circle.android { z-index: 0; margin-left: -8px; }
+
+        .fa-apple { font-size: 16px; color: #111827; }
+        .fa-android { font-size: 14px; color: #16a34a; }
+
+        .text-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .title-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.2;
+        }
+
+        .subtitle-text {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 2px;
+        }
+
+    /* The Button */
+        .install-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px; 
+            background-color: #edf2fc;   
+            padding: 10px 20px; 
+            border-radius: 50px; 
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .install-btn:hover {
+            background-color: #dde7fa;
+            transform: scale(1.02);
+        }
+
+        .install-btn:active {
+            transform: scale(0.95);
+        }
+
+        .install-btn i {
+            font-size: 1rem; 
+            color: #2b4575; 
+        }
+
+        .install-btn span {
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            color: #2b4575;
+            font-family: 'Poppins', sans-serif;
+        }
+
+    /* Bottom Gradient Line */
+        .gradient-line {
+            position: absolute;
+            top: 0; /* Moved to top of the bar for a nice highlight */
+            left: 0;
+            height: 3px;
+            width: 100%;
+            background: linear-gradient(to right, #3b82f6, #a855f7, #ec4899);
+        }
+
     </style>
 </head>
 
@@ -272,17 +399,31 @@
         </div>
 
 
-        <div class="install-strip" id="installStrip">
-            <div class="install-content">
-                <span class="install-text" id="installText">Install this site as an app</span>
-                <button class="close-strip" id="closeStrip">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+        <div id="installStrip">
+            <div class="gradient-line"></div>
+            <div class="banner-container">
+                <div class="left-group">
+                    <div class="platform-icons">
+                        <div class="icon-circle apple">  
+                            <i class="fa-brands fa-apple"></i>  
+                        </div>
+                        <div class="icon-circle android">
+                            <i class="fa-brands fa-android"></i>  
+                        </div>
+                    </div>  
+                    
+                    <div class="text-info">
+                        <span class="title-text">Install App</span>  
+                        <span class="subtitle-text">Fast & Native</span>  
+                    </div>
+                </div>
+                <button class="install-btn" id="installBtn">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Install</span>
                 </button>
             </div>
         </div>
+
 
         <div class="protected-zone">
             
