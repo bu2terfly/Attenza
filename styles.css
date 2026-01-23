@@ -811,14 +811,13 @@
         color: white;
     }
 
-    /* --- NOTEBOOK SECTION CONTAINER --- */
+        /* --- NOTEBOOK SECTION CONTAINER --- */
     .notebook-section {
         /* Increased padding ensures the tilted corners don't get cut off */
         padding: -6px 1px;
         margin-bottom: 30px;
         margin-top: -16px;
         overflow: visible;
-        /* Crucial: lets the paper tilt outside its box */
     }
 
     /* --- THE SHEET OF PAPER --- */
@@ -826,86 +825,65 @@
         position: relative;
         width: 100%;
         min-height: auto;
-        /* Ensures it looks like a full sheet even if empty */
 
         /* Typography */
         font-family: "Gaegu", cursive;
         font-size: 1.1rem;
-        /* Slightly larger for readability */
         color: #2c3e50;
-        /* Dark blue-grey text looks more premium than pure black */
 
         /* The Paper Texture & Lines */
         background-color: #fffdf6;
-        /* Warm off-white paper color */
-
-        /* This creates the blue horizontal lines. 
-       We use 1.6rem spacing for both the gradient AND the line-height below */
         background-image: linear-gradient(transparent 95%, #aebcd0 95%);
         background-size: 100% 1.2rem;
         line-height: 1.2rem;
 
-        /* Layout */
+        /* Layout - Increased left padding to 6.5rem to fit the new margin position */
         padding: 1.2rem 1.5rem 1.2rem 6.5rem;
-        /* Left padding makes room for margin line */
+        
         border-radius: 2px;
-        /* Very slight curve, paper isn't razor sharp */
 
         /* THE PINNED EFFECT */
         transform-origin: 15px 15px;
-        /* The rotation pivots around the pin location */
         transform: rotate(-2deg);
-        /* Lifts the right side up */
-
-        /* Premium Shadow: Soft, diffuse, looks like it's lifting off the wall */
         box-shadow: 5px 8px 20px rgba(0, 0, 0, 0.12);
-
-        /* Clean up borders */
         border: none;
     }
 
     /* --- THE RED MARGIN LINE --- */
     .margin {
         position: absolute;
-        left: 5rem;
-        /* Positioned carefully from the left */
+        /* Moved to the right (5.5rem) to make space for the bigger logo */
+        left: 5.5rem;
+        
         top: 0;
         bottom: 0;
         width: 0;
         border-left: 2px solid #e63946;
-        /* Dispur College Red */
         opacity: 0.8;
-        /* Slightly transparent so it blends into the paper */
     }
 
-    /* --- THE 3D PIN (TOP LEFT) --- */
-    .page::before {
-        content: '';
+    /* --- THE SVG PIN ICON (Styling for the embedded SVG) --- */
+    .pin-icon {
         position: absolute;
         
-        /* Positioned to look like it pins the corner */
-        top: -15px;
-        left: 10px;
-
-        /* Size matches the icon */
-        width: 48px;
-        height: 48px;
-
-        /* The Pin Icon */
-        background-image: url("https://img.icons8.com/color-glass/48/pin.png");
-        background-repeat: no-repeat;
-        background-size: contain;
-
-        /* Shadow for the pin itself */
-        filter: drop-shadow(2px 5px 2px rgba(0,0,0,0.2));
-        z-index: 10;
+        /* Fine-tuned to look "stuck" in the corner */
+        top: -12px;
+        left: 5px;
         
-        /* Resetting old styles */
-        border-radius: 0;
-        background-color: transparent;
-        box-shadow: none;
+        width: 50px;
+        height: 50px;
+        
+        /* Realistic Shadow */
+        filter: drop-shadow(2px 5px 3px rgba(0,0,0,0.25));
+        
+        z-index: 30; /* Sits on top of everything */
+        pointer-events: none;
     }
-    /* --- REMOVE OLD CORNER FOLDS --- */
+
+    /* --- REMOVE OLD CSS PIN/DOT --- */
+    .page::before {
+        content: none;
+    }
     .page::after {
         content: none;
     }
@@ -913,23 +891,26 @@
     /* --- CONTENT SPACING --- */
     .page p {
         margin: 0;
-        /* Ensure text aligns with the lines */
         padding-top: 0;
     }
 
     /* --- LOGO POSITIONING --- */
     .note-logo {
         position: absolute;
-        left: 8px;
-        /* Tucked into the margin area */
+        
+        /* Centered in the margin space */
+        left: 12px;
         top: 50%;
         transform: translateY(-50%) rotate(-5deg);
-        /* Slight rotation matches paper */
+        
+        /* Increased Size */
         width: 70px;
-        /* Adjusted size to fit margin */
         height: 70px;
+        
         object-fit: contain;
-        /* Makes the logo look printed ON the paper */
+        
+        /* Pure Overlay - No blending */
+        z-index: 20;
         pointer-events: none;
     }
 
@@ -946,9 +927,10 @@
         font-family: "Cedarville Cursive", cursive;
         font-size: 1.4rem;
         color: #c62828;
-        /* Red ink color */
         font-weight: bold;
     }
+
+
 
 
     /* MOBILE ADJUSTMENTS */
