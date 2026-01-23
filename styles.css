@@ -815,7 +815,7 @@
     .notebook-section {
         /* Increased padding ensures the tilted corners don't get cut off */
         padding: -6px 1px;
-        margin-bottom: 30px;
+        margin-bottom: 18px;
         margin-top: -16px;
         overflow: visible;
     }
