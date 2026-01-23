@@ -838,7 +838,7 @@
         line-height: 1.2rem;
 
         /* Layout - Increased left padding to 6.5rem to fit the new margin position */
-        padding: 1rem 1.2rem 1rem 4.5rem;
+        padding: 0.8rem 1rem 0.8rem 5rem;
         
         border-radius: 2px;
 
@@ -853,7 +853,7 @@
     .margin {
         position: absolute;
         /* Moved to the right (5.5rem) to make space for the bigger logo */
-        left: 4rem;
+        left: 4.5rem;
         
         top: 0;
         bottom: 0;
@@ -881,7 +881,7 @@
         position: absolute;
         
         /* Centered in the margin space */
-        left: -4px;
+        left: 0px;
         top: 50%;
         transform: translateY(-50%) rotate(-3deg);
         
