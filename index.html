@@ -154,29 +154,49 @@
             display: flex;
         }
 
-    /* --- NEW EXACT PWA BANNER STYLES --- */
+    /* --- THE BEST APPROACH (Viewport Magic) --- */
     #installStrip {
-        /* Logic: Starts hidden, shows when app is ready */
-        display: block; 
+        display: none; /* Logic: Starts hidden */
         
-        /* Font & Layout */
-        font-family: 'Poppins', sans-serif; 
-        box-sizing: border-box;
+        /* 1. FORCE FULL WIDTH */
+        width: 100vw;
+        
+        /* 2. CENTER IT & PULL TO EDGES */
         position: relative;
-        width: 100%;
-        margin-top: 24px; /* Adds space between Notebook and this strip */
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
         
-        /* The Glass Look */
-        background-color: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
+        /* 3. SPACING */
+        margin-top: 24px;
+        margin-bottom: 24px;
+        
+        /* 4. DESIGN */
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border-top: 1px solid #e5e7eb;
         border-bottom: 1px solid #e5e7eb;
-        border-top: 1px solid #e5e7eb; /* Optional: Looks good with top border too */
         
+        font-family: 'Poppins', sans-serif;
         z-index: 99;
         cursor: pointer;
-        transition: background-color 0.3s ease;
     }
+
+    /* Inner Container - Keeps your text aligned with the rest of the page */
+    .banner-container {
+        max-width: 80rem; 
+        margin: 0 auto;
+        padding: 0 1.5rem; 
+        height: 4.5rem; 
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* ... Keep your .left-group, .install-btn, .icon-circle CSS below this ... */
+
 
     /* Make sure all children use the box-sizing */
     #installStrip *, 
