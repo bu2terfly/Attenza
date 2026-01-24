@@ -1302,6 +1302,16 @@
         // commit subjects write
         await batch.commit();
 
+        const userRef = doc(db, 'users', APP_STATE.uid);
+        await setDoc(
+          userRef,
+          {
+            setupSubject: true,
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+
         // Now update summary doc inside a transaction so we don't overwrite other fields
         const summaryRef = doc(db, 'users', APP_STATE.uid, 'metadata', 'summary'); // choose metadata/summary path
         await runTransaction(db, async (tx) => {
