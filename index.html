@@ -342,10 +342,6 @@
           transform: translateX(200%);
           transition-delay: 300ms;
         }
-
-    </style>
-
-    <style>
         /* --- SKELETON UI STYLES --- */
         /* --- RESET & BASIC SETUP --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -484,11 +480,15 @@
 
         /* --- INTEGRATION STYLES --- */
         #skeleton {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 100vh;
-            overflow-y: auto;
+            min-height: 100vh;
+            z-index: 9999;
             background-color: #f5f3ef;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.4s ease-out; 
+            pointer-events: none; 
         }
 
         #skeleton::-webkit-scrollbar { display: none; }
@@ -1195,15 +1195,30 @@
         await initializeDashboard(userData);
       }
 
-      // Fade out skeleton and show main content
+
+      // --- NEW SCROLL-AWARE FADE LOGIC ---
       const skeleton = document.getElementById('skeleton');
-      if (skeleton) {
-        skeleton.style.opacity = '0';
-        setTimeout(() => {
-          skeleton.remove();
-          document.getElementById('main-content').style.display = 'block';
-        }, 500);
+      const mainContent = document.getElementById('main-content');
+
+      if (skeleton && mainContent) {
+        // 1. Reveal main content immediately (it sits BEHIND the skeleton)
+        // This ensures no white flash occurs.
+        mainContent.style.display = 'block';
+
+        // 2. Wait one "paint" frame to ensure the DOM is ready
+        requestAnimationFrame(() => {
+            
+            // 3. Fade out the skeleton
+            skeleton.style.opacity = '0';
+            
+            // 4. Remove it from DOM after the fade finishes
+            setTimeout(() => {
+                skeleton.remove();
+            }, 400); // Matches the 0.4s CSS transition
+        });
       }
+      // --- END LOGIC ---
+
 
     } catch (error) {
       console.error("Dashboard auth check failed:", error);
