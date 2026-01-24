@@ -20,50 +20,59 @@
     <title>ATTENZA - for Dispur College</title>
 
     <style>
-        /* --- YOUR ORIGINAL STYLES (kept unchanged) --- */
-
         /* --- NEW STYLES FOR WELCOME UPDATES --- */
+        /* The "Today is" text (Grey) */
         .date-line {
-            font-size: 0.85rem;
-            color: #666666;
-            font-weight: 500;
-            margin-top: 2px;
-            margin-bottom: 24px;
-        }
+            font-size: 0.85rem; 
+            color: #666666; 
+            font-weight: 500;/* Grey/Normal */
+            margin-top: 2px;     /* Tiny space under the pill */
+            margin-bottom: 24px; /* Space above the ring */
+         }
 
+        /* The Date itself (Purple & Bold) */
         #dynamicDateDisplay {
-            background: rgba(245, 220, 216);
-            border: 1px solid #fd654a;
-            color: #2b2933;
-            font-weight: 500;
-            padding: 4px 10px;
-            border-radius: 12px;
+            background: rgba(245, 220, 216);       /* Light Grey Box */
+            border: 1px solid #fd654a; /* Tiny Border */
+            color: #2b2933;            /* Purple Text */
+            font-weight: 500;          /* Bold */
+            padding: 4px 10px;         /* Stuffing inside the pill */
+            border-radius: 12px;       /* Round corners */
             font-size: 0.7rem;
-        }
+         }
 
+        /* 1. The Wrapper for content that needs locking */
         .protected-zone {
             position: relative;
             min-height: 500px;
         }
 
+        /* 2. The Overlay itself */
         .locked-overlay {
             position: absolute;
             top: 0;
+            
+            /* CSS Trick to force full screen width even inside a padded container */
             left: 50%;
             width: 100vw;
             transform: translateX(-50%);
+            
             height: 100%;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(3px);
+            z-index: 50; 
+            
+            /* The Blur Effect - Reduced Opacity as requested */
+            background: rgba(255, 255, 255, 0.15); /* Reduced white tint */
+            backdrop-filter: blur(3px); /* Reduced blur amount */
             -webkit-backdrop-filter: blur(3px);
-            display: none;
+            
+            display: none; /* Hidden by default */
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-bottom: 30vh;
+            padding-bottom: 30vh; /* Shift content up for visibility */
         }
 
+        /* 3. The "No Card" Text Styling */
         .lock-content {
             text-align: center;
             padding: 2rem;
@@ -114,42 +123,58 @@
             box-shadow: 0 2px 8px rgba(139, 124, 200, 0.3);
         }
 
+        /* 4. THE TRIGGER */
         body.mode-locked .locked-overlay {
             display: flex;
         }
 
+        /* --- THE BEST APPROACH (Viewport Magic) --- */
         #installStrip {
-            display: block;
+            display: block; /* Logic: Starts hidden */
+            
+            /* 1. FORCE FULL WIDTH */
             width: 100vw;
+            
+            /* 2. CENTER IT & PULL TO EDGES */
             position: relative;
             left: 50%;
             right: 50%;
             margin-left: -50vw;
             margin-right: -50vw;
+            
+            /* 3. SPACING */
             margin-top: 16px;
             margin-bottom: 24px;
+            
+            /* 4. DESIGN */
             background-color: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             border-top: 2px solid #e5e7eb;
             border-bottom: 2px solid #e5e7eb;
+            
             font-family: 'Poppins', sans-serif;
             z-index: 99;
             cursor: pointer;
         }
 
+        /* Inner Container - Keeps your text aligned with the rest of the page */
         .banner-container {
-            max-width: 80rem;
+            max-width: 80rem; 
             margin: 0 auto;
-            padding: 0 1.5rem;
-            height: 4.5rem;
+            padding: 0 1.5rem; 
+            height: 4.5rem; 
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        #installStrip *,
-        #installStrip *::before,
+        /* ... Keep your .left-group, .install-btn, .icon-circle CSS below this ... */
+
+
+        /* Make sure all children use the box-sizing */
+        #installStrip *, 
+        #installStrip *::before, 
         #installStrip *::after {
             box-sizing: border-box;
         }
@@ -158,16 +183,18 @@
             background-color: #ffffff;
         }
 
+        /* Container Layout */
         .pwa-inner-container {
             max-width: 80rem;
             margin: 0 auto;
             padding: 0 1rem;
-            height: 3rem;
+            height: 3rem; /* 64px */
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
+        /* Left Side: Icons & Label */
         .pwa-left-group {
             display: flex;
             align-items: center;
@@ -190,25 +217,19 @@
             justify-content: center;
         }
 
-        .pwa-icon-circle.apple {
-            z-index: 10;
-            position: relative;
+        /* Overlap effect */
+        .pwa-icon-circle.apple { 
+            z-index: 10; 
+            position: relative; 
+        }
+        .pwa-icon-circle.android { 
+            z-index: 0; 
+            margin-left: -4px; 
         }
 
-        .pwa-icon-circle.android {
-            z-index: 0;
-            margin-left: -4px;
-        }
-
-        .fa-apple {
-            font-size: 14px;
-            color: #111827;
-        }
-
-        .fa-android {
-            font-size: 12px;
-            color: #16a34a;
-        }
+        /* Icon Colors */
+        .fa-apple { font-size: 14px; color: #111827; }
+        .fa-android { font-size: 12px; color: #16a34a; }
 
         .pwa-title-text {
             font-size: 0.875rem;
@@ -217,33 +238,35 @@
             letter-spacing: -0.025em;
         }
 
+        /* Right Side: Install Button */
         .pwa-install-btn {
             display: flex;
             align-items: center;
             gap: 12px;
-            background-color: #edf2fc;
+            background-color: #edf2fc; /* Specific pale blue */
             padding: 6px 12px;
             border-radius: 20px;
             border: none;
             cursor: pointer;
             transition: transform 0.1s ease;
-            pointer-events: none;
+            pointer-events: none; /* TRICK: This makes clicks pass through to the main banner */
         }
 
         .pwa-install-btn i {
             font-size: 1rem;
-            color: #2b4575;
+            color: #2b4575; 
         }
 
         .pwa-install-btn span {
             font-size: 1rem;
             font-weight: 600;
-            color: #2b4575;
+            color: #2b4575; 
             font-family: 'Poppins', sans-serif;
             letter-spacing: -0.025em;
             line-height: 1;
         }
 
+        /* Bottom Gradient Line */
         .pwa-gradient-line {
             position: absolute;
             bottom: 0;
@@ -259,612 +282,709 @@
             opacity: 1;
         }
 
+        /* ===== Scoped Uiverse button styles (scoped ONLY to .uiverse-btn) ===== */
+        /* From Uiverse.io by barisdogansutcu - converted from global to scoped class to avoid collisions */
         .uiverse-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 0 10px;
-            color: black;
-            text-transform: uppercase;
-            cursor: pointer;
-            border: solid 2px black;
-            letter-spacing: 1px;
-            font-weight: 600;
-            font-size: 17px;
-            background-color: #f5f3ef;
-            border-radius: 50px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.5s ease;
-            transform: scale(0.75);
-            margin-bottom: 3px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 0 10px;
+          color: black;
+          text-transform: uppercase;
+          cursor: pointer;
+          border: solid 2px black;
+          letter-spacing: 1px;
+          font-weight: 600;
+          font-size: 17px;
+          background-color: #f5f3ef;
+          border-radius: 50px;
+          position: relative;
+          overflow: hidden;
+          transition: all 0.5s ease;
+          transform: scale(0.75);
+          margin-bottom: 3px;
         }
 
         .uiverse-btn:active {
-            transform: scale(0.9);
-            transition: all 100ms ease;
+          transform: scale(0.9);
+          transition: all 100ms ease;
         }
 
         .uiverse-btn svg {
-            transition: all 0.5s ease;
-            z-index: 2;
+          transition: all 0.5s ease;
+          z-index: 2;
         }
 
         .uiverse-btn .play {
-            transition: all 0.5s ease;
-            transition-delay: 300ms;
+          transition: all 0.5s ease;
+          transition-delay: 300ms;
         }
 
         .uiverse-btn:hover svg {
-            transform: scale(3) translate(50%);
+          transform: scale(3) translate(50%);
         }
 
         .uiverse-btn .now {
-            position: absolute;
-            left: 0;
-            transform: translateX(-100%);
-            transition: all 0.5s ease;
-            z-index: 2;
+          position: absolute;
+          left: 0;
+          transform: translateX(-100%);
+          transition: all 0.5s ease;
+          z-index: 2;
         }
 
         .uiverse-btn:hover .now {
-            transform: translateX(10px);
-            transition-delay: 300ms;
+          transform: translateX(10px);
+          transition-delay: 300ms;
         }
 
         .uiverse-btn:hover .play {
-            transform: translateX(200%);
-            transition-delay: 300ms;
+          transform: translateX(200%);
+          transition-delay: 300ms;
         }
 
-        /* --- END ORIGINAL STYLES --- */
-    </style>
-
-    <!-- ===== SKELETON UI STYLES (production-ready) ===== -->
-    <style>
-        /* Basic resets for skeleton overlay */
-        #skeletonOverlay {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.75);
-            z-index: 999999; /* ensure it sits above everything until data loads */
-            -webkit-backdrop-filter: blur(4px);
-            backdrop-filter: blur(4px);
-            transition: opacity 300ms ease, visibility 300ms ease;
-        }
-        #skeletonOverlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        /* Mobile frame simulation */
-        .skeleton-ui .mobile-frame {
-            width: 100%;
-            max-width: 400px;
-            background-color: #ffffff;
-            height: 90vh;
-            max-height: 850px;
-            overflow-y: auto;
-            border-radius: 12px;
-            box-shadow: 0 6px 30px rgba(0,0,0,0.08);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* Skeleton fundamentals */
+        /* --- RESET & BASIC SETUP --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        /* --- SKELETON ANIMATION & BASE --- */
         .skeleton {
             background-color: #e0e0e0;
             border-radius: 8px;
             position: relative;
             overflow: hidden;
         }
+
         .skeleton::after {
             content: "";
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
             background: linear-gradient(
                 90deg,
-                rgba(255,255,255,0) 0%,
-                rgba(255,255,255,0.6) 50%,
-                rgba(255,255,255,0) 100%
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0) 100%
             );
             transform: translateX(-100%);
-            animation: shimmer 1.4s infinite;
+            animation: shimmer 1.5s infinite;
             z-index: 1;
         }
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
 
-        /* Shapes */
-        .s-circle { width: 44px; height: 44px; border-radius: 50%; }
-        .s-text-xs { height: 10px; width: 60px; border-radius: 6px; }
-        .s-text-sm { height: 14px; width: 100px; border-radius: 8px; }
-        .s-text-md { height: 20px; width: 140px; border-radius: 8px; }
-        .s-hero-circle { width: 110px; height: 110px; border-radius: 50%; position: relative; }
-        .s-hero-circle::before { content:""; position:absolute; top:12px; left:12px; right:12px; bottom:12px; border-radius:50%; background:#fff; z-index:2; }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        /* --- LAYOUT UTILITIES --- */
+        .flex-row { display: flex; align-items: center; justify-content: space-between; }
+        .flex-col { display: flex; flex-direction: column; gap: 8px; }
+
+        /* --- SHAPES --- */
+        .s-circle { width: 40px; height: 40px; border-radius: 50%; }
+        .s-text-xs { height: 10px; width: 60px; border-radius: 4px; }
+        .s-text-sm { height: 14px; width: 100px; border-radius: 4px; }
+        .s-text-md { height: 20px; width: 140px; border-radius: 4px; }
+        
+        /* HERO SECTION */
+        .s-hero-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 10px;
+        }
+
+        /* THE RING FIX */
+        .s-hero-circle { 
+            width: 110px; 
+            height: 110px; 
+            border-radius: 50%; 
+            /* We keep the skeleton class on the HTML div for the grey color */
+        }
+
+        /* This creates the 'Hole' in the middle to make it a ring */
+        .s-hero-circle::before {
+            content: "";
+            position: absolute;
+            top: 12px; left: 12px; right: 12px; bottom: 12px; /* 12px thickness */
+            background-color: #ffffff; /* Matches app background */
+            border-radius: 50%;
+            z-index: 2; /* Sits on top of the shimmer */
+        }
 
         .s-illustration { width: 130px; height: 110px; border-radius: 12px; }
         .s-card { width: 100%; height: 90px; border-radius: 12px; flex-shrink: 0; }
 
-        .list-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
-        .s-dot { width:12px; height:12px; border-radius:50%; background:#e0e0e0; }
-        .s-list-line { height:12px; flex-grow:1; border-radius:6px; background:#e0e0e0; }
-        .s-badge { height:12px; width:50px; border-radius:6px; background:#e0e0e0; }
+        /* LIST ITEMS */
+        .list-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .s-dot { width: 12px; height: 12px; border-radius: 50%; background-color: #e0e0e0; }
+        .s-list-line { height: 12px; flex-grow: 1; border-radius: 4px; }
+        .s-badge { height: 12px; width: 50px; border-radius: 4px; }
 
-        /* Hide the real dashboard while the body has .loading */
-        body.loading .real-dashboard { display: none !important; }
-        /* Hide skeleton after loading state removed */
-        body:not(.loading) #skeletonOverlay { opacity: 0; visibility: hidden; pointer-events: none; }
+        #skeletonLoader {
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #ffffff;
+            z-index: 10000;
+        }
 
-        /* small responsive */
-        @media (max-width:420px) { .skeleton-ui .mobile-frame { padding: 16px; gap: 16px; } }
+        #skeletonLoader::-webkit-scrollbar {
+            display: none;
+        }
+
+        #skeletonLoader {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        #appContent {
+            display: none;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
     </style>
 </head>
 
-<!-- IMPORTANT: body starts with class "loading" so skeleton is visible until we remove it in JS -->
-<body class="loading">
-
-    <!-- ===== SKELETON UI OVERLAY (production-ready) ===== -->
-    <div id="skeletonOverlay" class="skeleton-ui" aria-hidden="true" role="status" aria-label="Loading Attenza">
-        <div class="mobile-frame" role="progressbar" aria-busy="true" aria-label="Loading Attenza">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div class="skeleton s-circle"></div>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-                    <div class="skeleton s-text-md" style="width:160px;"></div>
-                    <div class="skeleton s-text-xs" style="width:90px;"></div>
-                </div>
-                <div class="skeleton s-circle" style="width:36px;height:36px;"></div>
+<body>
+    <div id="skeletonLoader">
+        
+        <div class="flex-row">
+            <div class="skeleton s-circle"></div> 
+            <div class="flex-col" style="align-items: center;">
+                <div class="skeleton s-text-md"></div> 
+                <div class="skeleton s-text-xs"></div> 
             </div>
+            <div class="skeleton s-circle"></div> 
+        </div>
 
-            <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-                <div class="skeleton s-text-sm" style="width: 110px; border-radius: 20px; height: 28px;"></div>
-                <div class="skeleton s-text-md" style="width: 180px;"></div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px;">
-                    <div class="skeleton s-hero-circle"></div>
-                    <div class="skeleton s-illustration"></div>
-                </div>
-            </div>
-
-            <div class="skeleton s-card" style="margin-top:10px;"></div>
-
-            <div style="margin-top:10px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                    <div class="skeleton s-text-md" style="width:140px;"></div>
-                    <div class="skeleton s-text-xs" style="width:40px;"></div>
-                </div>
-
-                <div class="list-row">
-                    <div class="s-dot"></div>
-                    <div class="s-list-line"></div>
-                    <div class="s-badge"></div>
-                </div>
-                <div class="list-row">
-                    <div class="s-dot"></div>
-                    <div class="s-list-line"></div>
-                    <div class="s-badge"></div>
-                </div>
-                <div class="list-row">
-                    <div class="s-dot"></div>
-                    <div class="s-list-line"></div>
-                    <div class="s-badge"></div>
-                </div>
-                <div class="list-row">
-                    <div class="s-dot"></div>
-                    <div class="s-list-line"></div>
-                    <div class="s-badge"></div>
-                </div>
+        <div class="flex-col" style="margin-top: 10px;">
+            <div class="skeleton s-text-sm" style="width: 100px; border-radius: 20px; height: 25px;"></div> 
+            <div class="skeleton s-text-md" style="width: 180px; margin-top:5px;"></div> 
+            <div class="s-hero-section">
+                <div class="skeleton s-hero-circle"></div>
+                <div class="skeleton s-illustration"></div>
             </div>
         </div>
+
+        <div class="skeleton s-card"></div>
+
+        <div style="margin-top: 10px;">
+            <div class="flex-row" style="margin-bottom: 15px;">
+                <div class="skeleton s-text-md"></div> 
+                <div class="skeleton s-text-xs" style="width: 40px;"></div> 
+            </div>
+
+            <div class="list-row">
+                <div class="skeleton s-dot"></div>
+                <div class="skeleton s-list-line"></div>
+                <div class="skeleton s-badge"></div>
+            </div>
+            <div class="list-row">
+                <div class="skeleton s-dot"></div>
+                <div class="skeleton s-list-line"></div>
+                <div class="skeleton s-badge"></div>
+            </div>
+            <div class="list-row">
+                <div class="skeleton s-dot"></div>
+                <div class="skeleton s-list-line"></div>
+                <div class="skeleton s-badge"></div>
+            </div>
+            <div class="list-row">
+                <div class="skeleton s-dot"></div>
+                <div class="skeleton s-list-line"></div>
+                <div class="skeleton s-badge"></div>
+            </div>
+            <div class="list-row">
+                <div class="skeleton s-dot"></div>
+                <div class="skeleton s-list-line"></div>
+                <div class="skeleton s-badge"></div>
+            </div>
+             <div class="list-row">
+                <div class="skeleton s-dot"></div>
+                <div class="skeleton s-list-line"></div>
+                <div class="skeleton s-badge"></div>
+            </div>
+        </div>
+
     </div>
-    <!-- ===== END SKELETON UI ===== -->
-
-    <!-- ===== REAL DASHBOARD (wrap whole original app) ===== -->
-    <div class="real-dashboard">
-        <div class="header" id="header">
-            <div class="top-bar">
-                <div class="left-section">
-                    <button class="icon-btn" aria-label="Menu" onclick="openMenu()">
-                        <div class="menu-mini"><span></span></div>
-                    </button>
-                    <div class="brand-container">
-                        <span class="brand-name">ATTENZA</span>
-                        <span class="tagline">a student driven attendance tracker</span>
-                    </div>
-                </div>
-
-                <button class="icon-btn notif-rev" aria-label="Notifications">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path
-                            d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"
-                            stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" stroke="currentColor"></path>
-                    </svg>
-                    <div class="notif-dot"></div>
+    <div id="appContent">
+    <div class="header" id="header">
+        <div class="top-bar">
+            <div class="left-section">
+                <button class="icon-btn" aria-label="Menu" onclick="openMenu()">
+                    <div class="menu-mini"><span></span></div>
                 </button>
-            </div>
-
-            <div class="expand-section">
-                <div class="expand-arrow" id="expandArrow">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </div>
-
-                <div class="expanded-content" id="expandedContent">
-                    <div class="content-inner">
-                        <div class="info-section">
-                            <h3>About ATTENZA</h3>
-                            <p>A student-driven attendance tracker designed exclusively for Dispur College students. View
-                                your attendance data anytime, anywhere - something our teacher-driven system doesn't allow.
-                            </p>
-                        </div>
-
-                        <div class="info-section">
-                            <h3>Key Features</h3>
-                            <div class="features">
-                                <div class="feature-card">
-                                    <h4>📊 Real-time Data</h4>
-                                    <p>Check your attendance percentage instantly</p>
-                                </div>
-                                <div class="feature-card">
-                                    <h4>📅 Subject-wise View</h4>
-                                    <p>Track attendance for each subject separately</p>
-                                </div>
-                                <div class="feature-card">
-                                    <h4>🔔 Smart Alerts</h4>
-                                    <p>Get notified when attendance falls below threshold</p>
-                                </div>
-                                <div class="feature-card">
-                                    <h4>📱 Mobile Friendly</h4>
-                                    <p>Access from any device, anytime</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="info-section">
-                            <h3>How to Use</h3>
-                            <p>1. Log in with your college ID<br>
-                                2. View your dashboard with attendance summary<br>
-                                3. Click on any subject to see detailed records<br>
-                                4. Set alerts for attendance warnings</p>
-                        </div>
-                    </div>
+                <div class="brand-container">
+                    <span class="brand-name">ATTENZA</span>
+                    <span class="tagline">a student driven attendance tracker</span>
                 </div>
             </div>
+
+            <button class="icon-btn notif-rev" aria-label="Notifications">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path
+                        d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"
+                        stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" stroke="currentColor"></path>
+                </svg>
+                <div class="notif-dot"></div>
+            </button>
         </div>
 
-        <div class="content-body">
-
-            <div class="welcome-section">
-                <div class="welcome-content">
-                    <div class="welcome-text-content">
-                        <button class="uiverse-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36px" height="36px">
-                                <rect width="36" height="36" x="0" y="0" fill="#f5f3ef"></rect>
-                                <!-- svg paths truncated for brevity in this snippet but kept in actual markup -->
-                                <path fill="#e53935" d="M38.67,42H11.52C11.27,40.62,11,38.57,11,36c0-5,0-11,0-11s1.44-7.39,3.22-9.59 c1.67-2.06,2.76-3.48,6.78-4.41c3-0.7,7.13-0.23,9,1c2.15,1.42,3.37,6.67,3.81,11.29c1.49-0.3,5.21,0.2,5.5,1.28 C40.89,30.29,39.48,38.31,38.67,42z"></path>
-                                <path fill="#b71c1c" d="M39.02,42H11.99c-0.22-2.67-0.48-7.05-0.49-12.72c0.83,4.18,1.63,9.59,6.98,9.79 c3.48,0.12,8.27,0.55,9.83-2.45c1.57-3,3.72-8.95,3.51-15.62c-0.19-5.84-1.75-8.2-2.13-8.7c0.59,0.66,3.74,4.49,4.01,11.7 c0.03,0.83,0.06,1.72,0.08,2.66c4.21-0.15,5.93,1.5,6.07,2.35C40.68,33.85,39.8,38.9,39.02,42z"></path>
-                                <path fill="#212121" d="M35,27.17c0,3.67-0.28,11.2-0.42,14.83h-2C32.72,38.42,33,30.83,33,27.17 c0-5.54-1.46-12.65-3.55-14.02c-1.65-1.08-5.49-1.48-8.23-0.85c-3.62,0.83-4.57,1.99-6.14,3.92L15,16.32 c-1.31,1.6-2.59,6.92-3,8.96v10.8c0,2.58,0.28,4.61,0.54,5.92H10.5c-0.25-1.41-0.5-3.42-0.5-5.92l0.02-11.09 c0.15-0.77,1.55-7.63,3.43-9.94l0.08-0.09c1.65-2.03,2.96-3.63,7.25-4.61c3.28-0.76,7.67-0.25,9.77,1.13 C33.79,13.6,35,22.23,35,27.17z"></path>
-                                <!-- ... rest of svg ... -->
-                            </svg>
-                            <span class="now">what</span>
-                            <span class="play">Hey</span>
-                        </button>
-
-                        <h3 id="welcomeTitle">Hey, User!</h3>
-
-                        <p class="date-line">Today is <span id="dynamicDateDisplay">Loading...</span></p>
-
-                        <div class="attendance-ring">
-                            <svg class="ring-svg" viewBox="0 0 160 160">
-                                <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>
-                                <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>
-                            </svg>
-                            <div class="ring-center">
-                                <span class="percentage" id="percentageText">100%</span>
-                                <span class="percentage-label">Overall</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="expand-section">
+            <div class="expand-arrow" id="expandArrow">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
             </div>
 
-            <div class="notebook-section">
-                <div class="page">
-                    <img src="Image/your-logo.png" alt="Logo" class="note-logo">
-                    <div class="margin"></div>
-                    <p id="notebookQuote">Loading your attendance status...</p>
-                    <div class="teacher-mark">
-                        <span class="teacher-sign">Principal</span>
+            <div class="expanded-content" id="expandedContent">
+                <div class="content-inner">
+                    <div class="info-section">
+                        <h3>About ATTENZA</h3>
+                        <p>A student-driven attendance tracker designed exclusively for Dispur College students. View
+                            your attendance data anytime, anywhere - something our teacher-driven system doesn't allow.
+                        </p>
                     </div>
-                </div>
-            </div>
 
-            <div id="installStrip" class="pwa-banner-component" onclick="if(document.getElementById('installBtn')) document.getElementById('installBtn').click()">
-                <div class="pwa-inner-container">
-                    <div class="pwa-left-group">
-                        <div class="pwa-platform-icons">
-                            <div class="pwa-icon-circle apple">
-                                <i class="fa-brands fa-apple"></i>
+                    <div class="info-section">
+                        <h3>Key Features</h3>
+                        <div class="features">
+                            <div class="feature-card">
+                                <h4>📊 Real-time Data</h4>
+                                <p>Check your attendance percentage instantly</p>
                             </div>
-                            <div class="pwa-icon-circle android">
-                                <i class="fa-brands fa-android"></i>
+                            <div class="feature-card">
+                                <h4>📅 Subject-wise View</h4>
+                                <p>Track attendance for each subject separately</p>
+                            </div>
+                            <div class="feature-card">
+                                <h4>🔔 Smart Alerts</h4>
+                                <p>Get notified when attendance falls below threshold</p>
+                            </div>
+                            <div class="feature-card">
+                                <h4>📱 Mobile Friendly</h4>
+                                <p>Access from any device, anytime</p>
                             </div>
                         </div>
-                        <span class="pwa-title-text">Add to Home Screen</span>
                     </div>
-                    <div>
-                        <button class="pwa-install-btn" id="installBtn">
-                            <i class="fa-solid fa-download"></i>
-                            <span>Install</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="pwa-gradient-line"></div>
-            </div>
 
-            <div class="protected-zone">
-                <div id="locked-overlay" class="locked-overlay">
-                    <div class="lock-content">
-                        <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                        <div class="hint-title">Records Locked</div>
-                        <div class="hint-subtitle">Select your subjects to unlock detailed stats & schedule.</div>
-                        <button class="setup-btn" onclick="openMenu()">Setup Subjects</button>
+                    <div class="info-section">
+                        <h3>How to Use</h3>
+                        <p>1. Log in with your college ID<br>
+                            2. View your dashboard with attendance summary<br>
+                            3. Click on any subject to see detailed records<br>
+                            4. Set alerts for attendance warnings</p>
                     </div>
                 </div>
-
-                <div class="section-header">
-                    <h3>Today's Schedule</h3>
-                    <a href="#" class="view-all">
-                        VIEW
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </a>
-                </div>
-
-                <div class="full-bleed">
-                    <div class="schedule-window">
-                        <div class="scroll-area" id="scrollContainer">
-                            <div class="timeline-line"></div>
-                            <div id="dynamic-list-wrapper"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <section class="periodical-section">
-                    <header class="periodical-header">
-                        <h2>Periodical records</h2>
-                    </header>
-
-                    <div class="date-picker-container">
-                        <div class="custom-flatpickr">
-                            <input type="text" placeholder="Select date range..." data-input id="rangePicker" />
-                            <div class="date-display" id="dateDisplay">
-                                <span class="date-part empty" id="startDate">Select date</span>
-                                <span class="date-separator">to</span>
-                                <span class="date-part empty" id="endDate">Select date</span>
-                            </div>
-                            <span class="calendar-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect>
-                                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                </svg>
-                            </span>
-                        </div>
-                        <p class="date-picker-helper">for selected period</p>
-                    </div>
-
-                    <section class="bento-grid">
-                        <article class="card metric-card span-2">
-                            <div class="card-title">Overall attendance</div>
-                            <div class="metric-icon" aria-hidden="true">
-                                <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" fill="#323544" viewBox="0 0 24 24">
-                                    <path
-                                        d="M13.5 2c-.178 0-.356.013-.492.022l-.074.005a1 1 0 0 0-.934.998V11a1 1 0 0 0 1 1h7.975a1 1 0 0 0 .998-.934l.005-.074A7.04 7.04 0 0 0 22 10.5A8.5 8.5 0 0 0 13.5 2Z" />
-                                    <path
-                                        d="M11 6.025a1 1 0 0 0-1.065-.998 8.5 8.5 0 1 0 9.038 9.039A1 1 0 0 0 17.975 13H11V6.025Z" />
-                                </svg>
-                            </div>
-                            <div class="card-body">
-                                <div class="circle-shell">
-                                    <svg viewBox="0 0 140 140">
-                                        <circle class="circle-outer-ring" cx="70" cy="70" r="60" />
-                                        <circle class="circle-inner-value" cx="70" cy="70" r="48" />
-                                    </svg>
-                                    <div class="circle-center"><span>100%</span></div>
-                                </div>
-                                <div class="card-footer">All subjects combined</div>
-                            </div>
-                        </article>
-
-                        <article class="card metric-card span-2" id="majorCard">
-                            <div class="card-title">Major subs overall</div>
-                            <div class="metric-icon" aria-hidden="true">
-                                <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M3.5 5.75C3.5 5.33579 3.16421 5 2.75 5C2.33579 5 2 5.33579 2 5.75V17.75C2 18.9926 3.00736 20 4.25 20H21.25C21.6642 20 22 19.6642 22 19.25C22 18.8358 21.6642 18.5 21.25 18.5H4.25C3.83579 18.5 3.5 18.1642 3.5 17.75V5.75Z"
-                                        fill="#323544" />
-                                    <path
-                                        d="M7 10.7773C5.89543 10.7773 5 11.6728 5 12.7773V16.2501C5 16.6643 5.33579 17.0001 5.75 17.0001H8.25C8.66421 17.0001 9 16.6643 9 16.2501V12.7773C9 11.6728 8.10457 10.7773 7 10.7773Z"
-                                        fill="#323544" />
-                                    <path
-                                        d="M12.5 5C11.3954 5 10.5 5.89543 10.5 7V16.2501C10.5 16.6643 10.8358 17.0001 11.25 17.0001H13.75C14.1642 17.0001 14.5 16.6643 14.5 16.2501V7C14.5 5.89543 13.6046 5 12.5 5Z"
-                                        fill="#323544" />
-                                    <path
-                                        d="M18 8.55859C16.8954 8.55859 16 9.45402 16 10.5586V16.2501C16 16.6643 16.3358 17.0001 16.75 17.0001H19.25C19.6642 17.0001 20 16.6643 20 16.2501V10.5586C20 9.45402 19.1046 8.55859 18 8.55859Z"
-                                        fill="#323544" />
-                                </svg>
-                            </div>
-
-                            <div class="major-edit-icon" id="majorEdit" title="Select major subjects">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                    stroke="#323544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                    class="icon icon-tabler icons-tabler-outline icon-tabler-pencil-discount">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                                    <path d="M13.5 6.5l4 4" />
-                                    <path d="M16 21l5 -5" />
-                                    <path d="M21 21v.01" />
-                                    <path d="M16 16v.01" />
-                                </svg>
-                            </div>
-
-                            <div class="card-body">
-                                <div class="half-shell">
-                                    <svg viewBox="0 0 140 80">
-                                        <path class="half-outer-ring" d="M15 70 A55 55 0 0 1 125 70" />
-                                        <path class="half-inner-value" id="majorHalfPath" d="M28 70 A40 40 0 0 1 112 70" />
-                                    </svg>
-                                    <div class="half-center-text" id="majorPercent">0%</div>
-                                </div>
-                                <div class="card-footer" id="majorFooter">Select major, click pencil button</div>
-                            </div>
-
-                            <div class="major-modal" id="majorModal">
-                                <div class="major-modal-content">
-                                    <div class="major-modal-subtitle">
-                                        Select major subjects to calculate major overall.
-                                    </div>
-                                    <div class="major-modal-list" id="majorList">
-                                        <label>
-                                            <input type="checkbox" value="Mathematics" class="major-checkbox" />
-                                            <span>Mathematics</span>
-                                        </label>
-                                        <label>
-                                            <input type="checkbox" value="Physics" class="major-checkbox" />
-                                            <span>Physics</span>
-                                        </label>
-                                        <label>
-                                            <input type="checkbox" value="Chemistry" class="major-checkbox" />
-                                            <span>Chemistry</span>
-                                        </label>
-                                        <label>
-                                            <input type="checkbox" value="Computer Science" class="major-checkbox" />
-                                            <span>Computer Science</span>
-                                        </label>
-                                    </div>
-                                    <div class="major-modal-actions">
-                                        <button type="button" class="btn-ghost" id="majorCancel">Cancel</button>
-                                        <button type="button" class="btn-primary" id="majorSave">Save</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-
-                        <article class="card info-card span-full">
-                            <div class="summary-header">
-                                <span class="summary-title">Attendance summary</span>
-                                <span class="summary-icon" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="1.8"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="4" width="18" height="14" rx="2"></rect>
-                                        <path d="M7 9h10"></path>
-                                        <path d="M7 13h4"></path>
-                                    </svg>
-                                </span>
-                            </div>
-                            <div class="info-card-body" id="summaryBody">
-                                <ul>
-                                    <li>Overall attendance is 100% for this period.</li>
-                                    <li>Major subjects are not selected yet. Choose majors to track their combined attendance.
-                                    </li>
-                                </ul>
-                            </div>
-                        </article>
-
-                        <article class="card subject-card purple span-2">
-                            <div class="subject-header">
-                                <span class="subject-name">Mathematics</span>
-                                <span class="subject-icon" aria-hidden="true">
-                                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        fill="none" viewBox="0 0 24 24">
-                                        <path stroke="#323544" stroke-linejoin="round"
-                                            d="m17 13 3.4641-2V7L17 5l-3.4641 2v4M17 13l-3.4641-2M17 13v4l-7.00001 4M17 13V9m0 4-7.00001 4m3.53591-6L10.5 12.7348M9.99999 21l-3.4641-2.1318M9.99999 21v-4m-3.4641 2v-.1318m0 0V15L10.5 12.7348m-3.96411 6.1334L3.5 17V5m0 0L7 3l3.5 2m-7 0 2.99999 2M10.5 5v7.7348M10.5 5 6.49999 7M17 9l3.5-2M17 9l-3.5-2M9.99999 17l-3.5-2m0 .5V7" />
-                                    </svg>
-                                </span>
-                            </div>
-                            <div class="subject-meta-group">
-                                <div class="subject-meta">Total classes - 22</div>
-                                <div class="subject-meta">Attended - 18</div>
-                            </div>
-                            <div class="subject-percentage">82%</div>
-                        </article>
-
-                        <article class="card subject-card subject-2 span-2">
-                            <div class="subject-header">
-                                <span class="subject-name">Physics</span>
-                                <span class="subject-icon" aria-hidden="true">
-                                    <svg class="w-[38px] h-[38px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                        width="24" height="24" fill="#323544" viewBox="0 0 24 24">
-                                        <path
-                                            d="M20 14h-2.722L11 20.278a5.511 5.511 0 0 1-.9.722H20a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1ZM9 3H4a1 1 0 0 0-1 1v13.5a3.5 3.5 0 1 0 7 0V4a1 1 0 0 0-1-1ZM6.5 18.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2ZM19.132 7.9 15.6 4.368a1 1 0 0 0-1.414 0L12 6.55v9.9l7.132-7.132a1 1 0 0 0 0-1.418Z" />
-                                    </svg>
-                                </span>
-                            </div>
-                            <div class="subject-meta-group">
-                                <div class="subject-meta">Total classes - 20</div>
-                                <div class="subject-meta">Attended - 15</div>
-                            </div>
-                            <div class="subject-percentage">75%</div>
-                        </article>
-
-                        <article class="card subject-card mint span-2">
-                            <div class="subject-header">
-                                <span class="subject-name">Computer Science</span>
-                                <span class="subject-icon" aria-hidden="true">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M11.9933 3.50879C11.6316 3.50879 11.2683 3.58158 10.9266 3.7263L3.4825 6.85273C3.06333 7.02875 3.07417 7.62121 3.4925 7.79726L10.9775 10.8086C11.6332 11.0786 12.3667 11.0786 13.0225 10.8086L20.5075 7.79726C20.9266 7.63137 20.9266 7.02875 20.5175 6.85273L13.0533 3.7263C12.7179 3.58228 12.3575 3.5083 11.9933 3.50879ZM21.5 8.66308C21.4365 8.6635 21.3736 8.67644 21.315 8.70117L12.9716 11.9825C12.8783 12.0213 12.7984 12.0874 12.742 12.1723C12.6857 12.2573 12.6554 12.3574 12.655 12.4598V19.989C12.6558 20.0714 12.6763 20.1524 12.7148 20.225C12.7533 20.2975 12.8087 20.3595 12.876 20.4055C12.9433 20.4515 13.0207 20.4801 13.1014 20.4889C13.1821 20.4978 13.2637 20.4865 13.3392 20.4562L21.6833 17.1639C21.7769 17.1286 21.8574 17.0649 21.9141 16.9814C21.9708 16.898 22.0007 16.7989 22 16.6975V9.16836C21.9991 9.03426 21.946 8.90598 21.8523 8.81146C21.7587 8.71694 21.632 8.66305 21.5 8.66308ZM2.56333 8.69609C2.48934 8.69343 2.41561 8.706
-                        </article>
-
-                    </section>
-                </section>
-
-                <section class="periodical-section" id="dateWiseRecordsSection">
-                    <header class="app-header">
-                        <div class="title-block">
-                            <h1>Date-wise Records</h1>
-                            <span class="subtitle" id="selectedDateLabel">Loading…</span>
-                        </div>
-
-                        <div class="month-year-select">
-                            <span class="edit-icon" aria-hidden="true">
-                                <svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2"
-                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="m19 20.25c0-.402-.356-.75-.75-.75-2.561 0-11.939 0-14.5 0-.394 0-.75.348-.75.75s.356.75.75.75h14.5c.394 0 .75-.348.75-.75zm-7.403-3.398 9.124-9.125c.171-.171.279-.423.279-.684 0-.229-.083-.466-.28-.662l-3.115-3.104c-.185-.185-.429-.277-.672-.277s-.486.092-.672.277l-9.143 9.103c-.569 1.763-1.555 4.823-1.626 5.081-.02.075-.029.15-.029.224 0 .461.349.848.765.848.511 0 .991-.189 5.369-1.681zm-3.27-3.342 2.137 2.137-3.168 1.046zm.955-1.166 7.651-7.616 2.335 2.327-7.637 7.638z" />
-                                </svg>
-                            </span>
-                            <select id="monthYearSelect" aria-label="Month and year"></select>
-                        </div>
-                    </header>
-
-                    <section class="date-strip-wrapper" aria-label="Date picker">
-                        <div class="date-strip" id="dateStrip"></div>
-                    </section>
-
-                    <section class="cards-container" id="dateCardsContainer" aria-label="Attendance records"></section>
-                </section>
-
             </div>
         </div>
     </div>
-    <!-- ===== END REAL DASHBOARD ===== -->
+    
+    <div class="content-body">
+        
+        <div class="welcome-section">
+            <div class="welcome-content">
+                <div class="welcome-text-content">
+                    <!-- scoped uiverse button: only this button gets uiverse styles -->
+                    <button class="uiverse-btn">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 36 36"
+                            width="36px"
+                            height="36px"
+                            >
+                            <rect width="36" height="36" x="0" y="0" fill="#f5f3ef"></rect>
+                            <path
+                                fill="#e53935"
+                                d="M38.67,42H11.52C11.27,40.62,11,38.57,11,36c0-5,0-11,0-11s1.44-7.39,3.22-9.59 c1.67-2.06,2.76-3.48,6.78-4.41c3-0.7,7.13-0.23,9,1c2.15,1.42,3.37,6.67,3.81,11.29c1.49-0.3,5.21,0.2,5.5,1.28 C40.89,30.29,39.48,38.31,38.67,42z"
+                                ></path>
+                            <path
+                                fill="#b71c1c"
+                                d="M39.02,42H11.99c-0.22-2.67-0.48-7.05-0.49-12.72c0.83,4.18,1.63,9.59,6.98,9.79 c3.48,0.12,8.27,0.55,9.83-2.45c1.57-3,3.72-8.95,3.51-15.62c-0.19-5.84-1.75-8.2-2.13-8.7c0.59,0.66,3.74,4.49,4.01,11.7 c0.03,0.83,0.06,1.72,0.08,2.66c4.21-0.15,5.93,1.5,6.07,2.35C40.68,33.85,39.8,38.9,39.02,42z"
+                                ></path>
+                            <path
+                                fill="#212121"
+                                d="M35,27.17c0,3.67-0.28,11.2-0.42,14.83h-2C32.72,38.42,33,30.83,33,27.17 c0-5.54-1.46-12.65-3.55-14.02c-1.65-1.08-5.49-1.48-8.23-0.85c-3.62,0.83-4.57,1.99-6.14,3.92L15,16.32 c-1.31,1.6-2.59,6.92-3,8.96v10.8c0,2.58,0.28,4.61,0.54,5.92H10.5c-0.25-1.41-0.5-3.42-0.5-5.92l0.02-11.09 c0.15-0.77,1.55-7.63,3.43-9.94l0.08-0.09c1.65-2.03,2.96-3.63,7.25-4.61c3.28-0.76,7.67-0.25,9.77,1.13 C33.79,13.6,35,22.23,35,27.17z"
+                                ></path>
+                            <path
+                                fill="#01579b"
+                                d="M17.165,17.283c5.217-0.055,9.391,0.283,9,6.011c-0.391,5.728-8.478,5.533-9.391,5.337 c-0.913-0.196-7.826-0.043-7.696-5.337C9.209,18,13.645,17.32,17.165,17.283z"
+                                ></path>
+                            <path
+                                fill="#212121"
+                                d="M40.739,37.38c-0.28,1.99-0.69,3.53-1.22,4.62h-2.43c0.25-0.19,1.13-1.11,1.67-4.9 c0.57-4-0.23-11.79-0.93-12.78c-0.4-0.4-2.63-0.8-4.37-0.89l0.1-1.99c1.04,0.05,4.53,0.31,5.71,1.49 C40.689,24.36,41.289,33.53,40.739,37.38z"
+                                ></path>
+                            <path
+                                fill="#81d4fa"
+                                d="M10.154,20.201c0.261,2.059-0.196,3.351,2.543,3.546s8.076,1.022,9.402-0.554 c1.326-1.576,1.75-4.365-0.891-5.267C19.336,17.287,12.959,16.251,10.154,20.201z"
+                                ></path>
+                            <path
+                                fill="#212121"
+                                d="M17.615,29.677c-0.502,0-0.873-0.03-1.052-0.069c-0.086-0.019-0.236-0.035-0.434-0.06 c-5.344-0.679-8.053-2.784-8.052-6.255c0.001-2.698,1.17-7.238,8.986-7.32l0.181-0.002c3.444-0.038,6.414-0.068,8.272,1.818 c1.173,1.191,1.712,3,1.647,5.53c-0.044,1.688-0.785,3.147-2.144,4.217C22.785,29.296,19.388,29.677,17.615,29.677z M17.086,17.973 c-7.006,0.074-7.008,4.023-7.008,5.321c-0.001,3.109,3.598,3.926,6.305,4.27c0.273,0.035,0.48,0.063,0.601,0.089 c0.563,0.101,4.68,0.035,6.855-1.732c0.865-0.702,1.299-1.57,1.326-2.653c0.051-1.958-0.301-3.291-1.073-4.075 c-1.262-1.281-3.834-1.255-6.825-1.222L17.086,17.973z"
+                                ></path>
+                            <path
+                                fill="#e1f5fe"
+                                d="M15.078,19.043c1.957-0.326,5.122-0.529,4.435,1.304c-0.489,1.304-7.185,2.185-7.185,0.652 C12.328,19.467,15.078,19.043,15.078,19.043z"
+                                ></path>
+                        </svg>
+                        <span class="now">what</span>
+                        <span class="play">Hey</span>
+                    </button>
 
+
+                    <h3 id="welcomeTitle">Hey, User!</h3>
+                    
+                    
+                    <p class="date-line">Today is <span id="dynamicDateDisplay">Loading...</span></p>
+
+                    <div class="attendance-ring">
+                        <svg class="ring-svg" viewBox="0 0 160 160">
+                            <circle class="ring-bg-circle" cx="80" cy="80" r="70"></circle>
+                            <circle class="ring-progress-circle" cx="80" cy="80" r="70" id="progressCircle"></circle>
+                        </svg>
+                        <div class="ring-center">
+                            <span class="percentage" id="percentageText">100%</span>
+                            <span class="percentage-label">Overall</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notebook-section">
+            <div class="page">
+                <img src="Image/your-logo.png" alt="Logo" class="note-logo">
+                <div class="margin"></div>
+                <p id="notebookQuote">Loading your attendance status...</p>
+                <div class="teacher-mark">
+                    <span class="teacher-sign">Principal</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="installStrip" class="pwa-banner-component" onclick="if(document.getElementById('installBtn')) document.getElementById('installBtn').click()">
+            <div class="pwa-inner-container">
+                <div class="pwa-left-group">
+                    <div class="pwa-platform-icons">
+                        <div class="pwa-icon-circle apple">
+                            <i class="fa-brands fa-apple"></i>
+                        </div>
+                        <div class="pwa-icon-circle android">
+                            <i class="fa-brands fa-android"></i>
+                        </div>
+                    </div>
+                    <span class="pwa-title-text">Add to Home Screen</span>
+                </div>
+                <div>
+                    <button class="pwa-install-btn" id="installBtn">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Install</span>
+                    </button>
+                </div>
+            </div>
+            <div class="pwa-gradient-line"></div>
+        </div>
+
+
+
+        <div class="protected-zone">
+            
+            <div id="locked-overlay" class="locked-overlay">
+                <div class="lock-content">
+                    <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <div class="hint-title">Records Locked</div>
+                    <div class="hint-subtitle">Select your subjects to unlock detailed stats & schedule.</div>
+                    <button class="setup-btn" onclick="openMenu()">Setup Subjects</button>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h3>Today's Schedule</h3>
+                <a href="#" class="view-all">
+                    VIEW
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="full-bleed">
+                <div class="schedule-window">
+                    <div class="scroll-area" id="scrollContainer">
+                        <div class="timeline-line"></div>
+                        <div id="dynamic-list-wrapper"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="periodical-section">
+                <header class="periodical-header">
+                    <h2>Periodical records</h2>
+                </header>
+
+                <div class="date-picker-container">
+                    <div class="custom-flatpickr">
+                        <input type="text" placeholder="Select date range..." data-input id="rangePicker" />
+                        <div class="date-display" id="dateDisplay">
+                            <span class="date-part empty" id="startDate">Select date</span>
+                            <span class="date-separator">to</span>
+                            <span class="date-part empty" id="endDate">Select date</span>
+                        </div>
+                        <span class="calendar-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                            </svg>
+                        </span>
+                    </div>
+                    <p class="date-picker-helper">for selected period</p>
+                </div>
+
+                <section class="bento-grid">
+
+                    <article class="card metric-card span-2">
+                        <div class="card-title">Overall attendance</div>
+                        <div class="metric-icon" aria-hidden="true">
+                            <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" fill="#323544" viewBox="0 0 24 24">
+                                <path
+                                    d="M13.5 2c-.178 0-.356.013-.492.022l-.074.005a1 1 0 0 0-.934.998V11a1 1 0 0 0 1 1h7.975a1 1 0 0 0 .998-.934l.005-.074A7.04 7.04 0 0 0 22 10.5A8.5 8.5 0 0 0 13.5 2Z" />
+                                <path
+                                    d="M11 6.025a1 1 0 0 0-1.065-.998 8.5 8.5 0 1 0 9.038 9.039A1 1 0 0 0 17.975 13H11V6.025Z" />
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <div class="circle-shell">
+                                <svg viewBox="0 0 140 140">
+                                    <circle class="circle-outer-ring" cx="70" cy="70" r="60" />
+                                    <circle class="circle-inner-value" cx="70" cy="70" r="48" />
+                                </svg>
+                                <div class="circle-center"><span>100%</span></div>
+                            </div>
+                            <div class="card-footer">All subjects combined</div>
+                        </div>
+                    </article>
+
+                    <article class="card metric-card span-2" id="majorCard">
+                        <div class="card-title">Major subs overall</div>
+                        <div class="metric-icon" aria-hidden="true">
+                            <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M3.5 5.75C3.5 5.33579 3.16421 5 2.75 5C2.33579 5 2 5.33579 2 5.75V17.75C2 18.9926 3.00736 20 4.25 20H21.25C21.6642 20 22 19.6642 22 19.25C22 18.8358 21.6642 18.5 21.25 18.5H4.25C3.83579 18.5 3.5 18.1642 3.5 17.75V5.75Z"
+                                    fill="#323544" />
+                                <path
+                                    d="M7 10.7773C5.89543 10.7773 5 11.6728 5 12.7773V16.2501C5 16.6643 5.33579 17.0001 5.75 17.0001H8.25C8.66421 17.0001 9 16.6643 9 16.2501V12.7773C9 11.6728 8.10457 10.7773 7 10.7773Z"
+                                    fill="#323544" />
+                                <path
+                                    d="M12.5 5C11.3954 5 10.5 5.89543 10.5 7V16.2501C10.5 16.6643 10.8358 17.0001 11.25 17.0001H13.75C14.1642 17.0001 14.5 16.6643 14.5 16.2501V7C14.5 5.89543 13.6046 5 12.5 5Z"
+                                    fill="#323544" />
+                                <path
+                                    d="M18 8.55859C16.8954 8.55859 16 9.45402 16 10.5586V16.2501C16 16.6643 16.3358 17.0001 16.75 17.0001H19.25C19.6642 17.0001 20 16.6643 20 16.2501V10.5586C20 9.45402 19.1046 8.55859 18 8.55859Z"
+                                    fill="#323544" />
+                            </svg>
+                        </div>
+
+                        <div class="major-edit-icon" id="majorEdit" title="Select major subjects">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="#323544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-pencil-discount">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+                                <path d="M13.5 6.5l4 4" />
+                                <path d="M16 21l5 -5" />
+                                <path d="M21 21v.01" />
+                                <path d="M16 16v.01" />
+                            </svg>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="half-shell">
+                                <svg viewBox="0 0 140 80">
+                                    <path class="half-outer-ring" d="M15 70 A55 55 0 0 1 125 70" />
+                                    <path class="half-inner-value" id="majorHalfPath" d="M28 70 A40 40 0 0 1 112 70" />
+                                </svg>
+                                <div class="half-center-text" id="majorPercent">0%</div>
+                            </div>
+                            <div class="card-footer" id="majorFooter">Select major, click pencil button</div>
+                        </div>
+
+                        <div class="major-modal" id="majorModal">
+                            <div class="major-modal-content">
+                                <div class="major-modal-subtitle">
+                                    Select major subjects to calculate major overall.
+                                </div>
+                                <div class="major-modal-list" id="majorList">
+                                    <label>
+                                        <input type="checkbox" value="Mathematics" class="major-checkbox" />
+                                        <span>Mathematics</span>
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" value="Physics" class="major-checkbox" />
+                                        <span>Physics</span>
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" value="Chemistry" class="major-checkbox" />
+                                        <span>Chemistry</span>
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" value="Computer Science" class="major-checkbox" />
+                                        <span>Computer Science</span>
+                                    </label>
+                                </div>
+                                <div class="major-modal-actions">
+                                    <button type="button" class="btn-ghost" id="majorCancel">Cancel</button>
+                                    <button type="button" class="btn-primary" id="majorSave">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="card info-card span-full">
+                        <div class="summary-header">
+                            <span class="summary-title">Attendance summary</span>
+                            <span class="summary-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#323544" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+                                    <path d="M7 9h10"></path>
+                                    <path d="M7 13h4"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="info-card-body" id="summaryBody">
+                            <ul>
+                                <li>Overall attendance is 100% for this period.</li>
+                                <li>Major subjects are not selected yet. Choose majors to track their combined attendance.
+                                </li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <article class="card subject-card purple span-2">
+                        <div class="subject-header">
+                            <span class="subject-name">Mathematics</span>
+                            <span class="subject-icon" aria-hidden="true">
+                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="#323544" stroke-linejoin="round"
+                                        d="m17 13 3.4641-2V7L17 5l-3.4641 2v4M17 13l-3.4641-2M17 13v4l-7.00001 4M17 13V9m0 4-7.00001 4m3.53591-6L10.5 12.7348M9.99999 21l-3.4641-2.1318M9.99999 21v-4m-3.4641 2v-.1318m0 0V15L10.5 12.7348m-3.96411 6.1334L3.5 17V5m0 0L7 3l3.5 2m-7 0 2.99999 2M10.5 5v7.7348M10.5 5 6.49999 7M17 9l3.5-2M17 9l-3.5-2M9.99999 17l-3.5-2m0 .5V7" />
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="subject-meta-group">
+                            <div class="subject-meta">Total classes - 22</div>
+                            <div class="subject-meta">Attended - 18</div>
+                        </div>
+                        <div class="subject-percentage">82%</div>
+                    </article>
+
+                    <article class="card subject-card subject-2 span-2">
+                        <div class="subject-header">
+                            <span class="subject-name">Physics</span>
+                            <span class="subject-icon" aria-hidden="true">
+                                <svg class="w-[38px] h-[38px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                    width="24" height="24" fill="#323544" viewBox="0 0 24 24">
+                                    <path
+                                        d="M20 14h-2.722L11 20.278a5.511 5.511 0 0 1-.9.722H20a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1ZM9 3H4a1 1 0 0 0-1 1v13.5a3.5 3.5 0 1 0 7 0V4a1 1 0 0 0-1-1ZM6.5 18.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2ZM19.132 7.9 15.6 4.368a1 1 0 0 0-1.414 0L12 6.55v9.9l7.132-7.132a1 1 0 0 0 0-1.418Z" />
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="subject-meta-group">
+                            <div class="subject-meta">Total classes - 20</div>
+                            <div class="subject-meta">Attended - 15</div>
+                        </div>
+                        <div class="subject-percentage">75%</div>
+                    </article>
+
+                    <article class="card subject-card mint span-2">
+                        <div class="subject-header">
+                            <span class="subject-name">Computer Science</span>
+                            <span class="subject-icon" aria-hidden="true">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.9933 3.50879C11.6316 3.50879 11.2683 3.58158 10.9266 3.7263L3.4825 6.85273C3.06333 7.02875 3.07417 7.62121 3.4925 7.79726L10.9775 10.8086C11.6332 11.0786 12.3667 11.0786 13.0225 10.8086L20.5075 7.79726C20.9266 7.63137 20.9266 7.02875 20.5175 6.85273L13.0533 3.7263C12.7179 3.58228 12.3575 3.5083 11.9933 3.50879ZM21.5 8.66308C21.4365 8.6635 21.3736 8.67644 21.315 8.70117L12.9716 11.9825C12.8783 12.0213 12.7984 12.0874 12.742 12.1723C12.6857 12.2573 12.6554 12.3574 12.655 12.4598V19.989C12.6558 20.0714 12.6763 20.1524 12.7148 20.225C12.7533 20.2975 12.8087 20.3595 12.876 20.4055C12.9433 20.4515 13.0207 20.4801 13.1014 20.4889C13.1821 20.4978 13.2637 20.4865 13.3392 20.4562L21.6833 17.1639C21.7769 17.1286 21.8574 17.0649 21.9141 16.9814C21.9708 16.898 22.0007 16.7989 22 16.6975V9.16836C21.9991 9.03426 21.946 8.90598 21.8523 8.81146C21.7587 8.71694 21.632 8.66305 21.5 8.66308ZM2.56333 8.69609C2.48934 8.69343 2.41561 8.70634 2.34678 8.73399C2.27794 8.76166 2.21548 8.80352 2.16333 8.85688C2.07167 8.95082 2 9.06425 2 9.19965V16.271C2 16.645 2.42916 16.8947 2.75667 16.728L10.7116 12.8441C11.1 12.6579 11.07 12.0756 10.6608 11.9198L2.73583 8.73246C2.68113 8.70923 2.62262 8.69746 2.56333 8.69609Z"
+                                    fill="#323544" />
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="subject-meta-group">
+                            <div class="subject-meta">Total classes - 21</div>
+                            <div class="subject-meta">Attended - 16</div>
+                        </div>
+                        <div class="subject-percentage">76%</div>
+                    </article>
+
+                    <article class="card subject-card peach span-2">
+                        <div class="subject-header">
+                            <span class="subject-name">Computer Science</span>
+                            <span class="subject-icon" aria-hidden="true">
+                                <svg class="w-[38px] h-[38px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                    width="24" height="24" fill="#323544" viewBox="0 0 24 24">
+                                    <path
+                                        d="M3 4.92857C3 3.90506 3.80497 3 4.88889 3H19.1111C20.195 3 21 3.90506 21 4.92857V13h-3v-2c0-.5523-.4477-1-1-1h-4c-.5523 0-1 .4477-1 1v2H3V4.92857ZM3 15v1.0714C3 17.0949 3.80497 18 4.88889 18h3.47608L7.2318 19.3598c-.35356.4243-.29624 1.0548.12804 1.4084.42428.3536 1.05484.2962 1.40841-.128L10.9684 18h2.0632l2.2002 2.6402c.3535.4242.9841.4816 1.4084.128.4242-.3536.4816-.9841.128-1.4084L15.635 18h3.4761C20.195 18 21 17.0949 21 16.0714V15H3Z" />
+                                    <path d="M16 12v1h-2v-1h2Z" />
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="subject-meta-group">
+                            <div class="subject-meta">Total classes - 14</div>
+                            <div class="subject-meta">Attended - 11</div>
+                        </div>
+                        <div class="subject-percentage">79%</div>
+                    </article>
+
+                </section>
+            </section>
+
+            <section class="periodical-section" id="dateWiseRecordsSection">
+                <header class="app-header">
+                    <div class="title-block">
+                        <h1>Date-wise Records</h1>
+                        <span class="subtitle" id="selectedDateLabel">Loading…</span>
+                    </div>
+
+                    <div class="month-year-select">
+                        <span class="edit-icon" aria-hidden="true">
+                            <svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2"
+                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="m19 20.25c0-.402-.356-.75-.75-.75-2.561 0-11.939 0-14.5 0-.394 0-.75.348-.75.75s.356.75.75.75h14.5c.394 0 .75-.348.75-.75zm-7.403-3.398 9.124-9.125c.171-.171.279-.423.279-.684 0-.229-.083-.466-.28-.662l-3.115-3.104c-.185-.185-.429-.277-.672-.277s-.486.092-.672.277l-9.143 9.103c-.569 1.763-1.555 4.823-1.626 5.081-.02.075-.029.15-.029.224 0 .461.349.848.765.848.511 0 .991-.189 5.369-1.681zm-3.27-3.342 2.137 2.137-3.168 1.046zm.955-1.166 7.651-7.616 2.335 2.327-7.637 7.638z" />
+                            </svg>
+                        </span>
+                        <select id="monthYearSelect" aria-label="Month and year"></select>
+                    </div>
+                </header>
+
+                <section class="date-strip-wrapper" aria-label="Date picker">
+                    <div class="date-strip" id="dateStrip"></div>
+                </section>
+
+                <section class="cards-container" id="dateCardsContainer" aria-label="Attendance records"></section>
+            </section>
+        
+        </div> </div>
+    </div>
     <div class="modal-backdrop hidden" id="editModal">
         <div class="modal">
             <h3>Edit record</h3>
@@ -890,7 +1010,6 @@
             </div>
         </div>
     </div>
-
     <div class="ai-board-overlay">
         <div class="ai-board" id="aiBoard">
             <div class="ai-board-header">
@@ -915,6 +1034,7 @@
                 </div>
 
                 <div class="ai-response" id="aiResponse">
+
                     Here is a sample response from Attenza AI.
 
                     Once you connect Gemini and your attendance backend, this will show real, detailed insights.
@@ -929,6 +1049,7 @@
 
         <div class="ai-card-container">
             <div class="see-more-btn">
+
                 <div class="logo-loader-wrapper">
                     <img src="Image/Ailogo.webp" alt="Attenza AI" class="ai-loader-webp" loading="lazy"
                         decoding="async" />
@@ -976,100 +1097,82 @@
         </iframe>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script type="module">
+  import { auth, db } from './firebase-init.js';
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <!-- FIREBASE + AUTH CHECK (keeps your original imports & logic) -->
-    <script type="module">
-      import { auth, db } from './firebase-init.js';
-      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  /**
+   * Dashboard Auth & State Guard
+   * ---------------------------------
+   * Rules:
+   * - login.html is the ONLY gatekeeper
+   * - Dashboard assumes profile must already be complete
+   * - If profile is broken or missing → redirect to login.html
+   * - Subject setup missing → blur dashboard (NO redirect)
+   */
 
-      /**
-       * Dashboard Auth & State Guard
-       * ---------------------------------
-       * Rules:
-       * - login.html is the ONLY gatekeeper
-       * - Dashboard assumes profile must already be complete
-       * - If profile is broken or missing → redirect to login.html
-       * - Subject setup missing → blur dashboard (NO redirect)
-       */
+  onAuthStateChanged(auth, async (user) => {
 
-      onAuthStateChanged(auth, async (user) => {
+    // 0️⃣ Not logged in → back to login gate
+    if (!user) {
+      window.location.replace("login.html");
+      return;
+    }
 
-        // 0️⃣ Not logged in → back to login gate
-        if (!user) {
-          // Clear loading UI to avoid locking user with a forever loader if not logged in
-          document.body.classList.remove('loading');
-          const skl = document.getElementById('skeletonOverlay');
-          if (skl) skl.classList.add('hidden');
-          window.location.replace("login.html");
-          return;
-        }
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
 
-        try {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
+      // 1️⃣ Rare edge case:
+      // User exists in Auth but profile doc is missing or incomplete
+      if (
+        !userSnap.exists() ||
+        userSnap.data().profileComplete !== true
+      ) {
+        // Dashboard does NOT handle profile repair
+        // login.html already contains recovery logic
+        window.location.replace("login.html");
+        return;
+      }
 
-          // 1️⃣ Rare edge case:
-          // User exists in Auth but profile doc is missing or incomplete
-          if (
-            !userSnap.exists() ||
-            userSnap.data().profileComplete !== true
-          ) {
-            // Dashboard does NOT handle profile repair
-            // Hide skeleton briefly then redirect so user isn't stuck
-            document.body.classList.remove('loading');
-            const skl = document.getElementById('skeletonOverlay');
-            if (skl) skl.classList.add('hidden');
-            window.location.replace("login.html");
-            return;
-          }
+      const userData = userSnap.data();
 
-          const userData = userSnap.data();
+      // 2️⃣ Profile is valid → show dashboard shell
 
-          // 2️⃣ Profile is valid → show dashboard shell
-          document.body.style.visibility = "visible";
+      // 3️⃣ Subject setup lock (UI-only, not navigation)
+      if (userData.subjectsSetup !== true) {
+        // Lock dashboard interactions (blur, overlay, CTA)
+        document.body.classList.add("mode-locked");
+      } else {
+        document.body.classList.remove("mode-locked");
+      }
 
-          // 3️⃣ Subject setup lock (UI-only, not navigation)
-          if (userData.subjectsSetup !== true) {
-            // Lock dashboard interactions (blur, overlay, CTA)
-            document.body.classList.add("mode-locked");
-          } else {
-            document.body.classList.remove("mode-locked");
-          }
+      // 4️⃣ Initialize dashboard logic
+      // (charts, attendance ring, schedule, etc.)
+      if (typeof initializeDashboard === "function") {
+        await initializeDashboard(userData);
+      }
 
-          // 4️⃣ Initialize dashboard logic (charts, attendance ring, schedule, etc.)
-          // We await initializeDashboard if it exists so skeleton hides only after dashboard is ready.
-          if (typeof initializeDashboard === "function") {
-            try {
-              await initializeDashboard(userData);
-            } catch (initErr) {
-              console.error("initializeDashboard failed:", initErr);
-              // We still proceed to hide skeleton so user can see partial UI and any error UI you implement.
-            }
-          }
+const skeleton = document.getElementById('skeletonLoader');
+skeleton.classList.add('fade-out');
+setTimeout(() => {
+  skeleton.remove();
+}, 500);
+const appContent = document.getElementById('appContent');
+appContent.style.display = 'block';
 
-          // ✅ FINAL: hide skeleton and reveal real dashboard
-          document.body.classList.remove('loading');
-          const skl = document.getElementById('skeletonOverlay');
-          if (skl) skl.classList.add('hidden');
+    } catch (error) {
+      console.error("Dashboard auth check failed:", error);
+      // Fail safe → send back to gate
+      window.location.replace("login.html");
+    }
+  });
+</script>
 
-        } catch (error) {
-          console.error("Dashboard auth check failed:", error);
-          // Remove skeleton so user sees the redirect; otherwise might be a stuck loader
-          document.body.classList.remove('loading');
-          const skl = document.getElementById('skeletonOverlay');
-          if (skl) skl.classList.add('hidden');
-
-          // Fail safe → send back to gate
-          window.location.replace("login.html");
-        }
-      });
-    </script>
-
-    <!-- Your main dashboard logic -->
-    <script type="module" src="app.js"></script>
-
+<!-- Your main dashboard logic -->
+<script type="module" src="app.js"></script>
 </body>
 
 </html>
