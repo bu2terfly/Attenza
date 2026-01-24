@@ -922,52 +922,75 @@
         </iframe>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script type="module">
-        import { auth, db } from './firebase-init.js';
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script type="module">
+  import { auth, db } from './firebase-init.js';
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        onAuthStateChanged(auth, async (user) => {
-            const viewport = document.body;
+  /**
+   * Dashboard Auth & State Guard
+   * ---------------------------------
+   * Rules:
+   * - login.html is the ONLY gatekeeper
+   * - Dashboard assumes profile must already be complete
+   * - If profile is broken or missing → redirect to login.html
+   * - Subject setup missing → blur dashboard (NO redirect)
+   */
 
-            if (!user) {
-                window.location.replace("login.html");
-            } else {
-                try {
-                    const userRef = doc(db, "users", user.uid);
-                    const userSnap = await getDoc(userRef);
+  onAuthStateChanged(auth, async (user) => {
 
-                    // 1. Basic Profile Check
-                    if (userSnap.exists() && userSnap.data().profileComplete === true) {
-                        const userData = userSnap.data();
-                        viewport.style.visibility = "visible";
+    // 0️⃣ Not logged in → back to login gate
+    if (!user) {
+      window.location.replace("login.html");
+      return;
+    }
 
-                        // 2. SUBJECT SELECTION CHECK (The "Lock" Mode)
-                        // If profile is done, but no subjects...
-                        if (!userData.subjects || userData.subjects.length === 0) {
-                            // ...we add the class. CSS now specifically targets the .protected-zone
-                            document.body.classList.add('mode-locked');
-                        } else {
-                            document.body.classList.remove('mode-locked');
-                        }
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
 
-                        // 3. Initialize Dashboard
-                        if (typeof initializeDashboard === "function") {
-                            await initializeDashboard(userData);
-                        }
+      // 1️⃣ Rare edge case:
+      // User exists in Auth but profile doc is missing or incomplete
+      if (
+        !userSnap.exists() ||
+        userSnap.data().profileComplete !== true
+      ) {
+        // Dashboard does NOT handle profile repair
+        // login.html already contains recovery logic
+        window.location.replace("login.html");
+        return;
+      }
 
-                    } else {
-                        // Profile NOT complete -> Redirect to setup
-                        window.location.replace("setup.html");
-                    }
-                } catch (error) {
-                    console.error("Auth Check Error:", error);
-                }
-            }
-        });
-    </script>
-    <script type="module" src="app.js"></script>
+      const userData = userSnap.data();
+
+      // 2️⃣ Profile is valid → show dashboard shell
+      document.body.style.visibility = "visible";
+
+      // 3️⃣ Subject setup lock (UI-only, not navigation)
+      if (userData.subjectsSetup !== true) {
+        // Lock dashboard interactions (blur, overlay, CTA)
+        document.body.classList.add("mode-locked");
+      } else {
+        document.body.classList.remove("mode-locked");
+      }
+
+      // 4️⃣ Initialize dashboard logic
+      // (charts, attendance ring, schedule, etc.)
+      if (typeof initializeDashboard === "function") {
+        await initializeDashboard(userData);
+      }
+
+    } catch (error) {
+      console.error("Dashboard auth check failed:", error);
+      // Fail safe → send back to gate
+      window.location.replace("login.html");
+    }
+  });
+</script>
+
+<!-- Your main dashboard logic -->
+<script type="module" src="app.js"></script>
 </body>
 
 </html>
