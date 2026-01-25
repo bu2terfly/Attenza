@@ -21,13 +21,11 @@ window.initializeDashboard = async function (profileData) {
   const welcomeTitle = document.getElementById('welcomeTitle');
   if (welcomeTitle) welcomeTitle.innerText = `All set, ${firstName}!`;
 
-  // 2. Set Today's Date (Short Format: 22/01/2026)
+  // 2. Set Today's Date (Short Format: dd/mm/yyyy)
   const dateEl = document.getElementById('dynamicDateDisplay');
   if (dateEl) {
-      // 'en-GB' automatically gives you dd/mm/yyyy
-      dateEl.innerText = new Date().toLocaleDateString('en-GB'); 
+    dateEl.innerText = new Date().toLocaleDateString('en-GB'); 
   }
-
 
   try {
     // 3. Load Summary & Update Ring/Stats
@@ -113,7 +111,7 @@ function updateRingUI(percent) {
   }
 }
 
-// --- UPDATED QUOTE LOGIC (Targets Notebook) ---
+// --- UPDATED QUOTE LOGIC ---
 function updateQuote(percentage) {
   const notebookEl = document.getElementById('notebookQuote');
   if (!notebookEl) return;
@@ -129,8 +127,10 @@ function updateQuote(percentage) {
   }
 }
 
-// --- 2. Routine Logic (Vertical Timeline) ---
-// Updated: Automatically opens the first subject
+// ==========================================
+// --- 2. Routine Logic (Timeline Rewrite) ---
+// ==========================================
+
 async function loadTodayRoutine(profile) {
   const listWrapper = document.getElementById('dynamic-list-wrapper');
   if (!listWrapper) return;
@@ -144,7 +144,7 @@ async function loadTodayRoutine(profile) {
     return;
   }
 
-  // Determine Routine (Logic unchanged)
+  // Determine Routine
   let todaysSubjects = []; 
   if (profile.college === 'Dispur College') {
     try {
@@ -170,26 +170,24 @@ async function loadTodayRoutine(profile) {
     listWrapper.appendChild(itemEl);
   });
 
-  // Setup Listener
+  // Start Realtime Listener
   setupTodayListener(todaysSubjects);
 
-  // --- NEW LOGIC: AUTO-OPEN FIRST ITEM ---
+  // Auto-open first item if it exists
   setTimeout(() => {
       const firstItem = document.getElementById('item-0');
       if (firstItem) {
           toggleItemUI(firstItem);
       }
-  }, 100);
+  }, 200);
 }
-
 
 // Fetch Routine from Google Sheet CSV
 async function fetchDispurSheet(userClass, dateObj) {
   const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWCOvXokdqJy8pGPqf9JZdejf20T-V8SzeOMbdHb9-PhiWJXS-W4NDk0l3DA7ywq12FZXmRfoJ_WPK/pub?gid=0&single=true&output=csv";
 
   const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-  console.log("Fetching routine for:", dayName, userClass);
-
+  
   const response = await fetch(SHEET_URL);
   const text = await response.text();
 
@@ -217,7 +215,6 @@ async function fetchDispurSheet(userClass, dateObj) {
   }));
 }
 
-// Fetch all subjects
 async function fetchUserSubjects() {
   if (!currentUser) return [];
   try {
@@ -230,19 +227,18 @@ async function fetchUserSubjects() {
   }
 }
 
-// Updated for Focus Mode UI
+// Create Item Structure (Clean Slate)
 function createVerticalClassItem(subject, domId) {
   const div = document.createElement('div');
   div.className = 'class-item';
   div.id = domId;
   div.dataset.subjectName = subject.name;
   
-  // Parse time
   const shortTime = subject.time ? subject.time.split('-')[0].trim() : '—';
   
-  // On Click: Toggle Expand/Compact (Standard behavior)
   div.onclick = () => toggleItemUI(div);
 
+  // Default Structure: Action Area is empty initially but will be populated by updateCardStatus
   div.innerHTML = `
         <div class="dot"></div>
         <div class="view-compact">
@@ -251,7 +247,7 @@ function createVerticalClassItem(subject, domId) {
             <span class="status-badge-area"></span> 
         </div>
 
-        <div class="view-expanded active-card-style" id="card-inner-${domId}">
+        <div class="view-expanded" id="card-inner-${domId}">
             <div class="row-header">
                 <div>
                     <span class="time-text active-time">${subject.time}</span>
@@ -260,13 +256,12 @@ function createVerticalClassItem(subject, domId) {
                 </div>
             </div>
             
-            <div class="action-area" style="margin-top: 15px;">
-                 </div>
+            <div class="action-area" id="action-${domId}" style="margin-top: 15px;">
+               </div>
         </div>
     `;
   return div;
 }
-
 
 // Setup Listener for Today's Attendance
 function setupTodayListener(subjects) {
@@ -277,8 +272,7 @@ function setupTodayListener(subjects) {
   if (unsubscribeToday) unsubscribeToday();
 
   unsubscribeToday = onSnapshot(todayRef, (docSnap) => {
-    if (!docSnap.exists()) return;
-    const data = docSnap.data();
+    const data = docSnap.exists() ? docSnap.data() : { records: {} };
     const records = data.records || {};
 
     // Update UI for each item in the list
@@ -286,26 +280,29 @@ function setupTodayListener(subjects) {
     items.forEach(item => {
       const subjectName = item.dataset.subjectName;
       const status = records[subjectName]?.status;
+      // Pass the specific records to the update function
       updateCardStatus(item, status);
     });
   });
 }
 
-// Updates UI based on Firestore data
+// Updates UI based on Firestore data (Buttons vs. Status)
 function updateCardStatus(card, status) {
   const badgeArea = card.querySelector('.status-badge-area');
   const actionArea = card.querySelector('.action-area');
   const subjectName = card.dataset.subjectName;
   const domId = card.id;
 
-  // 1. Handle "Past" visual style
+  if (!card || !actionArea) return;
+
+  // 1. Handle Visual Styling (Gray out if past)
   if (status) {
     card.classList.add('is-past');
   } else {
     card.classList.remove('is-past');
   }
 
-  // 2. Update Compact Badge
+  // 2. Update Compact Badge (Visible when collapsed)
   if (badgeArea) {
       if(status === 'present') badgeArea.innerHTML = `<span class="status-tag tag-green">Attended</span>`;
       else if(status === 'absent') badgeArea.innerHTML = `<span class="status-tag tag-red">Skipped</span>`;
@@ -313,25 +310,34 @@ function updateCardStatus(card, status) {
       else badgeArea.innerHTML = '';
   }
 
-  // 3. Update Action Area (Buttons vs. Status Label)
+  // 3. Update Action Area (Buttons OR Status Label)
+  // IMPORTANT: We use stopPropagation on clicks to prevent card toggling
   if (!status) {
-      // Show Buttons
+      // No record found -> Show Action Buttons
       actionArea.innerHTML = `
          <div class="btn-container">
-            <button class="choice-btn btn-attend" onclick="event.stopPropagation(); startFocusMode('${domId}', '${subjectName}')">Attend</button>
-            <button class="choice-btn btn-skip" onclick="event.stopPropagation(); markAttendance('${subjectName}', 'absent', '')">Skip</button>
-            <button class="choice-btn btn-na" onclick="event.stopPropagation(); markAttendance('${subjectName}', 'not-held', '')">Not Held</button>
+            <button class="choice-btn btn-attend" onclick="event.stopPropagation(); initiateAttend('${domId}', '${subjectName}', this)">Attend</button>
+            <button class="choice-btn btn-skip" onclick="event.stopPropagation(); initiateQuickAction('${domId}', '${subjectName}', 'absent', this)">Skip</button>
+            <button class="choice-btn btn-na" onclick="event.stopPropagation(); initiateQuickAction('${domId}', '${subjectName}', 'not-held', this)">Not Held</button>
         </div>
       `;
   } else {
-      // Show Status + Change Status Link (No popup, just resets to buttons visually)
+      // Record exists -> Show Status & Edit Link
       let tagClass = 'tag-gray';
       let label = status;
       if(status === 'present') { tagClass = 'tag-green'; label = 'Attended'; }
       if(status === 'absent') { tagClass = 'tag-red'; label = 'Skipped'; }
       if(status === 'not-held') { label = 'Not Held'; }
 
-      // "Change Status" now just calls resetCardStatus to show buttons again
+      // We explicitly check to ensure we aren't in "Focus Mode" (Input state).
+      // If updateCardStatus is called, it overrides Focus Mode to show the Result.
+      const cardInner = document.getElementById(`card-inner-${domId}`);
+      if(cardInner && cardInner.querySelector('input')) {
+          // If input exists, user just saved. Revert inner HTML structure is handled by endFocusMode usually, 
+          // but strictly recreating standard view here is safer.
+          // For now, we just update the actionArea content which sits below details.
+      }
+
       actionArea.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="status-tag ${tagClass}">
@@ -343,10 +349,128 @@ function updateCardStatus(card, status) {
   }
 }
 
+// Helper: Set Button Loading State
+function setBtnLoading(btn, isLoading) {
+    if(!btn) return;
+    if (isLoading) {
+        btn.dataset.originalText = btn.innerText;
+        btn.innerHTML = `<span style="font-size:12px;">...</span>`; // Simple text loader or use an SVG
+        btn.style.opacity = "0.7";
+        btn.style.pointerEvents = "none";
+    } else {
+        btn.innerText = btn.dataset.originalText || "Save";
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "auto";
+    }
+}
 
-// --- 3. Mark Attendance Logic ---
-// Batch Write: Status + Remarks
-// Updated: Auto-opens the next subject after saving
+// --- INTERACTION HANDLERS ---
+
+// 1. User clicks "Attend" -> Opens Focus Mode (Input)
+window.initiateAttend = function(domId, subjectName, btn) {
+    setBtnLoading(btn, true);
+    // Short delay to allow visual feedback
+    setTimeout(() => {
+        startFocusMode(domId, subjectName);
+    }, 200);
+}
+
+// 2. User clicks "Skip" or "Not Held" -> Saves immediately
+window.initiateQuickAction = async function(domId, subjectName, status, btn) {
+    setBtnLoading(btn, true);
+    try {
+        await markAttendance(subjectName, status, ""); 
+        // Logic to close card is handled in markAttendance wrapper
+    } catch(e) {
+        console.error(e);
+        setBtnLoading(btn, false);
+    }
+}
+
+// 3. Start Focus Mode (Injects Input)
+window.startFocusMode = function(domId, subjectName) {
+    const scrollArea = document.getElementById('scrollContainer');
+    const itemEl = document.getElementById(domId);
+    const cardInner = document.getElementById(`card-inner-${domId}`);
+    
+    scrollArea.classList.add('focus-mode');
+    itemEl.classList.add('focused-item');
+
+    // Replace entire inner content with Input Mode
+    // We save the original header info if we wanted to restore it without reload, 
+    // but updateCardStatus handles restoration fine.
+    cardInner.innerHTML = `
+        <div style="animation: fadeIn 0.3s ease;" onclick="event.stopPropagation()">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 class="subject-text">${subjectName}</h4>
+                <span class="status-tag tag-green" style="display:inline-block;">Attended</span>
+            </div>
+
+            <label class="remark-label">Add short remarks (optional)</label>
+            <input type="text" id="input-${domId}" class="remark-input-line" 
+                   placeholder="e.g. Chapter 5 completed..." 
+                   maxlength="40"
+                   autocomplete="off" 
+                   oninput="checkInput('${domId}')">
+
+            <div class="remark-footer">
+                <button id="btn-${domId}" class="btn-action-small btn-mode-skip" onclick="endFocusMode('${domId}', '${subjectName}')">Skip Remark</button>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        const input = document.getElementById(`input-${domId}`);
+        if(input) input.focus();
+    }, 50); 
+}
+
+// 4. Toggle "Skip Remark" vs "Save" text
+window.checkInput = function(domId) {
+    const input = document.getElementById(`input-${domId}`);
+    const btn = document.getElementById(`btn-${domId}`);
+    
+    if (input.value.trim().length > 0) {
+        btn.innerText = "Save";
+        btn.className = "btn-action-small btn-mode-save";
+    } else {
+        btn.innerText = "Skip Remark";
+        btn.className = "btn-action-small btn-mode-skip";
+    }
+}
+
+// 5. End Focus Mode (Save Present + Remarks)
+window.endFocusMode = async function(domId, subjectName) {
+    const input = document.getElementById(`input-${domId}`);
+    const btn = document.getElementById(`btn-${domId}`);
+    const remarkVal = input ? input.value.trim() : "";
+
+    setBtnLoading(btn, true);
+
+    const scrollArea = document.getElementById('scrollContainer');
+    const itemEl = document.getElementById(domId);
+
+    // Save
+    await markAttendance(subjectName, 'present', remarkVal);
+
+    // Revert visual classes
+    scrollArea.classList.remove('focus-mode');
+    itemEl.classList.remove('focused-item');
+    
+    // Restoration of the "Standard View" happens via openNextSubject logic
+    // which effectively refreshes the view or closes the card.
+}
+
+// 6. Reset Status (User clicked "Change Status")
+window.resetCardStatus = function(domId, subjectName) {
+    const itemEl = document.getElementById(domId);
+    if(!itemEl) return;
+    // Passing null status forces updateCardStatus to render the Buttons again
+    updateCardStatus(itemEl, null);
+}
+
+// --- 3. Mark Attendance Core Logic ---
 window.markAttendance = async function (subjectName, status, optionalRemark = "") {
   if (!currentUser) return;
   console.log(`Marking ${status} for ${subjectName}`);
@@ -414,23 +538,51 @@ window.markAttendance = async function (subjectName, status, optionalRemark = ""
     });
 
     await loadSummary();
-
-    // --- NEW LOGIC: OPEN NEXT SUBJECT AUTOMATICALLY ---
-    const allItems = Array.from(document.querySelectorAll('.class-item'));
-    const currentIdx = allItems.findIndex(el => el.dataset.subjectName === subjectName);
-
-    // If there is a next item, open it
-    if (currentIdx !== -1 && currentIdx + 1 < allItems.length) {
-        setTimeout(() => {
-            toggleItemUI(allItems[currentIdx + 1]);
-        }, 300); // 300ms delay for smooth animation
-    }
+    
+    // Trigger Next Card Logic
+    openNextSubject(subjectName);
 
   } catch (e) {
     console.error("Attendance Transaction Failed:", e);
+    alert("Could not save attendance. Check connection.");
   }
 }
 
+// Opens the next card in sequence, or closes everything if done
+function openNextSubject(currentSubjectName) {
+    const allItems = Array.from(document.querySelectorAll('.class-item'));
+    const currentIdx = allItems.findIndex(el => el.dataset.subjectName === currentSubjectName);
+
+    // 1. Deactivate Current Item
+    if (currentIdx !== -1) {
+        allItems[currentIdx].classList.remove('active');
+        // Restore standard HTML structure if it was in input mode
+        // Fetch fresh object to rebuild standard view
+        fetchUserSubjects().then(subs => {
+            const sub = subs.find(s => s.name === currentSubjectName);
+            if(sub) {
+                // Re-render item to clean state (removes input fields)
+                // Note: The listener will fire soon to update the status tag
+                const newItem = createVerticalClassItem(sub, allItems[currentIdx].id);
+                allItems[currentIdx].replaceWith(newItem);
+            }
+        });
+    }
+
+    // 2. Open Next Item
+    if (currentIdx !== -1 && currentIdx + 1 < allItems.length) {
+        setTimeout(() => {
+            toggleItemUI(document.getElementById(allItems[currentIdx + 1].id));
+        }, 400); // Smooth delay
+    } else {
+        // Last item done - Ensure everything is closed
+        setTimeout(() => {
+             allItems.forEach(i => i.classList.remove('active'));
+             // Scroll back to top or just sit there
+             document.getElementById('scrollContainer').scrollTo({ top: 0, behavior: 'smooth'});
+        }, 400);
+    }
+}
 
 // --- 4. Bento Grid Subject Cards ---
 function updateSubjectCards(finalStats) {
@@ -847,7 +999,7 @@ window.openMenu = function () {
   if (menu) menu.style.left = "0";
 }
 
-// --- New Timeline Item Expand/Collapse Logic ---
+// --- Timeline Item Expand/Collapse Logic ---
 window.toggleItemUI = function(clickedItem) {
     const container = document.getElementById('scrollContainer');
     const allItems = document.querySelectorAll('.class-item');
@@ -1138,85 +1290,3 @@ window.calculatePeriodicalStats = async function (startKey, endKey) {
     alert("Failed to calculate periodical stats.");
   }
 }
-
-// --- NEW FOCUS MODE LOGIC ---
-
-// 1. Enter Focus Mode (Injects Input)
-window.startFocusMode = function(domId, subjectName) {
-    const scrollArea = document.getElementById('scrollContainer');
-    const itemEl = document.getElementById(domId);
-    const cardInner = document.getElementById(`card-inner-${domId}`);
-    
-    // Trigger CSS Animation
-    scrollArea.classList.add('focus-mode');
-    itemEl.classList.add('focused-item');
-
-    // Swap HTML to Input Mode
-    cardInner.innerHTML = `
-        <div style="animation: fadeIn 0.3s ease;" onclick="event.stopPropagation()">
-            
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h4 class="subject-text">${subjectName}</h4>
-                <span class="status-tag tag-green" style="display:inline-block;">Attended</span>
-            </div>
-
-            <label class="remark-label">Add short remarks (optional)</label>
-            <input type="text" id="input-${domId}" class="remark-input-line" 
-                   placeholder="e.g. Chapter 5 completed..." 
-                   maxlength="40"
-                   autocomplete="off" 
-                   oninput="checkInput('${domId}')">
-
-            <div class="remark-footer">
-                <button id="btn-${domId}" class="btn-action-small btn-mode-skip" onclick="endFocusMode('${domId}', '${subjectName}')">Skip Remark</button>
-            </div>
-        </div>
-    `;
-    
-    // Auto focus
-    setTimeout(() => {
-        const input = document.getElementById(`input-${domId}`);
-        if(input) input.focus();
-    }, 50); 
-}
-
-// 2. Toggle Button Text (Skip Remark vs Save)
-window.checkInput = function(domId) {
-    const input = document.getElementById(`input-${domId}`);
-    const btn = document.getElementById(`btn-${domId}`);
-    
-    if (input.value.trim().length > 0) {
-        btn.innerText = "Save";
-        btn.className = "btn-action-small btn-mode-save";
-    } else {
-        btn.innerText = "Skip Remark";
-        btn.className = "btn-action-small btn-mode-skip";
-    }
-}
-
-// 3. Exit Focus Mode & Save to DB
-window.endFocusMode = function(domId, subjectName) {
-    const scrollArea = document.getElementById('scrollContainer');
-    const itemEl = document.getElementById(domId);
-    const input = document.getElementById(`input-${domId}`);
-    const remarkVal = input ? input.value.trim() : "";
-
-    // Reverse Animation
-    scrollArea.classList.remove('focus-mode');
-    itemEl.classList.remove('focused-item');
-
-    // Wait 300ms for animation, then save to DB
-    setTimeout(() => {
-        markAttendance(subjectName, 'present', remarkVal);
-    }, 300);
-}
-
-// 4. "Change Status" Click - Resets to Button View
-window.resetCardStatus = function(domId, subjectName) {
-    const itemEl = document.getElementById(domId);
-    if(!itemEl) return;
-    
-    // Passing null status forces updateCardStatus to render the Buttons again
-    updateCardStatus(itemEl, null);
-}
-
