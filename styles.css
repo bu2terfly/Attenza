@@ -662,6 +662,71 @@
         line-height: 1.5;
     }
 
+/* ===== ADD TO END OF YOUR style.css ===== */
+/* --- BUTTON LOADER SPINNER --- */
+.btn-loader {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: btnSpin 0.6s linear infinite;
+}
+@keyframes btnSpin {
+    to { transform: rotate(360deg); }
+}
+/* Loader color for light buttons */
+.btn-skip .btn-loader,
+.btn-na .btn-loader {
+    border-color: rgba(0, 0, 0, 0.15);
+    border-top-color: #4B5563;
+}
+.btn-mode-skip .btn-loader {
+    border-color: rgba(0, 0, 0, 0.15);
+    border-top-color: #6B7280;
+}
+.btn-mode-save .btn-loader {
+    border-color: rgba(255, 255, 255, 0.3);
+    border-top-color: #FFFFFF;
+}
+/* --- BUTTON TEXT VISIBILITY --- */
+.choice-btn .btn-text,
+.btn-action-small .btn-text {
+    display: inline;
+}
+/* --- DISABLED BUTTON STATE --- */
+.choice-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.btn-action-small:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* --- ALL-MARKED STATE (when every subject is done) --- */
+.scroll-area.all-marked .class-item {
+    opacity: 1;
+    pointer-events: auto;
+}
+.scroll-area.all-marked .class-item.active {
+    /* Remove active state when all marked */
+}
+.scroll-area.all-marked .class-item .view-expanded {
+    display: none !important;
+}
+.scroll-area.all-marked .class-item .view-compact {
+    display: flex !important;
+    opacity: 1;
+}
+.scroll-area.all-marked .timeline-line {
+    opacity: 1;
+}
+.scroll-area.all-marked .class-item .dot {
+    opacity: 1;
+}
+
 
     .install-strip {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
