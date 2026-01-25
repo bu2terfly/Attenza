@@ -442,6 +442,11 @@ function updateCardStatus(card, status) {
 
 // Handle quick mark (Skip / Not Held) with loader
 async function handleQuickMark(btn, subjectName, status) {
+    // Clear pending reset flag since user is now marking
+    if (pendingResetSubject === subjectName) {
+        pendingResetSubject = null;
+    }
+
     // Show loader
     const textSpan = btn.querySelector('.btn-text');
     const loaderSpan = btn.querySelector('.btn-loader');
@@ -1246,6 +1251,11 @@ window.calculatePeriodicalStats = async function (startKey, endKey) {
 
 // 1. Enter Focus Mode (Injects Input) - Internal function
 function startFocusModeInternal(domId, subjectName) {
+    // Clear pending reset flag since user is now marking attended
+    if (pendingResetSubject === subjectName) {
+        pendingResetSubject = null;
+    }
+
     const scrollArea = document.getElementById('scrollContainer');
     const itemEl = document.getElementById(domId);
     const cardInner = document.getElementById(`card-inner-${domId}`);
