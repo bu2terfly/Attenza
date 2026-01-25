@@ -526,6 +526,19 @@
 .btn-mode-skip { background: #F3F4F6; color: #6B7280; }
 .btn-mode-save { background: #8B80F9; color: #FFFFFF; }
 
+/* Button Loader Spinner */
+.btn-loader {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0,0,0,0.1);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* --- FOCUS MODE ANIMATION STATES --- */
 .scroll-area.focus-mode .timeline-line { opacity: 0; }
 .scroll-area.focus-mode .class-item { opacity: 0.3; transform: scale(0.99); pointer-events: none; }
