@@ -10,6 +10,7 @@ let currentUser = null;
 let userProfile = null;
 let unsubscribeToday = null; // Listener for today's attendance
 let todaySubjectsList = []; // Track today's subjects globally
+let pendingResetSubject = null; // Track subject being reset to prevent listener override
 
 // --- Dashboard Initialization ---
 window.initializeDashboard = async function (profileData) {
@@ -281,6 +282,19 @@ function setupTodayListener(subjects) {
             const subjectName = item.dataset.subjectName;
             const status = records[subjectName]?.status || null;
 
+            // Skip update if user is manually resetting this subject's status
+            if (subjectName === pendingResetSubject) {
+                pendingResetSubject = null;
+                // Track unmarked for shifting logic
+                if (!status && !firstUnmarkedItem) {
+                    firstUnmarkedItem = item;
+                }
+                if (!status) {
+                    allMarked = false;
+                }
+                return; // Don't update this card's UI
+            }
+
             // Update UI immediately
             updateCardStatus(item, status);
 
@@ -297,20 +311,32 @@ function setupTodayListener(subjects) {
         const scrollArea = document.getElementById('scrollContainer');
 
         if (allMarked && items.length > 0) {
-            // All subjects marked - collapse all cards
+            // All subjects marked - collapse active cards but keep clickable
             scrollArea?.classList.add('all-marked');
             items.forEach(item => {
-                item.classList.remove('active');
                 item.classList.remove('focused-item');
             });
             scrollArea?.classList.remove('focus-mode');
+            // Don't remove 'active' class - let user keep viewing if they want
         } else {
             scrollArea?.classList.remove('all-marked');
 
-            // Open first unmarked item if none is currently active
-            const hasActiveItem = document.querySelector('.class-item.active');
-            if (!hasActiveItem && firstUnmarkedItem) {
-                setTimeout(() => toggleItemUI(firstUnmarkedItem), 100);
+            // Close currently active card and open first unmarked
+            const currentActiveItem = document.querySelector('.class-item.active');
+            if (firstUnmarkedItem) {
+                // If there's an active card that is now marked, shift to next unmarked
+                if (currentActiveItem && currentActiveItem !== firstUnmarkedItem) {
+                    const currentSubject = currentActiveItem.dataset.subjectName;
+                    const currentStatus = records[currentSubject]?.status || null;
+                    if (currentStatus) {
+                        // Current active is marked, shift to first unmarked
+                        currentActiveItem.classList.remove('active');
+                        setTimeout(() => toggleItemUI(firstUnmarkedItem), 100);
+                    }
+                } else if (!currentActiveItem) {
+                    // No active item, open first unmarked
+                    setTimeout(() => toggleItemUI(firstUnmarkedItem), 100);
+                }
             }
         }
     });
@@ -1315,6 +1341,9 @@ window.endFocusMode = endFocusModeInternal;
 function resetCardStatusInternal(domId, subjectName) {
     const itemEl = document.getElementById(domId);
     if (!itemEl) return;
+
+    // Set pending flag to prevent listener from overwriting
+    pendingResetSubject = subjectName;
 
     // Force re-render with null status to show buttons
     updateCardStatus(itemEl, null);
