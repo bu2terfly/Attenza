@@ -1323,6 +1323,7 @@ window.startFocusMode = startFocusModeInternal;
 async function endFocusModeInternal(domId, subjectName) {
     const scrollArea = document.getElementById('scrollContainer');
     const itemEl = document.getElementById(domId);
+    const cardInner = document.getElementById(`card-inner-${domId}`);
     const input = document.getElementById(`input-${domId}`);
     const btn = document.getElementById(`btn-${domId}`);
     const remarkVal = input ? input.value.trim() : "";
@@ -1342,6 +1343,28 @@ async function endFocusModeInternal(domId, subjectName) {
     // Reverse Animation after save
     scrollArea?.classList.remove('focus-mode');
     itemEl?.classList.remove('focused-item');
+
+    // Restore card structure so listener can update it properly
+    // Get subject details from todaySubjectsList
+    const subjectData = todaySubjectsList.find(s => s.name === subjectName) || { time: '', room: '—', faculty: '—' };
+    if (cardInner) {
+        cardInner.innerHTML = `
+      <div class="row-header">
+        <div>
+          <span class="time-text active-time">${subjectData.time}</span>
+          <h4 class="subject-text">${subjectName}</h4>
+          <div class="details-text">${subjectData.room} • ${subjectData.faculty}</div>
+        </div>
+      </div>
+      
+      <div class="action-area" style="margin-top: 15px;"></div>
+    `;
+    }
+
+    // Update card status immediately (listener will also fire but this ensures immediate feedback)
+    if (itemEl) {
+        updateCardStatus(itemEl, 'present');
+    }
 }
 
 // Expose for window access
