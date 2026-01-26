@@ -20,7 +20,7 @@ const CACHE_KEYS = {
 };
 
 // Master Sheet CSV Export URL (to be configured)
-const MASTER_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWCOvXokdqJy8pGPqf9JZdejf20T-V8SzeOMbdHb9-PhiWJXS-W4NDk0l3DA7ywq12FZXmRfoJ_WPK/pub?gid=0&single=true&output=csv";
+const MASTER_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQfNCRyXxZSbL-pMT-MOxZ3c5ucXzajfqH48fKt3WTQOD77sSfzPe8xG6sx4sIP85j74_vXgQ5xGTJq/pub?output=csv";
 
 // Build CSV export URL from Sheet ID
 function buildRoutineSheetURL(sheetId) {
