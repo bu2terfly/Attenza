@@ -843,6 +843,13 @@
       where
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // --- ROUTINE SERVICE IMPORTS ---
+    import {
+      fetchSubjectsForClass,
+      saveUserClassId,
+      clearAllRoutineCache
+    } from './routine-service.js';
+
     // --- FIREBASE CONFIG (same as login.html) ---
     const firebaseConfig = {
       apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
@@ -965,26 +972,51 @@
       }
     }
 
-    // Attempt to fetch subjects from colleges/{collegeId}/subjects collection if it exists.
+    // Attempt to fetch subjects from routine sheet first, then Firestore, then fallback to defaults
     async function loadCollegeSubjects(collegeId) {
-      if (!collegeId) return;
-      try {
-        const colRef = collection(db, 'colleges', collegeId, 'subjects');
-        const snaps = await getDocs(colRef);
-        if (snaps && !snaps.empty) {
-          const arr = [];
-          snaps.forEach(s => {
-            const d = s.data();
-            if (d && d.name) arr.push(d.name);
-          });
-          if (arr.length) {
-            APP_STATE.fetchedSubjects = Array.from(new Set([...arr]));
+      const classId = APP_STATE.profile?.class_id || APP_STATE.profile?.course_or_class || APP_STATE.profile?.class || '';
+
+      // Try 1: Fetch from Routine Sheet (Google Sheets) if class is set
+      if (classId) {
+        try {
+          console.log('Attempting to fetch subjects from routine sheet for class:', classId);
+          const routineSubjects = await fetchSubjectsForClass(classId);
+          if (routineSubjects && routineSubjects.length > 0) {
+            console.log('Found subjects from routine sheet:', routineSubjects.length);
+            APP_STATE.fetchedSubjects = Array.from(new Set([...routineSubjects]));
+            // Save class ID for dashboard reference
+            saveUserClassId(classId);
+            return; // Success - exit early
           }
+        } catch (err) {
+          console.warn('Could not fetch from routine sheet:', err);
         }
-      } catch (err) {
-        // no college subjects or permission issue — fallback to default list
-        console.warn("Could not load college subjects", err);
       }
+
+      // Try 2: Fetch from Firestore colleges collection
+      if (collegeId) {
+        try {
+          const colRef = collection(db, 'colleges', collegeId, 'subjects');
+          const snaps = await getDocs(colRef);
+          if (snaps && !snaps.empty) {
+            const arr = [];
+            snaps.forEach(s => {
+              const d = s.data();
+              if (d && d.name) arr.push(d.name);
+            });
+            if (arr.length) {
+              console.log('Found subjects from Firestore:', arr.length);
+              APP_STATE.fetchedSubjects = Array.from(new Set([...arr]));
+              return; // Success - exit early
+            }
+          }
+        } catch (err) {
+          console.warn('Could not load college subjects from Firestore:', err);
+        }
+      }
+
+      // Fallback: Keep default list (already set in APP_STATE)
+      console.log('Using default subject list');
     }
 
     // Load user's existing saved subjects (and prefill selection + past attendance for step2)
@@ -1290,8 +1322,13 @@
             pastTotalSum += past.total;
             pastAttendedSum += past.attended;
           }
+
+          // Check if this is a custom subject (user-created, not from routine sheet)
+          const isCustom = APP_STATE.customSubjects.has(name);
+
           const payload = {
             name: name,
+            isCustom: isCustom, // Hybrid Safety: custom subjects show daily
             pastAttendance: { total: past.total || 0, attended: past.attended || 0 },
             updatedAt: serverTimestamp()
           };
