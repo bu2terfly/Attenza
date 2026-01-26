@@ -5,6 +5,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// --- Routine Service Import ---
+import {
+    fetchRoutineWithVersionCheck,
+    buildTodaySchedule,
+    saveUserClassId,
+    getUserClassId,
+    clearRoutineCache
+} from './routine-service.js';
+
 // --- Global State ---
 let currentUser = null;
 let userProfile = null;
@@ -129,36 +138,70 @@ function updateQuote(percentage) {
     }
 }
 
-// --- 2. Routine Logic (Vertical Timeline) ---
+// --- 2. Routine Logic (Vertical Timeline) with Hybrid Safety Approach ---
+/**
+ * Hybrid Safety Logic:
+ * 1. Loop through USER's saved subjects (not routine rows)
+ * 2. For each subject, check if it matches today's routine (Day + Section + Subject)
+ * 3. Scenario A: Match Found → Use sheet data (time, room, teacher)
+ * 4. Scenario B: No Match + (isCustom OR fetchFailed) → Show as "Daily"
+ * 5. Scenario C: No Match + Official Subject → Hide (not scheduled today)
+ */
 async function loadTodayRoutine(profile) {
     const listWrapper = document.getElementById('dynamic-list-wrapper');
     if (!listWrapper) return;
 
     listWrapper.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">Loading schedule...</div>';
 
-    // Fetch subjects
-    const subjects = await fetchUserSubjects();
-    if (subjects.length === 0) {
+    // Fetch user's saved subjects from Firestore
+    const userSubjects = await fetchUserSubjects();
+    if (userSubjects.length === 0) {
         listWrapper.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">No subjects set. Go to Menu > Select Subjects.</div>';
         return;
     }
 
-    // Determine Routine
+    // Determine class_id from profile
+    const classId = profile.class_id || profile.course_or_class || profile.class || '';
+    const userSection = profile.section || 'A';
+
+    // Save class ID for future reference
+    if (classId) saveUserClassId(classId);
+
     let todaysSubjects = [];
-    if (profile.college === 'Dispur College') {
-        try {
-            todaysSubjects = await fetchDispurSheet(profile.course_or_class || profile.class, new Date());
-            if (todaysSubjects.length === 0) {
-                todaysSubjects = subjects.map(s => ({ name: s.name, time: 'Daily', room: '—', faculty: '—', duration: '1 hr' }));
-            }
-        } catch (err) {
-            console.error("Routine fetch failed, fallback:", err);
-            todaysSubjects = subjects.map(s => ({ name: s.name, time: 'Daily', room: '—', faculty: '—', duration: '1 hr' }));
+    let routineData = [];
+    let fetchFailed = false;
+
+    // Try to fetch routine with version check (caching optimization)
+    try {
+        const result = await fetchRoutineWithVersionCheck(classId);
+        routineData = result.routineData || [];
+        fetchFailed = result.fetchFailed;
+
+        if (result.fromCache) {
+            console.log('Using cached routine data');
+        } else if (routineData.length > 0) {
+            console.log('Fetched fresh routine data');
         }
-    } else {
-        todaysSubjects = subjects.map(s => ({
-            name: s.name, time: 'Daily', room: '—', faculty: '—', duration: '1 hr'
-        }));
+    } catch (err) {
+        console.error('Routine fetch error:', err);
+        fetchFailed = true;
+    }
+
+    // Build today's schedule using Hybrid Safety approach
+    todaysSubjects = buildTodaySchedule(userSubjects, routineData, userSection, fetchFailed);
+
+    // Handle case where no subjects match today's schedule and not in fallback mode
+    if (todaysSubjects.length === 0 && !fetchFailed) {
+        // Check if it's a day off (Saturday/Sunday) or just no classes today
+        const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        const isSunday = dayName.toLowerCase() === 'sunday';
+
+        if (isSunday) {
+            listWrapper.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">It\'s Sunday! No scheduled classes today. Enjoy your rest! 🎉</div>';
+        } else {
+            listWrapper.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">No classes scheduled for today.</div>';
+        }
+        return;
     }
 
     // Store globally for reference
@@ -174,40 +217,6 @@ async function loadTodayRoutine(profile) {
 
     // Setup Listener FIRST, then open first item
     setupTodayListener(todaysSubjects);
-}
-
-// Fetch Routine from Google Sheet CSV
-async function fetchDispurSheet(userClass, dateObj) {
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWCOvXokdqJy8pGPqf9JZdejf20T-V8SzeOMbdHb9-PhiWJXS-W4NDk0l3DA7ywq12FZXmRfoJ_WPK/pub?gid=0&single=true&output=csv";
-
-    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-    console.log("Fetching routine for:", dayName, userClass);
-
-    const response = await fetch(SHEET_URL);
-    const text = await response.text();
-
-    const rows = text.split('\n').map(r => r.trim()).filter(r => r).map(row => {
-        return row.split(',').map(c => c.trim());
-    });
-
-    const todays = rows.filter(r => {
-        if (r.length < 5) return false;
-        const sheetCollege = (r[0] || "").toLowerCase();
-        const sheetClass = (r[1] || "").toLowerCase();
-        const sheetDay = (r[2] || "").toLowerCase();
-
-        return sheetCollege.includes('dispur') &&
-            sheetClass === (userClass || "").toLowerCase() &&
-            sheetDay === dayName.toLowerCase();
-    });
-
-    return todays.map(r => ({
-        name: r[4],
-        time: r[3],
-        faculty: r[5] || '—',
-        room: r[6] || '—',
-        duration: '1 hr'
-    }));
 }
 
 // Fetch all subjects
