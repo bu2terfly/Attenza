@@ -849,7 +849,6 @@
       saveUserClassId,
       clearAllRoutineCache
     } from './routine-service.js';
-    import * as cache from './cache-service.js';
 
     // --- FIREBASE CONFIG (same as login.html) ---
     const firebaseConfig = {
@@ -1340,39 +1339,59 @@
         // commit subjects write
         await batch.commit();
 
+        // Prepare cached subjects array for User Profile (Read Optimization)
+        const cachedSubjects = [];
+        selected.forEach(name => {
+          const id = slugifyName(name);
+          const past = APP_STATE.step2Data[id] || { total: 0, attended: 0 };
+          cachedSubjects.push({
+            name: name,
+            id: id,
+            isCustom: APP_STATE.customSubjects.has(name),
+            pastAttendance: { total: past.total || 0, attended: past.attended || 0 }
+          });
+        });
+
         const userRef = doc(db, 'users', APP_STATE.uid);
         await setDoc(
           userRef,
           {
             subjectsSetup: true,
+            cachedSubjects: cachedSubjects, // Save subjects to profile for 0-read access
             updatedAt: serverTimestamp()
           },
           { merge: true }
         );
 
-        // Now update summary doc inside a transaction so we don't overwrite other fields
-        const summaryRef = doc(db, 'users', APP_STATE.uid, 'metadata', 'summary'); // choose metadata/summary path
+        // Now update summary doc inside a transaction
+        const summaryRef = doc(db, 'users', APP_STATE.uid, 'metadata', 'summary');
         await runTransaction(db, async (tx) => {
           const summarySnap = await tx.get(summaryRef);
           const existing = summarySnap.exists() ? summarySnap.data() : {};
 
-          // We'll set past totals (derived from subjects) so it's authoritative for past data.
-          // Keep other fields such as appTracked totals untouched.
           const newSummary = {
             pastTotalClasses: pastTotalSum,
             pastAttendedClasses: pastAttendedSum,
             updatedAt: serverTimestamp()
           };
-
-          // Merge with existing
           tx.set(summaryRef, { ...existing, ...newSummary }, { merge: true });
         });
 
+        // === UPDATE LOCAL CACHE BEFORE REDIRECT ===
+        try {
+          const SHARED_KEY = 'attenza_profile_v2';
+          const raw = localStorage.getItem(SHARED_KEY);
+          if (raw) {
+            const cached = JSON.parse(raw);
+            if (cached && cached.data) {
+              cached.data.subjectsSetup = true;
+              cached.data.cachedSubjects = cachedSubjects;
+              localStorage.setItem(SHARED_KEY, JSON.stringify(cached));
+            }
+          }
+        } catch (e) { console.log("Cache update failed", e); }
+
         showToast("Subjects saved successfully!");
-
-        // Clear all caches (profile, summary, subjects) to ensure fresh load on dashboard
-        cache.clearAll();
-
         // redirect to index/dashboard
         window.location.replace("index.html");
       } catch (err) {
