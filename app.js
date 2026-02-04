@@ -1,7 +1,7 @@
 import { auth, db } from './firebase-init.js';
 import {
     doc, getDoc, getDocs, collection, query, where, documentId,
-    runTransaction, serverTimestamp, orderBy, onSnapshot, setDoc, writeBatch
+    runTransaction, serverTimestamp, orderBy, onSnapshot, setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -14,9 +14,6 @@ import {
     clearRoutineCache
 } from './routine-service.js';
 
-// --- Cache Service Import (Firestore Read Optimization) ---
-import * as cache from './cache-service.js';
-
 // --- Global State ---
 let currentUser = null;
 let userProfile = null;
@@ -24,11 +21,120 @@ let unsubscribeToday = null; // Listener for today's attendance
 let todaySubjectsList = []; // Track today's subjects globally
 let pendingResetSubject = null; // Track subject being reset to prevent listener override
 
+// ============================================
+// === AGGRESSIVE CACHING LAYER (Production) ===
+// ============================================
+
+// Cache Keys
+const CACHE_KEYS = {
+    PROFILE: 'attenza_profile_v2',
+    SUBJECTS: 'attenza_subjects_v2',
+    SUMMARY: 'attenza_summary_v2',
+    WEEKLY: 'attenza_weekly_v2',
+    ATTENDANCE: 'attenza_attendance_v2'
+};
+
+// In-Memory Caches (Session-level, super fast)
+let memoryCache = {
+    subjects: null,        // Array of subject objects
+    summary: null,         // Summary data object
+    weeklyAggregates: {},  // { 'yyyy-Www': { total, present, subjects: {} } }
+    attendanceByDate: {}   // { 'yyyy-mm-dd': { records: {} } }
+};
+
+// --- Cache Helper Functions ---
+
+function saveToLocalStorage(key, data) {
+    try {
+        const payload = { ts: Date.now(), uid: currentUser?.uid, data };
+        localStorage.setItem(key, JSON.stringify(payload));
+    } catch (e) { console.warn('Cache save failed:', key, e); }
+}
+
+function loadFromLocalStorage(key, maxAgeMs = 24 * 60 * 60 * 1000) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed?.ts || !parsed?.data) return null;
+        // Validate UID matches current user
+        if (parsed.uid && currentUser && parsed.uid !== currentUser.uid) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        // Check TTL
+        if (Date.now() - parsed.ts > maxAgeMs) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return parsed.data;
+    } catch (e) {
+        console.warn('Cache load failed:', key, e);
+        return null;
+    }
+}
+
+function clearUserCache() {
+    Object.values(CACHE_KEYS).forEach(key => localStorage.removeItem(key));
+    memoryCache = { subjects: null, summary: null, weeklyAggregates: {}, attendanceByDate: {} };
+}
+
+// --- Date Utility Functions ---
+
+function getWeekKey(dateStr) {
+    // Convert yyyy-mm-dd to ISO week key: yyyy-Www
+    const d = new Date(dateStr + 'T00:00:00');
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+function getWeeksInRange(startKey, endKey) {
+    // Returns array of week keys between two dates
+    const weeks = new Set();
+    const start = new Date(startKey + 'T00:00:00');
+    const end = new Date(endKey + 'T00:00:00');
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        weeks.add(getWeekKey(d.toISOString().split('T')[0]));
+    }
+    return Array.from(weeks);
+}
+
+function getYesterdayKey() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+}
+
+function getTodayKey() {
+    return new Date().toISOString().split('T')[0];
+}
+
 // --- Dashboard Initialization ---
 window.initializeDashboard = async function (profileData) {
     console.log("Initializing Dashboard for:", profileData.name);
     currentUser = auth.currentUser;
     userProfile = profileData;
+
+    // === CACHE PROFILE FOR MENU (0 reads for menu) ===
+    saveToLocalStorage(CACHE_KEYS.PROFILE, {
+        name: profileData.name,
+        email: profileData.email,
+        rollNumber: profileData.rollNumber,
+        section: profileData.section,
+        semester: profileData.semester,
+        department: profileData.department,
+        collegeId: profileData.collegeId,
+        subjectsSetup: profileData.subjectsSetup
+    });
+
+    // Load weekly cache from localStorage
+    const storedWeekly = loadFromLocalStorage(CACHE_KEYS.WEEKLY);
+    if (storedWeekly) {
+        memoryCache.weeklyAggregates = storedWeekly;
+    }
 
     // 1. Update Welcome Text
     const firstName = profileData.name.split(' ')[0];
@@ -51,24 +157,46 @@ window.initializeDashboard = async function (profileData) {
         // 5. Load Major Subjects (Local Cache + Calc)
         loadMajorSubjects();
 
+        // 6. Load Default Periodical View (signup to today - uses cached summary, 0 reads)
+        const signupDate = profileData.createdAt
+            ? (profileData.createdAt.toDate ? profileData.createdAt.toDate() : new Date(profileData.createdAt))
+            : new Date();
+        const signupKey = signupDate.toISOString().split('T')[0];
+        const todayKey = getTodayKey();
+        calculatePeriodicalStats(signupKey, todayKey, true);
+
+        // 7. Load Date-wise Section (default: yesterday)
+        initDateWiseSection();
+
     } catch (e) {
         console.error("Dashboard Init Error:", e);
     }
 }
 
-// --- 1. Summary & Stats Logic ---
-// CACHE-FIRST: Only fetches from Firestore on cold start
+// --- 1. Summary & Stats Logic (CACHED) ---
 async function loadSummary(forceRefresh = false) {
     if (!currentUser) return;
 
-    // 1. Check cache first (unless forced refresh)
-    const cachedSummary = cache.getSummary();
-    if (cachedSummary && !forceRefresh) {
-        applySummaryToUI(cachedSummary);
-        return;
+    // 1. Try Memory Cache first (fastest)
+    if (!forceRefresh && memoryCache.summary) {
+        console.log('[Cache] Using memory-cached summary (0 reads)');
+        applyUISummaryData(memoryCache.summary);
+        return memoryCache.summary;
     }
 
-    // 2. Firestore fetch only on cache miss or forced refresh
+    // 2. Try localStorage cache
+    if (!forceRefresh) {
+        const cached = loadFromLocalStorage(CACHE_KEYS.SUMMARY);
+        if (cached && cached.uid === currentUser.uid) {
+            console.log('[Cache] Using localStorage summary (0 reads)');
+            memoryCache.summary = cached;
+            applyUISummaryData(cached);
+            return cached;
+        }
+    }
+
+    // 3. Fetch from Firestore (only on cold start)
+    console.log('[Firestore] Fetching summary (1 read)');
     const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
 
     try {
@@ -77,22 +205,37 @@ async function loadSummary(forceRefresh = false) {
 
         if (!data) {
             console.log("No summary found, assuming fresh start.");
-            data = { pastTotalClasses: 0, pastAttendedClasses: 0, trackedTotal: 0, trackedPresent: 0, subjects: {} };
+            data = {
+                pastTotalClasses: 0,
+                pastAttendedClasses: 0,
+                trackedTotal: 0,
+                trackedPresent: 0,
+                subjects: {}
+            };
         }
 
-        // 3. Cache for future use
-        cache.setSummary(data);
+        // Cache it
+        data.uid = currentUser.uid;
+        memoryCache.summary = data;
+        saveToLocalStorage(CACHE_KEYS.SUMMARY, data);
 
-        // 4. Update UI
-        applySummaryToUI(data);
+        applyUISummaryData(data);
+        return data;
 
     } catch (e) {
         console.error("Load Summary Failed:", e);
+        return null;
     }
 }
 
-// Extracted UI logic - uses cached subjects (no Firestore read)
-function applySummaryToUI(data) {
+// Helper: Apply summary data to UI without re-fetching
+async function applyUISummaryData(data) {
+    if (!data) {
+        updateRingUI(100);
+        updateQuote(100);
+        return;
+    }
+
     const pastTotal = data.pastTotalClasses || 0;
     const pastPresent = data.pastAttendedClasses || 0;
     const trackTotal = data.trackedTotal || 0;
@@ -105,8 +248,8 @@ function applySummaryToUI(data) {
     updateRingUI(percentage);
     updateQuote(percentage);
 
-    // Use cached subjects (already loaded, no new Firestore read)
-    const allSubjects = cache.getSubjects() || [];
+    // Prepare stats for Periodical/Bento cards using cached subjects
+    const allSubjects = await fetchUserSubjects();
     const trackedSubjects = data.subjects || {};
 
     const summaryStatsForCards = {};
@@ -123,7 +266,6 @@ function applySummaryToUI(data) {
     });
 
     updateSubjectCards(summaryStatsForCards);
-    loadMajorSubjects();
 }
 
 function updateRingUI(percent) {
@@ -238,24 +380,50 @@ async function loadTodayRoutine(profile) {
     setupTodayListener(todaysSubjects);
 }
 
-// Fetch all subjects - CACHE-FIRST (single fetch per session)
-async function fetchUserSubjects() {
-    // 1. Check cache first
-    const cached = cache.getSubjects();
-    if (cached && cached.length > 0) {
-        return cached;
-    }
-
+// Fetch all subjects (CACHED - 0 reads after first load)
+async function fetchUserSubjects(forceRefresh = false) {
     if (!currentUser) return [];
 
+    // 1. Check memory cache first (fastest)
+    if (!forceRefresh && memoryCache.subjects?.length) {
+        console.log('[Cache] Using memory-cached subjects (0 reads)');
+        return memoryCache.subjects;
+    }
+
+    // 2. Check userProfile.cachedSubjects (set during setup)
+    if (!forceRefresh && userProfile?.cachedSubjects?.length) {
+        console.log('[Cache] Using profile cachedSubjects (0 reads)');
+        // Convert to full subject objects if needed
+        const subjects = userProfile.cachedSubjects.map(s => {
+            if (typeof s === 'string') return { name: s };
+            return s;
+        });
+        memoryCache.subjects = subjects;
+        saveToLocalStorage(CACHE_KEYS.SUBJECTS, subjects);
+        return subjects;
+    }
+
+    // 3. Try localStorage cache
+    if (!forceRefresh) {
+        const cached = loadFromLocalStorage(CACHE_KEYS.SUBJECTS);
+        if (cached?.length) {
+            console.log('[Cache] Using localStorage subjects (0 reads)');
+            memoryCache.subjects = cached;
+            return cached;
+        }
+    }
+
+    // 4. Fallback to Firestore (only on cold start with no cache)
+    console.log('[Firestore] Fetching subjects from collection (N reads - COLD START ONLY)');
     try {
-        // 2. Firestore fetch only on cache miss
         const colRef = collection(db, 'users', currentUser.uid, 'subjects');
         const snap = await getDocs(colRef);
         const subjects = snap.docs.map(d => d.data());
 
-        // 3. Cache for future use
-        cache.setSubjects(subjects);
+        // Cache for future use
+        memoryCache.subjects = subjects;
+        saveToLocalStorage(CACHE_KEYS.SUBJECTS, subjects);
+
         return subjects;
     } catch (e) {
         console.error("Fetch Subjects Error:", e);
@@ -504,172 +672,170 @@ async function handleQuickMark(btn, subjectName, status) {
 
 
 // --- 3. Mark Attendance Logic ---
-// OPTIMIZED: Includes weekly aggregation + no summary re-reads
 async function markAttendanceInternal(subjectName, status, optionalRemark = "") {
     if (!currentUser) return;
     console.log(`Marking ${status} for ${subjectName}`);
 
     const today = new Date().toISOString().split('T')[0];
-    const weekKey = cache.getWeekKeyFromDateKey(today);
-
     const todayRef = doc(db, 'users', currentUser.uid, 'attendance', today);
     const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
-    const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
 
-    let oldStatus = null; // Track for cache mutation
+    // Weekly Ref
+    const weekKey = getWeekKey(today);
+    const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
 
     try {
         await runTransaction(db, async (transaction) => {
-            // Read all docs in transaction
-            const [todaySnap, summarySnap, weekSnap] = await Promise.all([
-                transaction.get(todayRef),
-                transaction.get(summaryRef),
-                transaction.get(weekRef)
-            ]);
-
+            // Read Today's Doc
+            const todaySnap = await transaction.get(todayRef);
             let todayData = todaySnap.exists() ? todaySnap.data() : { date: today, records: {} };
             if (!todayData.records) todayData.records = {};
-            oldStatus = todayData.records[subjectName]?.status || null;
+            let oldStatus = todayData.records[subjectName]?.status;
 
-            let summaryData = summarySnap.exists() ? summarySnap.data() : {
-                trackedTotal: 0, trackedPresent: 0, subjects: {},
-                pastTotalClasses: 0, pastAttendedClasses: 0
-            };
+            // Read Summary
+            const summarySnap = await transaction.get(summaryRef);
+            let summaryData = summarySnap.exists() ? summarySnap.data() : { trackedTotal: 0, trackedPresent: 0, subjects: {} };
 
-            let weekData = weekSnap.exists() ? weekSnap.data() : {
-                totalClasses: 0, attendedClasses: 0, subjects: {}
-            };
+            // Read Weekly
+            const weekSnap = await transaction.get(weekRef);
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {} };
 
-            // === IDEMPOTENT DELTA LOGIC (identical for summary and weekly) ===
-            function applyDeltaToSummary(target) {
-                // Revert old status
-                if (oldStatus === 'present') {
-                    target.trackedTotal = (target.trackedTotal || 0) - 1;
-                    target.trackedPresent = (target.trackedPresent || 0) - 1;
-                    if (target.subjects && target.subjects[subjectName]) {
-                        target.subjects[subjectName].trackedTotal--;
-                        target.subjects[subjectName].trackedPresent--;
-                    }
-                } else if (oldStatus === 'absent') {
-                    target.trackedTotal = (target.trackedTotal || 0) - 1;
-                    if (target.subjects && target.subjects[subjectName]) {
-                        target.subjects[subjectName].trackedTotal--;
-                    }
-                }
-                // Apply new status
-                if (status === 'present') {
-                    target.trackedTotal = (target.trackedTotal || 0) + 1;
-                    target.trackedPresent = (target.trackedPresent || 0) + 1;
-                    if (!target.subjects) target.subjects = {};
-                    if (!target.subjects[subjectName]) target.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
-                    target.subjects[subjectName].trackedTotal++;
-                    target.subjects[subjectName].trackedPresent++;
-                } else if (status === 'absent') {
-                    target.trackedTotal = (target.trackedTotal || 0) + 1;
-                    if (!target.subjects) target.subjects = {};
-                    if (!target.subjects[subjectName]) target.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
-                    target.subjects[subjectName].trackedTotal++;
-                }
-                // 'not-held' and 'skip' do not affect totals
-            }
-
-            function applyDeltaToWeekly(target) {
-                // Revert old status
-                if (oldStatus === 'present') {
-                    target.totalClasses = (target.totalClasses || 0) - 1;
-                    target.attendedClasses = (target.attendedClasses || 0) - 1;
-                    if (target.subjects && target.subjects[subjectName]) {
-                        target.subjects[subjectName].total--;
-                        target.subjects[subjectName].attended--;
-                    }
-                } else if (oldStatus === 'absent') {
-                    target.totalClasses = (target.totalClasses || 0) - 1;
-                    if (target.subjects && target.subjects[subjectName]) {
-                        target.subjects[subjectName].total--;
-                    }
-                }
-                // Apply new status
-                if (status === 'present') {
-                    target.totalClasses = (target.totalClasses || 0) + 1;
-                    target.attendedClasses = (target.attendedClasses || 0) + 1;
-                    if (!target.subjects) target.subjects = {};
-                    if (!target.subjects[subjectName]) target.subjects[subjectName] = { total: 0, attended: 0 };
-                    target.subjects[subjectName].total++;
-                    target.subjects[subjectName].attended++;
-                } else if (status === 'absent') {
-                    target.totalClasses = (target.totalClasses || 0) + 1;
-                    if (!target.subjects) target.subjects = {};
-                    if (!target.subjects[subjectName]) target.subjects[subjectName] = { total: 0, attended: 0 };
-                    target.subjects[subjectName].total++;
-                }
-                // 'not-held' and 'skip' do not affect totals
-            }
-
-            // Apply deltas
-            applyDeltaToSummary(summaryData);
-            applyDeltaToWeekly(weekData);
-
-            // Update today's record
-            todayData.records[subjectName] = {
-                status: status,
-                remarks: optionalRemark,
-                timestamp: serverTimestamp()
-            };
-
-            // Write all
-            transaction.set(todayRef, todayData);
-            transaction.set(summaryRef, summaryData, { merge: true });
-            transaction.set(weekRef, weekData, { merge: true });
-        });
-
-        // === CACHE UPDATES (NO Firestore re-reads) ===
-        // Mutate cached summary in-place
-        cache.mutateSummary(summaryData => {
-            // Revert old status
+            // 1. Revert Old Stats
             if (oldStatus === 'present') {
+                // Summary
                 summaryData.trackedTotal = (summaryData.trackedTotal || 0) - 1;
                 summaryData.trackedPresent = (summaryData.trackedPresent || 0) - 1;
                 if (summaryData.subjects && summaryData.subjects[subjectName]) {
                     summaryData.subjects[subjectName].trackedTotal--;
                     summaryData.subjects[subjectName].trackedPresent--;
                 }
+                // Weekly
+                weekData.total = Math.max(0, (weekData.total || 0) - 1);
+                weekData.present = Math.max(0, (weekData.present || 0) - 1);
+                if (weekData.subjects && weekData.subjects[subjectName]) {
+                    weekData.subjects[subjectName].total--;
+                    weekData.subjects[subjectName].attended--;
+                }
             } else if (oldStatus === 'absent') {
+                // Summary
                 summaryData.trackedTotal = (summaryData.trackedTotal || 0) - 1;
                 if (summaryData.subjects && summaryData.subjects[subjectName]) {
                     summaryData.subjects[subjectName].trackedTotal--;
                 }
+                // Weekly
+                weekData.total = Math.max(0, (weekData.total || 0) - 1);
+                if (weekData.subjects && weekData.subjects[subjectName]) {
+                    weekData.subjects[subjectName].total--;
+                }
             }
-            // Apply new status
+
+            // 2. Apply New Stats
             if (status === 'present') {
+                // Summary
                 summaryData.trackedTotal = (summaryData.trackedTotal || 0) + 1;
                 summaryData.trackedPresent = (summaryData.trackedPresent || 0) + 1;
+
                 if (!summaryData.subjects) summaryData.subjects = {};
                 if (!summaryData.subjects[subjectName]) summaryData.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
                 summaryData.subjects[subjectName].trackedTotal++;
                 summaryData.subjects[subjectName].trackedPresent++;
+
+                // Weekly
+                weekData.total = (weekData.total || 0) + 1;
+                weekData.present = (weekData.present || 0) + 1;
+                if (!weekData.subjects) weekData.subjects = {};
+                if (!weekData.subjects[subjectName]) weekData.subjects[subjectName] = { total: 0, visited: 0, attended: 0 };
+                weekData.subjects[subjectName].total++;
+                weekData.subjects[subjectName].attended++;
+
             } else if (status === 'absent') {
+                // Summary
                 summaryData.trackedTotal = (summaryData.trackedTotal || 0) + 1;
+
                 if (!summaryData.subjects) summaryData.subjects = {};
                 if (!summaryData.subjects[subjectName]) summaryData.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
                 summaryData.subjects[subjectName].trackedTotal++;
+
+                // Weekly
+                weekData.total = (weekData.total || 0) + 1;
+                if (!weekData.subjects) weekData.subjects = {};
+                if (!weekData.subjects[subjectName]) weekData.subjects[subjectName] = { total: 0, visited: 0, attended: 0 };
+                weekData.subjects[subjectName].total++;
             }
+
+            // 3. Update Record
+            todayData.records[subjectName] = {
+                status: status,
+                remarks: optionalRemark,
+                timestamp: serverTimestamp()
+            };
+
+            transaction.set(todayRef, todayData);
+            transaction.set(summaryRef, summaryData, { merge: true });
+            transaction.set(weekRef, weekData, { merge: true });
+
+            // === CACHE UPDATE (0 reads) ===
+            // Update memory cache with computed summaryData
+            summaryData.uid = currentUser.uid;
+            memoryCache.summary = summaryData;
+            saveToLocalStorage(CACHE_KEYS.SUMMARY, summaryData);
+
+            // Update weekly aggregate cache
+            // We already computed weekData, so we can just use it!
+            memoryCache.weeklyAggregates[weekKey] = weekData;
+            saveToLocalStorage(CACHE_KEYS.WEEKLY, memoryCache.weeklyAggregates);
+
+            // Cache today's attendance for date-wise view
+            memoryCache.attendanceByDate[today] = todayData;
         });
 
-        // Invalidate affected caches (precise invalidation)
-        cache.invalidateWeekly(weekKey);
-        cache.invalidateDailyAttendance(today);
+        // Apply UI from cached data (0 reads)
+        applyUISummaryData(memoryCache.summary);
 
-        // Update UI from cache (NO Firestore read)
-        const cachedSummary = cache.getSummary();
-        if (cachedSummary) {
-            applySummaryToUI(cachedSummary);
-        }
-
-        // Note: Timeline UI updates are handled by the onSnapshot listener
+        // Note: UI updates are handled by the onSnapshot listener automatically
 
     } catch (e) {
         console.error("Attendance Transaction Failed:", e);
     }
+}
+
+// Helper: Update weekly aggregate cache after marking attendance
+function updateWeeklyCacheAfterMark(weekKey, subjectName, oldStatus, newStatus) {
+    if (!memoryCache.weeklyAggregates[weekKey]) {
+        memoryCache.weeklyAggregates[weekKey] = { total: 0, present: 0, subjects: {} };
+    }
+    const week = memoryCache.weeklyAggregates[weekKey];
+
+    // Revert old status
+    if (oldStatus === 'present') {
+        week.total = Math.max(0, (week.total || 0) - 1);
+        week.present = Math.max(0, (week.present || 0) - 1);
+        if (week.subjects[subjectName]) {
+            week.subjects[subjectName].total = Math.max(0, (week.subjects[subjectName].total || 0) - 1);
+            week.subjects[subjectName].attended = Math.max(0, (week.subjects[subjectName].attended || 0) - 1);
+        }
+    } else if (oldStatus === 'absent') {
+        week.total = Math.max(0, (week.total || 0) - 1);
+        if (week.subjects[subjectName]) {
+            week.subjects[subjectName].total = Math.max(0, (week.subjects[subjectName].total || 0) - 1);
+        }
+    }
+
+    // Apply new status
+    if (newStatus === 'present') {
+        week.total = (week.total || 0) + 1;
+        week.present = (week.present || 0) + 1;
+        if (!week.subjects[subjectName]) week.subjects[subjectName] = { total: 0, attended: 0 };
+        week.subjects[subjectName].total++;
+        week.subjects[subjectName].attended++;
+    } else if (newStatus === 'absent') {
+        week.total = (week.total || 0) + 1;
+        if (!week.subjects[subjectName]) week.subjects[subjectName] = { total: 0, attended: 0 };
+        week.subjects[subjectName].total++;
+    }
+
+    // Persist to localStorage
+    saveToLocalStorage(CACHE_KEYS.WEEKLY, memoryCache.weeklyAggregates);
 }
 
 // Expose for window access
@@ -779,8 +945,7 @@ function loadMajorSubjects() {
     };
 }
 
-// CACHE-ONLY: No Firestore reads
-function updateMajorCard(majors, overrideStats = null) {
+async function updateMajorCard(majors, overrideStats = null) {
     const card = document.getElementById('majorCard');
     if (!card) return;
 
@@ -801,7 +966,6 @@ function updateMajorCard(majors, overrideStats = null) {
     let presentM = 0;
 
     if (overrideStats) {
-        // Periodical mode - use provided stats
         majors.forEach(m => {
             if (overrideStats[m]) {
                 totalM += overrideStats[m].total;
@@ -809,10 +973,12 @@ function updateMajorCard(majors, overrideStats = null) {
             }
         });
     } else {
-        // Overall mode - use cached data ONLY (no Firestore reads)
-        const summaryData = cache.getSummary() || { subjects: {} };
-        const trackedMap = summaryData.subjects || {};
-        const subjects = cache.getSubjects() || [];
+        const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
+        const summarySnap = await getDoc(summaryRef);
+        const summaryData = summarySnap.exists() ? summarySnap.data() : { subjects: {} };
+        const trackedMap = (summaryData && summaryData.subjects) ? summaryData.subjects : {};
+
+        const subjects = await fetchUserSubjects();
 
         majors.forEach(m => {
             const sub = subjects.find(s => s.name === m);
@@ -848,19 +1014,45 @@ function updateMajorCard(majors, overrideStats = null) {
 }
 
 
-// --- 6. Date-Wise Records Logic ---
-const attendanceData = {};
+// --- 6. Date-Wise Records Logic (CACHED) ---
+const attendanceData = {}; // Legacy compatibility
 
 const dateStrip = document.getElementById('dateStrip');
 const cardsContainer = document.getElementById('dateCardsContainer');
 let currentSelectedDateKey = null;
 
+// Auto-init strip if element exists (page load), but wait for dashboard
 if (dateStrip) initDateStrip();
 
 function initDateStrip() {
     initMonthYearSelect();
     const today = new Date();
-    renderDateStrip(today);
+    renderDateStrip(today, false); // Don't auto-load on strip init
+}
+
+// Called from dashboard init - loads yesterday by default
+function initDateWiseSection() {
+    if (!dateStrip) return;
+
+    // Find yesterday's button and click it
+    const yesterdayKey = getYesterdayKey();
+    const buttons = dateStrip.querySelectorAll('.date-item');
+    let yesterdayBtn = null;
+
+    buttons.forEach(btn => {
+        // Get the date key from button's onclick context
+        const dateStr = btn.getAttribute('data-date');
+        if (dateStr === yesterdayKey) {
+            yesterdayBtn = btn;
+        }
+    });
+
+    if (yesterdayBtn) {
+        loadDateRecords(yesterdayKey, yesterdayBtn);
+    } else {
+        // Yesterday not in current month strip, just load the data
+        loadDateRecords(yesterdayKey, null);
+    }
 }
 
 function initMonthYearSelect() {
@@ -886,7 +1078,8 @@ function initMonthYearSelect() {
     };
 }
 
-function renderDateStrip(centerDate) {
+// (Legacy function removed)
+function renderDateStrip(centerDate, autoLoad = false) {
     if (!dateStrip) return;
     dateStrip.innerHTML = '';
 
@@ -900,6 +1093,7 @@ function renderDateStrip(centerDate) {
         const dKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const btn = document.createElement('button');
         btn.className = 'date-item';
+        btn.setAttribute('data-date', dKey);
 
         if (dKey === todayStr) btn.classList.add('today');
 
@@ -910,18 +1104,9 @@ function renderDateStrip(centerDate) {
 
         btn.onclick = () => loadDateRecords(dKey, btn);
         dateStrip.appendChild(btn);
-
-        const centerMonthKey = `${centerDate.getFullYear()}-${String(centerDate.getMonth() + 1).padStart(2, '0')}`;
-        const isTodayInthisMonth = todayStr.startsWith(centerMonthKey);
-        if (isTodayInthisMonth) {
-            if (dKey === todayStr) loadDateRecords(dKey, btn);
-        } else if (d.getDate() === 1) {
-            loadDateRecords(dKey, btn);
-        }
     }
 }
 
-// CACHE-FIRST: Per-date attendance caching
 async function loadDateRecords(dateKey, btnElement) {
     currentSelectedDateKey = dateKey;
 
@@ -934,44 +1119,45 @@ async function loadDateRecords(dateKey, btnElement) {
 
     if (!currentUser) return;
 
-    try {
-        // Check cache first
-        let records = null;
-        const cached = cache.getDailyAttendance(dateKey);
-
-        if (cached) {
-            records = cached.records || {};
-        } else {
-            // Firestore fetch only on cache miss
+    // 1. Check Memory Cache (0 reads)
+    let records = null;
+    if (memoryCache.attendanceByDate[dateKey]) {
+        console.log(`[Cache] Using memory attendance for ${dateKey} (0 reads)`);
+        records = memoryCache.attendanceByDate[dateKey].records || {};
+    } else {
+        // 2. Fetch from Firestore (1 read)
+        console.log(`[Firestore] Fetching attendance for ${dateKey} (1 read)`);
+        try {
             const docRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
             const snap = await getDoc(docRef);
 
-            if (snap.exists() && snap.data().records) {
-                records = snap.data().records;
-                // Cache for future use
-                cache.setDailyAttendance(dateKey, snap.data());
+            if (snap.exists()) {
+                const data = snap.data();
+                memoryCache.attendanceByDate[dateKey] = data; // Cache it
+                records = data.records || {};
             } else {
+                memoryCache.attendanceByDate[dateKey] = { records: {} }; // Cache empty
                 records = {};
-                cache.setDailyAttendance(dateKey, { records: {} });
             }
-        }
-
-        cardsContainer.innerHTML = '';
-
-        if (Object.keys(records).length === 0) {
-            cardsContainer.innerHTML = '<div class="empty-state">No records for this date.</div>';
+        } catch (e) {
+            console.error("Date Load Error:", e);
+            cardsContainer.innerHTML = `<div class="error">Failed to load: ${e.message} (${e.code || ''})</div>`;
             return;
         }
-
-        Object.keys(records).forEach(subName => {
-            const rec = records[subName];
-            cardsContainer.appendChild(createDateRecordCard(subName, rec));
-        });
-
-    } catch (e) {
-        console.error("Date Load Error:", e);
-        cardsContainer.innerHTML = `<div class="error">Failed to load: ${e.message} (${e.code || ''})</div>`;
     }
+
+    // Render
+    cardsContainer.innerHTML = '';
+
+    if (!records || Object.keys(records).length === 0) {
+        cardsContainer.innerHTML = '<div class="empty-state">No classes marked.</div>';
+        return;
+    }
+
+    Object.keys(records).forEach(subName => {
+        const rec = records[subName];
+        cardsContainer.appendChild(createDateRecordCard(subName, rec));
+    });
 }
 
 function createDateRecordCard(subjectName, record) {
@@ -1035,109 +1221,58 @@ async function saveEditRecord(subjectName) {
     const todayRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
     const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
 
-    // WEEKLY: Calculate week key for the edited date
-    const weekKey = cache.getWeekKeyFromDateKey(dateKey);
-    const weeklyRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
-
     try {
         await runTransaction(db, async (transaction) => {
-            // 1. Read all required docs
             const todaySnap = await transaction.get(todayRef);
-            const summarySnap = await transaction.get(summaryRef);
-            const weeklySnap = await transaction.get(weeklyRef);
-
             let todayData = todaySnap.exists() ? todaySnap.data() : { date: dateKey, records: {} };
             let oldStatus = todayData.records[subjectName]?.status;
 
-            // No change check
             if (oldStatus === status && todayData.records[subjectName]?.remarks === remarks) return;
 
+            const summarySnap = await transaction.get(summaryRef);
             let summaryData = summarySnap.exists() ? summarySnap.data() : { trackedTotal: 0, trackedPresent: 0, subjects: {} };
-            // Initialize weekly data if missing
-            let weeklyData = weeklySnap.exists() ? weeklySnap.data() : { totalClasses: 0, attendedClasses: 0, subjects: {} };
 
-            // 2. Apply Delta Updates (Summary & Weekly)
             if (oldStatus !== status) {
-                // --- SUBTRACT OLD STATUS ---
                 if (oldStatus === 'present') {
-                    // Summary
                     summaryData.trackedTotal--;
                     summaryData.trackedPresent--;
                     if (summaryData.subjects[subjectName]) {
                         summaryData.subjects[subjectName].trackedTotal--;
                         summaryData.subjects[subjectName].trackedPresent--;
                     }
-                    // Weekly
-                    weeklyData.totalClasses--;
-                    weeklyData.attendedClasses--;
-                    if (weeklyData.subjects[subjectName]) {
-                        weeklyData.subjects[subjectName].total--;
-                        weeklyData.subjects[subjectName].attended--;
-                    }
                 } else if (oldStatus === 'absent') {
-                    // Summary
                     summaryData.trackedTotal--;
                     if (summaryData.subjects[subjectName]) {
                         summaryData.subjects[subjectName].trackedTotal--;
                     }
-                    // Weekly
-                    weeklyData.totalClasses--;
-                    if (weeklyData.subjects[subjectName]) {
-                        weeklyData.subjects[subjectName].total--;
-                    }
                 }
 
-                // --- ADD NEW STATUS ---
                 if (status === 'present') {
-                    // Summary
                     summaryData.trackedTotal++;
                     summaryData.trackedPresent++;
                     if (!summaryData.subjects[subjectName]) summaryData.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
                     summaryData.subjects[subjectName].trackedTotal++;
                     summaryData.subjects[subjectName].trackedPresent++;
-                    // Weekly
-                    weeklyData.totalClasses++;
-                    weeklyData.attendedClasses++;
-                    if (!weeklyData.subjects[subjectName]) weeklyData.subjects[subjectName] = { total: 0, attended: 0 };
-                    weeklyData.subjects[subjectName].total++;
-                    weeklyData.subjects[subjectName].attended++;
                 } else if (status === 'absent') {
-                    // Summary
                     summaryData.trackedTotal++;
                     if (!summaryData.subjects[subjectName]) summaryData.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
                     summaryData.subjects[subjectName].trackedTotal++;
-                    // Weekly
-                    weeklyData.totalClasses++;
-                    if (!weeklyData.subjects[subjectName]) weeklyData.subjects[subjectName] = { total: 0, attended: 0 };
-                    weeklyData.subjects[subjectName].total++;
                 }
             }
 
-            // 3. Update Record
             todayData.records[subjectName] = {
                 status: status,
                 remarks: remarks,
                 timestamp: serverTimestamp()
             };
 
-            // 4. Write all
             transaction.set(todayRef, todayData);
             transaction.set(summaryRef, summaryData, { merge: true });
-            transaction.set(weeklyRef, weeklyData, { merge: true });
         });
 
         document.getElementById('editModal').classList.add('hidden');
-
-        // CACHE INVALIDATION
-        // Clear caches to force re-fetch of fresh data
-        cache.clearDailyAttendance(dateKey);
-        cache.clearSummary();
-        cache.clearWeekly(weekKey);
-
-        // Reload UI (will fetch fresh data)
         loadDateRecords(dateKey, null);
         loadSummary();
-
     } catch (e) {
         console.error("Save Edit Error:", e);
         alert("Failed to save changes.");
@@ -1370,68 +1505,97 @@ if (rangePicker && window.flatpickr) {
     });
 }
 
-// --- Periodical Stats Logic ---
-// OPTIMIZED: Uses weekly aggregation docs instead of range queries
-// Maximum 1-4 reads per query instead of 50-200
-window.calculatePeriodicalStats = async function (startKey, endKey) {
+// --- Periodical Stats Logic (CACHED with Weekly Aggregates) ---
+window.calculatePeriodicalStats = async function (startKey, endKey, isDefaultView = false) {
     if (!currentUser) return;
-    console.log(`Filtering from ${startKey} to ${endKey} using weekly aggregation`);
+    console.log(`[Periodical] Filtering from ${startKey} to ${endKey}${isDefaultView ? ' (default view)' : ''}`);
 
     document.getElementById('percentageText').innerText = '...';
 
     try {
-        // Check if backfill needed (first-time only)
-        if (!cache.isWeeklyBackfillDone()) {
-            console.log('Performing one-time weekly backfill...');
-            await performOneTimeBackfill();
-            cache.markWeeklyBackfillDone();
-            console.log('Weekly backfill complete!');
-        }
-
-        // Get all weeks in the date range
-        const weeks = cache.getWeeksInRange(startKey, endKey);
-        console.log(`Querying ${weeks.length} weekly docs:`, weeks);
-
         let periodTotal = 0;
         let periodPresent = 0;
-        const subjectAgg = {};
+        let subjectAgg = {};
 
-        // Fetch each weekly doc (cache-first)
-        for (const weekKey of weeks) {
-            let weekData = cache.getWeekly(weekKey);
+        // For default view (signup to today), use cached summary directly (0 reads)
+        if (isDefaultView && memoryCache.summary) {
+            console.log('[Cache] Using summary for default periodical view (0 reads)');
+            const data = memoryCache.summary;
+            periodTotal = (data.pastTotalClasses || 0) + (data.trackedTotal || 0);
+            periodPresent = (data.pastAttendedClasses || 0) + (data.trackedPresent || 0);
 
-            if (!weekData) {
-                // Firestore fetch only on cache miss
-                const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
-                const weekSnap = await getDoc(weekRef);
-                weekData = weekSnap.exists() ? weekSnap.data() : { totalClasses: 0, attendedClasses: 0, subjects: {} };
-                cache.setWeekly(weekKey, weekData);
+            // Build subject aggregates from summary
+            const allSubjects = await fetchUserSubjects();
+            const trackedSubjects = data.subjects || {};
+            allSubjects.forEach(sub => {
+                const pastT = (sub.pastAttendance && sub.pastAttendance.total) || 0;
+                const pastP = (sub.pastAttendance && sub.pastAttendance.attended) || 0;
+                const trackT = (trackedSubjects[sub.name] && trackedSubjects[sub.name].trackedTotal) || 0;
+                const trackP = (trackedSubjects[sub.name] && trackedSubjects[sub.name].trackedPresent) || 0;
+                subjectAgg[sub.name] = { total: pastT + trackT, attended: pastP + trackP };
+            });
+        } else {
+            // Custom range: Use weekly aggregates (fetches only needed weeks)
+            const weeks = getWeeksInRange(startKey, endKey);
+            console.log(`[Periodical] Need ${weeks.length} weeks:`, weeks);
+
+            // Try to load from memory/localStorage cache first
+            let cachedWeekly = memoryCache.weeklyAggregates;
+            if (!Object.keys(cachedWeekly).length) {
+                const stored = loadFromLocalStorage(CACHE_KEYS.WEEKLY);
+                if (stored) {
+                    cachedWeekly = stored;
+                    memoryCache.weeklyAggregates = stored;
+                }
             }
 
-            // Aggregate totals
-            periodTotal += weekData.totalClasses || 0;
-            periodPresent += weekData.attendedClasses || 0;
-
-            // Aggregate per-subject
-            for (const [subName, stats] of Object.entries(weekData.subjects || {})) {
-                if (!subjectAgg[subName]) subjectAgg[subName] = { total: 0, attended: 0 };
-                subjectAgg[subName].total += stats.total || 0;
-                subjectAgg[subName].attended += stats.attended || 0;
+            // Fetch only weeks not in cache
+            const missingWeeks = weeks.filter(w => !cachedWeekly[w]);
+            if (missingWeeks.length > 0) {
+                console.log(`[Firestore] Fetching ${missingWeeks.length} missing weeks`);
+                for (const weekKey of missingWeeks) {
+                    const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
+                    const weekSnap = await getDoc(weekRef);
+                    if (weekSnap.exists()) {
+                        cachedWeekly[weekKey] = weekSnap.data();
+                    } else {
+                        // Week doesn't exist in Firestore yet, initialize empty
+                        cachedWeekly[weekKey] = { total: 0, present: 0, subjects: {} };
+                    }
+                }
+                memoryCache.weeklyAggregates = cachedWeekly;
+                saveToLocalStorage(CACHE_KEYS.WEEKLY, cachedWeekly);
+            } else {
+                console.log('[Cache] All weeks found in cache (0 reads)');
             }
+
+            // Aggregate from weeks
+            weeks.forEach(weekKey => {
+                const weekData = cachedWeekly[weekKey] || { total: 0, present: 0, subjects: {} };
+                periodTotal += weekData.total || 0;
+                periodPresent += weekData.present || 0;
+
+                if (weekData.subjects) {
+                    Object.entries(weekData.subjects).forEach(([subName, stat]) => {
+                        if (!subjectAgg[subName]) subjectAgg[subName] = { total: 0, attended: 0 };
+                        subjectAgg[subName].total += stat.total || 0;
+                        subjectAgg[subName].attended += stat.attended || 0;
+                    });
+                }
+            });
         }
 
         const overallPct = periodTotal > 0 ? Math.round((periodPresent / periodTotal) * 100) : 0;
         updateRingUI(overallPct);
 
         const label = document.querySelector('.percentage-label');
-        if (label) label.innerText = "Period";
+        if (label) label.innerText = isDefaultView ? "Overall" : "Period";
 
         const stored = localStorage.getItem('attenza_majors');
         const majors = stored ? JSON.parse(stored) : [];
         updateMajorCard(majors, subjectAgg);
 
-        // Use cached subjects (no Firestore read)
-        const allUserSubs = cache.getSubjects() || [];
+        const allUserSubs = await fetchUserSubjects();
         const finalMap = {};
         allUserSubs.forEach(s => {
             finalMap[s.name] = subjectAgg[s.name] || { total: 0, attended: 0 };
@@ -1440,78 +1604,22 @@ window.calculatePeriodicalStats = async function (startKey, endKey) {
 
         const sumBody = document.getElementById('summaryBody');
         if (sumBody) {
-            sumBody.innerHTML = `<ul>
-        <li><b>Period:</b> ${startKey} to ${endKey}</li>
-        <li>Attended ${periodPresent} of ${periodTotal} classes (${overallPct}%).</li>
-      </ul>`;
+            if (isDefaultView) {
+                sumBody.innerHTML = `<ul>
+                    <li><b>Period:</b> Since signup (overall)</li>
+                    <li>Attended ${periodPresent} of ${periodTotal} classes (${overallPct}%).</li>
+                </ul>`;
+            } else {
+                sumBody.innerHTML = `<ul>
+                    <li><b>Period:</b> ${startKey} to ${endKey}</li>
+                    <li>Attended ${periodPresent} of ${periodTotal} classes (${overallPct}%).</li>
+                </ul>`;
+            }
         }
 
     } catch (e) {
         console.error("Periodical calculation error:", e);
         alert("Failed to calculate periodical stats.");
-    }
-}
-
-// One-time backfill: Creates weekly docs from existing attendance data
-async function performOneTimeBackfill() {
-    if (!currentUser) return;
-
-    try {
-        // Fetch ALL attendance docs once (this is the only range query, done once per user ever)
-        const attRef = collection(db, 'users', currentUser.uid, 'attendance');
-        const allDocs = await getDocs(attRef);
-
-        if (allDocs.empty) {
-            console.log('No attendance data to backfill');
-            return;
-        }
-
-        const weeklyMap = {}; // { weekKey: { totalClasses, attendedClasses, subjects } }
-
-        allDocs.forEach(docSnap => {
-            const dateKey = docSnap.id;
-            const weekKey = cache.getWeekKeyFromDateKey(dateKey);
-            const data = docSnap.data();
-
-            if (!weeklyMap[weekKey]) {
-                weeklyMap[weekKey] = { totalClasses: 0, attendedClasses: 0, subjects: {} };
-            }
-
-            for (const [subj, record] of Object.entries(data.records || {})) {
-                if (record.status === 'present') {
-                    weeklyMap[weekKey].totalClasses++;
-                    weeklyMap[weekKey].attendedClasses++;
-                    if (!weeklyMap[weekKey].subjects[subj]) {
-                        weeklyMap[weekKey].subjects[subj] = { total: 0, attended: 0 };
-                    }
-                    weeklyMap[weekKey].subjects[subj].total++;
-                    weeklyMap[weekKey].subjects[subj].attended++;
-                } else if (record.status === 'absent') {
-                    weeklyMap[weekKey].totalClasses++;
-                    if (!weeklyMap[weekKey].subjects[subj]) {
-                        weeklyMap[weekKey].subjects[subj] = { total: 0, attended: 0 };
-                    }
-                    weeklyMap[weekKey].subjects[subj].total++;
-                }
-                // 'not-held' and 'skip' don't count
-            }
-        });
-
-        // Batch write all weekly docs
-        const batch = writeBatch(db);
-        for (const [weekKey, data] of Object.entries(weeklyMap)) {
-            const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
-            batch.set(weekRef, data);
-            // Also cache locally
-            cache.setWeekly(weekKey, data);
-        }
-        await batch.commit();
-
-        console.log(`Backfilled ${Object.keys(weeklyMap).length} weekly docs`);
-
-    } catch (e) {
-        console.error('Weekly backfill failed:', e);
-        throw e;
     }
 }
 
