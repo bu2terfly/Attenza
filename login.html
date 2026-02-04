@@ -904,6 +904,7 @@
       getSectionsForClass,
       saveUserClassId
     } from './routine-service.js';
+    import * as cache from './cache-service.js';
 
     // Globals
     let verificationInterval = null;
@@ -1169,10 +1170,23 @@
         }
 
         // 2. Check Profile Completeness
+        // 2. Check Profile Completeness (Optimized with Cache)
         try {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists() && userSnap.data().profileComplete === true) {
+          // Check cache first
+          let userProfile = cache.getProfile(user.uid);
+
+          // If not in cache, fetch from Firestore
+          if (!userProfile) {
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              userProfile = userSnap.data();
+              // Cache for downstream use
+              cache.setProfile(user.uid, { ...userProfile, uid: user.uid });
+            }
+          }
+
+          if (userProfile && userProfile.profileComplete === true) {
             window.location.replace("index.html");
           } else {
             // SHOW REGISTRATION (Existing Auth, No Profile)
