@@ -576,94 +576,9 @@
                     <button class="btn btn-primary" id="modalSave">Save changes</button>
                 </div>
             </div>
-            <!-- =========================================
-             BOTTOM NAVIGATION BAR
-             ========================================= -->
-            <div class="search-layer" id="searchLayer">
-                <div class="remarks-box">
-                    <svg class="bulb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        <path d="M12 4v1M18 6l-1 1M20 12h-1M18 18l-1-1M12 19v1M7 18l1-1M5 12H4M7 6l1 1" />
-                    </svg>
-                    <div class="remarks-text">
-                        Enter a Roll Number to fetch <span class="highlight">classmate records</span>.
-                    </div>
-                </div>
+        </div>
 
-                <div class="hud-glass" id="hudGlass">
-                    <div class="hud-input-row">
-                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        <input type="number" id="rollInput" class="hud-input" placeholder="Roll Number..."
-                            pattern="\d*">
-
-                        <button class="search-go-btn" id="searchBtn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="result-strip" id="resultStrip">
-                        <div class="strip-divider"></div>
-                        <div class="strip-content">
-                            <div class="user-info">
-                                <div class="avatar">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </div>
-                                <div class="text-box">
-                                    <span class="s-name" id="searchResultName">Searching...</span>
-                                    <span class="s-time" id="searchResultTime">Loading...</span>
-                                </div>
-                            </div>
-                            <div class="score-box">
-                                <div class="s-val" id="searchResultPercent">--%</div>
-                                <div class="s-label">Overall</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <nav class="noise-nav" id="noiseNav">
-                <div class="nav-item active" id="btnDashboard" onclick="switchTab('dashboard')">
-                    <svg class="nav-icon" viewBox="0 0 25 24">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M5.52344 3.25C4.2808 3.25 3.27344 4.25736 3.27344 5.5V18.5C3.27344 19.7426 4.2808 20.75 5.52344 20.75H18.5234C19.7661 20.75 20.7734 19.7426 20.7734 18.5V5.5C20.7734 4.25736 19.7661 3.25 18.5234 3.25H5.52344ZM4.77344 5.5C4.77344 5.08579 5.10922 4.75 5.52344 4.75H18.5234C18.9377 4.75 19.2734 5.08579 19.2734 5.5V8.58301L4.77344 8.58301V5.5ZM4.77344 10.083V18.5C4.77344 18.9142 5.10922 19.25 5.52344 19.25H8.60645L8.60645 10.083H4.77344ZM10.1064 10.083V13.916H19.2734V10.083L10.1064 10.083ZM10.1064 15.416H19.2734V18.5C19.2734 18.9142 18.9377 19.25 18.5234 19.25H10.1064V15.416Z" />
-                    </svg>
-                    <span class="nav-text">Dashboard</span>
-                </div>
-
-                <div class="nav-item" id="btnSearch" onclick="switchTab('search')">
-                    <svg class="nav-icon" viewBox="0 0 24 25">
-                        <path
-                            d="M11.2498 5.75037C10.8356 5.75037 10.4998 6.08615 10.4998 6.50037C10.4998 6.91458 10.8356 7.25037 11.2498 7.25037C13.874 7.25037 16.0011 9.37718 16.0011 12.0004C16.0011 12.4146 16.3369 12.7504 16.7511 12.7504C17.1653 12.7504 17.5011 12.4146 17.5011 12.0004C17.5011 8.54842 14.7021 5.75037 11.2498 5.75037Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M2 11.9989C2 6.89126 6.14154 2.75098 11.25 2.75098C16.3585 2.75098 20.5 6.89126 20.5 11.9989C20.5 14.2836 19.6714 16.3747 18.2983 17.9883L21.7791 21.4695C22.072 21.7624 22.072 22.2372 21.7791 22.5301C21.4862 22.823 21.0113 22.823 20.7184 22.5301L17.2372 19.0486C15.6237 20.4197 13.5334 21.2469 11.25 21.2469C6.14154 21.2469 2 17.1066 2 11.9989ZM11.25 4.25098C6.96962 4.25098 3.5 7.72003 3.5 11.9989C3.5 16.2779 6.96962 19.7469 11.25 19.7469C15.5304 19.7469 19 16.2779 19 11.9989C19 7.72003 15.5304 4.25098 11.25 4.25098Z" />
-                    </svg>
-                    <span class="nav-text">Roll search</span>
-                </div>
-
-                <div class="nav-item" id="btnUpdates" onclick="switchTab('updates')">
-                    <svg class="nav-icon" viewBox="0 0 24 25">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M6.6767 3.09336C6.75061 2.74731 7.05632 2.5 7.41016 2.5H14.6891C14.9457 2.5 15.1845 2.6312 15.3221 2.8478C15.4597 3.0644 15.477 3.33632 15.368 3.56863L13.1876 8.21482L18.8398 8.21482C19.1127 8.21482 19.3641 8.36309 19.4962 8.60195C19.6282 8.84081 19.6201 9.13255 19.4749 9.36368L11.4461 22.1489C11.2619 22.4422 10.9008 22.5712 10.5724 22.4611C10.244 22.3509 10.0338 22.0302 10.0637 21.6852L10.6842 14.5352H5.16016C4.93376 14.5352 4.71947 14.4329 4.57707 14.2569C4.43468 14.0809 4.37942 13.8499 4.4267 13.6285L6.6767 3.09336ZM8.0169 4L6.08725 13.0352H11.5021C11.7123 13.0352 11.9128 13.1234 12.0549 13.2783C12.1969 13.4332 12.2675 13.6406 12.2493 13.85L11.8264 18.7226L17.4832 9.71482L12.0071 9.71482C11.7505 9.71482 11.5117 9.58362 11.3741 9.36702C11.2365 9.15042 11.2192 8.8785 11.3282 8.64619L13.5086 4H8.0169Z" />
-                    </svg>
-                    <span class="nav-text">Updates</span>
-                </div>
-            </nav>
-
-            <div id="menuOverlay" style="
+        <div id="menuOverlay" style="
       position: fixed;
       top: 0;
       left: -100%;
@@ -673,300 +588,386 @@
       background: transparent;
       transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     ">
-                <iframe src="menu.html" style="
+            <iframe src="menu.html" style="
           width: 100%;
           height: 100%;
           border: none;
           background: #F9F8F6;
         ">
-                </iframe>
-            </div>
+            </iframe>
         </div>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script type="module">
-            import { auth, db } from './firebase-init.js';
-            import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-            import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script type="module">
+        import { auth, db } from './firebase-init.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-            /**
-             * Dashboard Auth & State Guard
-             * ---------------------------------
-             * Rules:
-             * - login.html is the ONLY gatekeeper
-             * - Dashboard assumes profile must already be complete
-             * - If profile is broken or missing → redirect to login.html
-             * - Subject setup missing → blur dashboard (NO redirect)
-             */
+        /**
+         * Dashboard Auth & State Guard
+         * ---------------------------------
+         * Rules:
+         * - login.html is the ONLY gatekeeper
+         * - Dashboard assumes profile must already be complete
+         * - If profile is broken or missing → redirect to login.html
+         * - Subject setup missing → blur dashboard (NO redirect)
+         */
 
-            onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, async (user) => {
 
-                // 0️⃣ Not logged in → back to login gate
-                if (!user) {
+            // 0️⃣ Not logged in → back to login gate
+            if (!user) {
+                window.location.replace("login.html");
+                return;
+            }
+
+            try {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                // 1️⃣ Rare edge case:
+                // User exists in Auth but profile doc is missing or incomplete
+                if (
+                    !userSnap.exists() ||
+                    userSnap.data().profileComplete !== true
+                ) {
+                    // Dashboard does NOT handle profile repair
+                    // login.html already contains recovery logic
                     window.location.replace("login.html");
                     return;
                 }
 
-                try {
-                    const userRef = doc(db, "users", user.uid);
-                    const userSnap = await getDoc(userRef);
+                const userData = userSnap.data();
 
-                    // 1️⃣ Rare edge case:
-                    // User exists in Auth but profile doc is missing or incomplete
-                    if (
-                        !userSnap.exists() ||
-                        userSnap.data().profileComplete !== true
-                    ) {
-                        // Dashboard does NOT handle profile repair
-                        // login.html already contains recovery logic
-                        window.location.replace("login.html");
-                        return;
-                    }
+                // 2️⃣ Profile is valid → show dashboard shell
+                document.body.style.visibility = "visible";
 
-                    const userData = userSnap.data();
-
-                    // 2️⃣ Profile is valid → show dashboard shell
-                    document.body.style.visibility = "visible";
-
-                    // 3️⃣ Subject setup lock (UI-only, not navigation)
-                    if (userData.subjectsSetup !== true) {
-                        // Lock dashboard interactions (blur, overlay, CTA)
-                        document.body.classList.add("mode-locked");
-                    } else {
-                        document.body.classList.remove("mode-locked");
-                    }
-
-                    // 4️⃣ Initialize dashboard logic
-                    // (charts, attendance ring, schedule, etc.)
-                    if (typeof initializeDashboard === "function") {
-                        await initializeDashboard(userData);
-                    }
-
-
-                    // --- NEW SCROLL-AWARE FADE LOGIC ---
-                    const skeleton = document.getElementById('skeleton');
-                    const mainContent = document.getElementById('main-content');
-
-                    if (skeleton && mainContent) {
-                        // 1. Reveal main content immediately (it sits BEHIND the skeleton)
-                        // This ensures no white flash occurs.
-                        mainContent.style.display = 'block';
-
-                        // 2. Wait one "paint" frame to ensure the DOM is ready
-                        requestAnimationFrame(() => {
-
-                            // 3. Fade out the skeleton
-                            skeleton.style.opacity = '0';
-
-                            // 4. Remove it from DOM after the fade finishes
-                            setTimeout(() => {
-                                skeleton.remove();
-                            }, 400); // Matches the 0.4s CSS transition
-                        });
-                    }
-                    // --- END LOGIC ---
-
-
-                } catch (error) {
-                    console.error("Dashboard auth check failed:", error);
-                    // Fail safe → send back to gate
-                    window.location.replace("login.html");
+                // 3️⃣ Subject setup lock (UI-only, not navigation)
+                if (userData.subjectsSetup !== true) {
+                    // Lock dashboard interactions (blur, overlay, CTA)
+                    document.body.classList.add("mode-locked");
+                } else {
+                    document.body.classList.remove("mode-locked");
                 }
-            });
-        </script>
 
-        <!-- ========================================= -->
-        <!-- NOTIFICATION PANEL OVERLAY -->
-        <!-- ========================================= -->
-        <div id="notificationOverlay">
-            <div class="notif-header">
-                <button class="notif-close-btn" onclick="closeNotificationPanel()">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                // 4️⃣ Initialize dashboard logic
+                // (charts, attendance ring, schedule, etc.)
+                if (typeof initializeDashboard === "function") {
+                    await initializeDashboard(userData);
+                }
+
+
+                // --- NEW SCROLL-AWARE FADE LOGIC ---
+                const skeleton = document.getElementById('skeleton');
+                const mainContent = document.getElementById('main-content');
+
+                if (skeleton && mainContent) {
+                    // 1. Reveal main content immediately (it sits BEHIND the skeleton)
+                    // This ensures no white flash occurs.
+                    mainContent.style.display = 'block';
+
+                    // 2. Wait one "paint" frame to ensure the DOM is ready
+                    requestAnimationFrame(() => {
+
+                        // 3. Fade out the skeleton
+                        skeleton.style.opacity = '0';
+
+                        // 4. Remove it from DOM after the fade finishes
+                        setTimeout(() => {
+                            skeleton.remove();
+                        }, 400); // Matches the 0.4s CSS transition
+                    });
+                }
+                // --- END LOGIC ---
+
+
+            } catch (error) {
+                console.error("Dashboard auth check failed:", error);
+                // Fail safe → send back to gate
+                window.location.replace("login.html");
+            }
+        });
+    </script>
+
+    <!-- ========================================= -->
+    <!-- BOTTOM NAVIGATION BAR -->
+    <!-- ========================================= -->
+    <div class="search-layer" id="searchLayer">
+        <div class="remarks-box">
+            <svg class="bulb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path d="M12 4v1M18 6l-1 1M20 12h-1M18 18l-1-1M12 19v1M7 18l1-1M5 12H4M7 6l1 1" />
+            </svg>
+            <div class="remarks-text">
+                Enter a Roll Number to fetch <span class="highlight">classmate records</span>.
+            </div>
+        </div>
+
+        <div class="hud-glass" id="hudGlass">
+            <div class="hud-input-row">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="number" id="rollInput" class="hud-input" placeholder="Roll Number..." pattern="\d*">
+
+                <button class="search-go-btn" id="searchBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
                     </svg>
                 </button>
-                <h1>Notifications</h1>
             </div>
-            <div class="notif-feed-container" id="notifFeed">
-                <div class="notif-state-msg">
-                    <p>Checking updates...</p>
+
+            <div class="result-strip" id="resultStrip">
+                <div class="strip-divider"></div>
+                <div class="strip-content">
+                    <div class="user-info">
+                        <div class="avatar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div class="text-box">
+                            <span class="s-name" id="searchResultName">Searching...</span>
+                            <span class="s-time" id="searchResultTime">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="score-box">
+                        <div class="s-val" id="searchResultPercent">--%</div>
+                        <div class="s-label">Overall</div>
+                    </div>
                 </div>
             </div>
-            <!-- Hidden Icon Templates -->
-            <div style="display:none;">
-                <div id="notif-icon-info"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                    </svg></div>
-                <div id="notif-icon-alert"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                    </svg></div>
-                <div id="notif-icon-tip"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                    </svg></div>
-                <div id="notif-icon-college"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
-                    </svg></div>
-                <div id="notif-icon-admin"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-                    </svg></div>
-            </div>
+        </div>
+    </div>
+
+    <nav class="noise-nav" id="noiseNav">
+        <div class="nav-item active" id="btnDashboard" onclick="switchTab('dashboard')">
+            <svg class="nav-icon" viewBox="0 0 25 24">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M5.52344 3.25C4.2808 3.25 3.27344 4.25736 3.27344 5.5V18.5C3.27344 19.7426 4.2808 20.75 5.52344 20.75H18.5234C19.7661 20.75 20.7734 19.7426 20.7734 18.5V5.5C20.7734 4.25736 19.7661 3.25 18.5234 3.25H5.52344ZM4.77344 5.5C4.77344 5.08579 5.10922 4.75 5.52344 4.75H18.5234C18.9377 4.75 19.2734 5.08579 19.2734 5.5V8.58301L4.77344 8.58301V5.5ZM4.77344 10.083V18.5C4.77344 18.9142 5.10922 19.25 5.52344 19.25H8.60645L8.60645 10.083H4.77344ZM10.1064 10.083V13.916H19.2734V10.083L10.1064 10.083ZM10.1064 15.416H19.2734V18.5C19.2734 18.9142 18.9377 19.25 18.5234 19.25H10.1064V15.416Z" />
+            </svg>
+            <span class="nav-text">Dashboard</span>
         </div>
 
-        <!-- Notification Panel JavaScript -->
-        <script>
-            // --- NOTIFICATION PANEL FUNCTIONS ---
-            function openNotificationPanel() {
-                const panel = document.getElementById('notificationOverlay');
+        <div class="nav-item" id="btnSearch" onclick="switchTab('search')">
+            <svg class="nav-icon" viewBox="0 0 24 25">
+                <path
+                    d="M11.2498 5.75037C10.8356 5.75037 10.4998 6.08615 10.4998 6.50037C10.4998 6.91458 10.8356 7.25037 11.2498 7.25037C13.874 7.25037 16.0011 9.37718 16.0011 12.0004C16.0011 12.4146 16.3369 12.7504 16.7511 12.7504C17.1653 12.7504 17.5011 12.4146 17.5011 12.0004C17.5011 8.54842 14.7021 5.75037 11.2498 5.75037Z" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M2 11.9989C2 6.89126 6.14154 2.75098 11.25 2.75098C16.3585 2.75098 20.5 6.89126 20.5 11.9989C20.5 14.2836 19.6714 16.3747 18.2983 17.9883L21.7791 21.4695C22.072 21.7624 22.072 22.2372 21.7791 22.5301C21.4862 22.823 21.0113 22.823 20.7184 22.5301L17.2372 19.0486C15.6237 20.4197 13.5334 21.2469 11.25 21.2469C6.14154 21.2469 2 17.1066 2 11.9989ZM11.25 4.25098C6.96962 4.25098 3.5 7.72003 3.5 11.9989C3.5 16.2779 6.96962 19.7469 11.25 19.7469C15.5304 19.7469 19 16.2779 19 11.9989C19 7.72003 15.5304 4.25098 11.25 4.25098Z" />
+            </svg>
+            <span class="nav-text">Roll search</span>
+        </div>
+
+        <div class="nav-item" id="btnUpdates" onclick="switchTab('updates')">
+            <svg class="nav-icon" viewBox="0 0 24 25">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M6.6767 3.09336C6.75061 2.74731 7.05632 2.5 7.41016 2.5H14.6891C14.9457 2.5 15.1845 2.6312 15.3221 2.8478C15.4597 3.0644 15.477 3.33632 15.368 3.56863L13.1876 8.21482L18.8398 8.21482C19.1127 8.21482 19.3641 8.36309 19.4962 8.60195C19.6282 8.84081 19.6201 9.13255 19.4749 9.36368L11.4461 22.1489C11.2619 22.4422 10.9008 22.5712 10.5724 22.4611C10.244 22.3509 10.0338 22.0302 10.0637 21.6852L10.6842 14.5352H5.16016C4.93376 14.5352 4.71947 14.4329 4.57707 14.2569C4.43468 14.0809 4.37942 13.8499 4.4267 13.6285L6.6767 3.09336ZM8.0169 4L6.08725 13.0352H11.5021C11.7123 13.0352 11.9128 13.1234 12.0549 13.2783C12.1969 13.4332 12.2675 13.6406 12.2493 13.85L11.8264 18.7226L17.4832 9.71482L12.0071 9.71482C11.7505 9.71482 11.5117 9.58362 11.3741 9.36702C11.2365 9.15042 11.2192 8.8785 11.3282 8.64619L13.5086 4H8.0169Z" />
+            </svg>
+            <span class="nav-text">Updates</span>
+        </div>
+    </nav>
+
+    <!-- ========================================= -->
+    <!-- NOTIFICATION PANEL OVERLAY -->
+    <!-- ========================================= -->
+    <div id="notificationOverlay">
+        <div class="notif-header">
+            <button class="notif-close-btn" onclick="closeNotificationPanel()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h1>Notifications</h1>
+        </div>
+        <div class="notif-feed-container" id="notifFeed">
+            <div class="notif-state-msg">
+                <p>Checking updates...</p>
+            </div>
+        </div>
+        <!-- Hidden Icon Templates -->
+        <div style="display:none;">
+            <div id="notif-icon-info"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg></div>
+            <div id="notif-icon-alert"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg></div>
+            <div id="notif-icon-tip"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                </svg></div>
+            <div id="notif-icon-college"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+                </svg></div>
+            <div id="notif-icon-admin"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                </svg></div>
+        </div>
+    </div>
+
+    <!-- Notification Panel JavaScript -->
+    <script>
+        // --- NOTIFICATION PANEL FUNCTIONS ---
+        function openNotificationPanel() {
+            const panel = document.getElementById('notificationOverlay');
+            panel.classList.remove('notif-closing');
+            panel.classList.add('notif-open');
+            document.body.classList.add('no-scroll');
+            fetchNotificationsFromSheet();
+        }
+
+        function closeNotificationPanel() {
+            const panel = document.getElementById('notificationOverlay');
+            panel.classList.add('notif-closing');
+            panel.classList.remove('notif-open');
+            document.body.classList.remove('no-scroll');
+            // Reset after animation
+            setTimeout(() => {
                 panel.classList.remove('notif-closing');
-                panel.classList.add('notif-open');
-                document.body.classList.add('no-scroll');
-                fetchNotificationsFromSheet();
+            }, 350);
+        }
+
+        // --- READ USER PROFILE FROM CACHE ---
+        function getNotificationUser() {
+            try {
+                const cached = localStorage.getItem('attenza_profile_v2');
+                if (!cached) return { college: "", class: "", section: "", roll: "", role: "student" };
+                const parsed = JSON.parse(cached);
+                const data = parsed.data || parsed;
+                return {
+                    college: data.collegeId || "Dispur College",
+                    class: data.semester || "",
+                    section: data.section || "",
+                    roll: data.rollNumber || "",
+                    role: "student"
+                };
+            } catch (e) {
+                console.warn('Profile cache read failed:', e);
+                return { college: "", class: "", section: "", roll: "", role: "student" };
             }
+        }
 
-            function closeNotificationPanel() {
-                const panel = document.getElementById('notificationOverlay');
-                panel.classList.add('notif-closing');
-                panel.classList.remove('notif-open');
-                document.body.classList.remove('no-scroll');
-                // Reset after animation
-                setTimeout(() => {
-                    panel.classList.remove('notif-closing');
-                }, 350);
-            }
+        // --- NOTIFICATION SHEET CONFIG ---
+        const NOTIF_SHEET_ID = '1YWUh0uCyc6IaCuFTBUPqsGBq9yt94n8HZ70DSNdHw8o';
+        const NOTIF_SHEET_URL = `https://docs.google.com/spreadsheets/d/${NOTIF_SHEET_ID}/gviz/tq?tqx=out:json`;
 
-            // --- READ USER PROFILE FROM CACHE ---
-            function getNotificationUser() {
-                try {
-                    const cached = localStorage.getItem('attenza_profile_v2');
-                    if (!cached) return { college: "", class: "", section: "", roll: "", role: "student" };
-                    const parsed = JSON.parse(cached);
-                    const data = parsed.data || parsed;
-                    return {
-                        college: data.collegeId || "Dispur College",
-                        class: data.semester || "",
-                        section: data.section || "",
-                        roll: data.rollNumber || "",
-                        role: "student"
-                    };
-                } catch (e) {
-                    console.warn('Profile cache read failed:', e);
-                    return { college: "", class: "", section: "", roll: "", role: "student" };
-                }
-            }
+        // --- ICON TEMPLATES ---
+        const notifIcons = {
+            info: document.getElementById('notif-icon-info')?.innerHTML || '',
+            alert: document.getElementById('notif-icon-alert')?.innerHTML || '',
+            tip: document.getElementById('notif-icon-tip')?.innerHTML || '',
+            college: document.getElementById('notif-icon-college')?.innerHTML || '',
+            admin: document.getElementById('notif-icon-admin')?.innerHTML || ''
+        };
 
-            // --- NOTIFICATION SHEET CONFIG ---
-            const NOTIF_SHEET_ID = '1YWUh0uCyc6IaCuFTBUPqsGBq9yt94n8HZ70DSNdHw8o';
-            const NOTIF_SHEET_URL = `https://docs.google.com/spreadsheets/d/${NOTIF_SHEET_ID}/gviz/tq?tqx=out:json`;
+        async function fetchNotificationsFromSheet() {
+            const feedContainer = document.getElementById('notifFeed');
+            const CURRENT_USER = getNotificationUser();
 
-            // --- ICON TEMPLATES ---
-            const notifIcons = {
-                info: document.getElementById('notif-icon-info')?.innerHTML || '',
-                alert: document.getElementById('notif-icon-alert')?.innerHTML || '',
-                tip: document.getElementById('notif-icon-tip')?.innerHTML || '',
-                college: document.getElementById('notif-icon-college')?.innerHTML || '',
-                admin: document.getElementById('notif-icon-admin')?.innerHTML || ''
-            };
+            try {
+                const response = await fetch(NOTIF_SHEET_URL);
+                if (!response.ok) throw new Error('Failed to connect');
 
-            async function fetchNotificationsFromSheet() {
-                const feedContainer = document.getElementById('notifFeed');
-                const CURRENT_USER = getNotificationUser();
+                const text = await response.text();
+                const jsonText = text.substring(47).slice(0, -2);
+                const json = JSON.parse(jsonText);
+                const rawRows = json.table.rows;
 
-                try {
-                    const response = await fetch(NOTIF_SHEET_URL);
-                    if (!response.ok) throw new Error('Failed to connect');
-
-                    const text = await response.text();
-                    const jsonText = text.substring(47).slice(0, -2);
-                    const json = JSON.parse(jsonText);
-                    const rawRows = json.table.rows;
-
-                    if (!rawRows || rawRows.length === 0) {
-                        feedContainer.innerHTML = '<div class="notif-state-msg">No updates right now.</div>';
-                        return;
-                    }
-
-                    const notifications = rawRows.map(row => ({
-                        title: row.c[0]?.v || "Update",
-                        message: row.c[1]?.v || "",
-                        type: row.c[2]?.v?.toLowerCase() || "info",
-                        active: row.c[3]?.v || false,
-                        priority: row.c[4]?.v || 0,
-                        expiryDate: row.c[5]?.v ? new Date(row.c[5].f || row.c[5].v) : null,
-                        linkUrl: row.c[6]?.v || null,
-                        linkText: row.c[7]?.v || "Open",
-                        target_college: row.c[8]?.v || "",
-                        target_class: row.c[9]?.v || "",
-                        target_section: row.c[10]?.v || "",
-                        target_roll: row.c[11]?.v || "",
-                        target_role: row.c[12]?.v || ""
-                    }));
-
-                    renderNotificationFeed(notifications, CURRENT_USER, feedContainer);
-
-                } catch (error) {
-                    console.error('Notification fetch error:', error);
-                    feedContainer.innerHTML = '<div class="notif-state-msg">Unable to load feed. Check connection.</div>';
-                }
-            }
-
-            function checkNotifRule(targetString, userValue) {
-                if (!targetString || targetString.trim() === "") return true;
-                const targets = targetString.split(',').map(s => s.trim().toLowerCase());
-                const userVal = String(userValue).toLowerCase();
-                return targets.includes(userVal);
-            }
-
-            function renderNotificationFeed(data, CURRENT_USER, feedContainer) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                const activeData = data.filter(item => {
-                    if (!item.active) return false;
-                    if (item.expiryDate && item.expiryDate < today) return false;
-                    const isTargetAdmin = item.target_role.toLowerCase().includes('admin');
-                    if (isTargetAdmin && CURRENT_USER.role !== 'admin') return false;
-                    return checkNotifRule(item.target_college, CURRENT_USER.college) &&
-                        checkNotifRule(item.target_class, CURRENT_USER.class) &&
-                        checkNotifRule(item.target_section, CURRENT_USER.section) &&
-                        checkNotifRule(item.target_roll, CURRENT_USER.roll) &&
-                        checkNotifRule(item.target_role, CURRENT_USER.role);
-                });
-
-                if (activeData.length === 0) {
-                    feedContainer.innerHTML = '<div class="notif-state-msg">All caught up! No new notifications.</div>';
+                if (!rawRows || rawRows.length === 0) {
+                    feedContainer.innerHTML = '<div class="notif-state-msg">No updates right now.</div>';
                     return;
                 }
 
-                activeData.sort((a, b) => b.priority - a.priority);
+                const notifications = rawRows.map(row => ({
+                    title: row.c[0]?.v || "Update",
+                    message: row.c[1]?.v || "",
+                    type: row.c[2]?.v?.toLowerCase() || "info",
+                    active: row.c[3]?.v || false,
+                    priority: row.c[4]?.v || 0,
+                    expiryDate: row.c[5]?.v ? new Date(row.c[5].f || row.c[5].v) : null,
+                    linkUrl: row.c[6]?.v || null,
+                    linkText: row.c[7]?.v || "Open",
+                    target_college: row.c[8]?.v || "",
+                    target_class: row.c[9]?.v || "",
+                    target_section: row.c[10]?.v || "",
+                    target_roll: row.c[11]?.v || "",
+                    target_role: row.c[12]?.v || ""
+                }));
 
-                feedContainer.innerHTML = activeData.map((item, index) => {
-                    let useIcon = notifIcons.info;
-                    if (item.type === 'alert') useIcon = notifIcons.alert;
-                    if (item.type === 'tip') useIcon = notifIcons.tip;
-                    if (item.type === 'college') useIcon = notifIcons.college;
+                renderNotificationFeed(notifications, CURRENT_USER, feedContainer);
 
-                    if (CURRENT_USER.role === 'admin' && item.target_role.toLowerCase().includes('admin')) {
-                        item.type = 'admin';
-                        useIcon = notifIcons.admin;
-                    }
+            } catch (error) {
+                console.error('Notification fetch error:', error);
+                feedContainer.innerHTML = '<div class="notif-state-msg">Unable to load feed. Check connection.</div>';
+            }
+        }
 
-                    const newDot = item.priority > 5 ? '<span class="notif-red-dot"></span>' : '';
-                    const actionBtn = item.linkUrl
-                        ? `<a href="${item.linkUrl}" target="_blank" class="notif-item-action-btn">${item.linkText}</a>`
-                        : '';
-                    const delay = `animation-delay: ${index * 0.1}s`;
+        function checkNotifRule(targetString, userValue) {
+            if (!targetString || targetString.trim() === "") return true;
+            const targets = targetString.split(',').map(s => s.trim().toLowerCase());
+            const userVal = String(userValue).toLowerCase();
+            return targets.includes(userVal);
+        }
 
-                    return `
+        function renderNotificationFeed(data, CURRENT_USER, feedContainer) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const activeData = data.filter(item => {
+                if (!item.active) return false;
+                if (item.expiryDate && item.expiryDate < today) return false;
+                const isTargetAdmin = item.target_role.toLowerCase().includes('admin');
+                if (isTargetAdmin && CURRENT_USER.role !== 'admin') return false;
+                return checkNotifRule(item.target_college, CURRENT_USER.college) &&
+                    checkNotifRule(item.target_class, CURRENT_USER.class) &&
+                    checkNotifRule(item.target_section, CURRENT_USER.section) &&
+                    checkNotifRule(item.target_roll, CURRENT_USER.roll) &&
+                    checkNotifRule(item.target_role, CURRENT_USER.role);
+            });
+
+            if (activeData.length === 0) {
+                feedContainer.innerHTML = '<div class="notif-state-msg">All caught up! No new notifications.</div>';
+                return;
+            }
+
+            activeData.sort((a, b) => b.priority - a.priority);
+
+            feedContainer.innerHTML = activeData.map((item, index) => {
+                let useIcon = notifIcons.info;
+                if (item.type === 'alert') useIcon = notifIcons.alert;
+                if (item.type === 'tip') useIcon = notifIcons.tip;
+                if (item.type === 'college') useIcon = notifIcons.college;
+
+                if (CURRENT_USER.role === 'admin' && item.target_role.toLowerCase().includes('admin')) {
+                    item.type = 'admin';
+                    useIcon = notifIcons.admin;
+                }
+
+                const newDot = item.priority > 5 ? '<span class="notif-red-dot"></span>' : '';
+                const actionBtn = item.linkUrl
+                    ? `<a href="${item.linkUrl}" target="_blank" class="notif-item-action-btn">${item.linkText}</a>`
+                    : '';
+                const delay = `animation-delay: ${index * 0.1}s`;
+
+                return `
                 <div class="notif-item notif-type-${item.type}" style="${delay}">
                     <div class="notif-accent-bar"></div>
                     <div class="notif-item-body">
@@ -983,209 +984,209 @@
                     </div>
                 </div>
                 `;
-                }).join('');
+            }).join('');
+        }
+    </script>
+
+    <!-- ========================================= -->
+    <!-- BOTTOM NAVBAR LOGIC -->
+    <!-- ========================================= -->
+    <script type="module">
+        import { db } from './firebase-init.js';
+        import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- NAVBAR ELEMENTS ---
+        const body = document.body;
+        const hudGlass = document.getElementById('hudGlass');
+        const rollInput = document.getElementById('rollInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultStrip = document.getElementById('resultStrip');
+
+        const navItems = {
+            dashboard: document.getElementById('btnDashboard'),
+            search: document.getElementById('btnSearch'),
+            updates: document.getElementById('btnUpdates')
+        };
+
+        // --- GET CURRENT USER PROFILE FROM CACHE ---
+        function getCurrentUserProfile() {
+            try {
+                const cached = localStorage.getItem('attenza_profile_v2');
+                if (!cached) return null;
+                const parsed = JSON.parse(cached);
+                return parsed.data || parsed;
+            } catch (e) {
+                console.warn('Profile cache read failed:', e);
+                return null;
             }
-        </script>
+        }
 
-        <!-- ========================================= -->
-        <!-- BOTTOM NAVBAR LOGIC -->
-        <!-- ========================================= -->
-        <script type="module">
-            import { db } from './firebase-init.js';
-            import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // --- TAB SWITCHING LOGIC ---
+        window.switchTab = function (tab) {
+            // 1. Reset Nav Visuals
+            Object.values(navItems).forEach(el => {
+                if (el) el.classList.remove('active');
+            });
+            if (navItems[tab]) navItems[tab].classList.add('active');
 
-            // --- NAVBAR ELEMENTS ---
-            const body = document.body;
-            const hudGlass = document.getElementById('hudGlass');
-            const rollInput = document.getElementById('rollInput');
-            const searchBtn = document.getElementById('searchBtn');
-            const resultStrip = document.getElementById('resultStrip');
-
-            const navItems = {
-                dashboard: document.getElementById('btnDashboard'),
-                search: document.getElementById('btnSearch'),
-                updates: document.getElementById('btnUpdates')
-            };
-
-            // --- GET CURRENT USER PROFILE FROM CACHE ---
-            function getCurrentUserProfile() {
-                try {
-                    const cached = localStorage.getItem('attenza_profile_v2');
-                    if (!cached) return null;
-                    const parsed = JSON.parse(cached);
-                    return parsed.data || parsed;
-                } catch (e) {
-                    console.warn('Profile cache read failed:', e);
-                    return null;
+            // 2. Handle Specific Tab Logic
+            if (tab === 'search') {
+                body.classList.add('search-mode');
+                setTimeout(() => {
+                    if (rollInput) rollInput.focus();
+                }, 200);
+            } else if (tab === 'dashboard') {
+                body.classList.remove('search-mode');
+                resetSearch();
+            } else if (tab === 'updates') {
+                body.classList.remove('search-mode');
+                resetSearch();
+                // Open the notification panel
+                if (typeof openNotificationPanel === 'function') {
+                    openNotificationPanel();
                 }
+                // Reset navbar to dashboard after a short delay
+                setTimeout(() => {
+                    Object.values(navItems).forEach(el => {
+                        if (el) el.classList.remove('active');
+                    });
+                    if (navItems.dashboard) navItems.dashboard.classList.add('active');
+                }, 100);
             }
+        };
 
-            // --- TAB SWITCHING LOGIC ---
-            window.switchTab = function (tab) {
-                // 1. Reset Nav Visuals
-                Object.values(navItems).forEach(el => {
-                    if (el) el.classList.remove('active');
-                });
-                if (navItems[tab]) navItems[tab].classList.add('active');
+        function resetSearch() {
+            if (rollInput) rollInput.value = "";
+            if (rollInput) rollInput.blur();
+            if (hudGlass) hudGlass.classList.remove('expanded', 'no-result');
+            if (searchBtn) searchBtn.classList.remove('visible');
+            // Reset result display
+            const nameEl = document.getElementById('searchResultName');
+            const timeEl = document.getElementById('searchResultTime');
+            const percentEl = document.getElementById('searchResultPercent');
+            if (nameEl) nameEl.textContent = 'Searching...';
+            if (timeEl) timeEl.textContent = 'Loading...';
+            if (percentEl) percentEl.textContent = '--%';
+        }
 
-                // 2. Handle Specific Tab Logic
-                if (tab === 'search') {
-                    body.classList.add('search-mode');
-                    setTimeout(() => {
-                        if (rollInput) rollInput.focus();
-                    }, 200);
-                } else if (tab === 'dashboard') {
-                    body.classList.remove('search-mode');
-                    resetSearch();
-                } else if (tab === 'updates') {
-                    body.classList.remove('search-mode');
-                    resetSearch();
-                    // Open the notification panel
-                    if (typeof openNotificationPanel === 'function') {
-                        openNotificationPanel();
-                    }
-                    // Reset navbar to dashboard after a short delay
-                    setTimeout(() => {
-                        Object.values(navItems).forEach(el => {
-                            if (el) el.classList.remove('active');
-                        });
-                        if (navItems.dashboard) navItems.dashboard.classList.add('active');
-                    }, 100);
+        // --- INPUT EVENTS ---
+        if (rollInput) {
+            rollInput.addEventListener('input', (e) => {
+                if (e.target.value.length > 0) {
+                    searchBtn.classList.add('visible');
+                } else {
+                    searchBtn.classList.remove('visible');
+                    hudGlass.classList.remove('expanded', 'no-result');
                 }
-            };
+            });
+        }
 
-            function resetSearch() {
-                if (rollInput) rollInput.value = "";
-                if (rollInput) rollInput.blur();
-                if (hudGlass) hudGlass.classList.remove('expanded', 'no-result');
-                if (searchBtn) searchBtn.classList.remove('visible');
-                // Reset result display
+        // --- SEARCH BUTTON CLICK (Firebase Query) ---
+        if (searchBtn) {
+            searchBtn.addEventListener('click', async () => {
+                const rollValue = rollInput.value.trim();
+                if (!rollValue) return;
+
+                // Show loading state
+                hudGlass.classList.add('expanded');
                 const nameEl = document.getElementById('searchResultName');
                 const timeEl = document.getElementById('searchResultTime');
                 const percentEl = document.getElementById('searchResultPercent');
-                if (nameEl) nameEl.textContent = 'Searching...';
-                if (timeEl) timeEl.textContent = 'Loading...';
-                if (percentEl) percentEl.textContent = '--%';
-            }
 
-            // --- INPUT EVENTS ---
-            if (rollInput) {
-                rollInput.addEventListener('input', (e) => {
-                    if (e.target.value.length > 0) {
-                        searchBtn.classList.add('visible');
-                    } else {
-                        searchBtn.classList.remove('visible');
-                        hudGlass.classList.remove('expanded', 'no-result');
+                nameEl.textContent = 'Searching...';
+                timeEl.textContent = 'Please wait...';
+                percentEl.textContent = '--%';
+
+                try {
+                    // Get current user profile for classmate matching
+                    const myProfile = getCurrentUserProfile();
+                    if (!myProfile || !myProfile.semester || !myProfile.collegeId) {
+                        nameEl.textContent = 'Profile Error';
+                        timeEl.textContent = 'Please re-login';
+                        return;
                     }
-                });
-            }
 
-            // --- SEARCH BUTTON CLICK (Firebase Query) ---
-            if (searchBtn) {
-                searchBtn.addEventListener('click', async () => {
-                    const rollValue = rollInput.value.trim();
-                    if (!rollValue) return;
+                    // Query Firebase: Match by rollNumber + semester (course) + college
+                    const usersRef = collection(db, 'users');
+                    const q = query(usersRef,
+                        where('rollNumber', '==', rollValue),
+                        where('semester', '==', myProfile.semester),
+                        where('collegeId', '==', myProfile.collegeId)
+                    );
 
-                    // Show loading state
-                    hudGlass.classList.add('expanded');
-                    const nameEl = document.getElementById('searchResultName');
-                    const timeEl = document.getElementById('searchResultTime');
-                    const percentEl = document.getElementById('searchResultPercent');
+                    const querySnapshot = await getDocs(q);
 
-                    nameEl.textContent = 'Searching...';
-                    timeEl.textContent = 'Please wait...';
-                    percentEl.textContent = '--%';
-
-                    try {
-                        // Get current user profile for classmate matching
-                        const myProfile = getCurrentUserProfile();
-                        if (!myProfile || !myProfile.semester || !myProfile.collegeId) {
-                            nameEl.textContent = 'Profile Error';
-                            timeEl.textContent = 'Please re-login';
-                            return;
-                        }
-
-                        // Query Firebase: Match by rollNumber + semester (course) + college
-                        const usersRef = collection(db, 'users');
-                        const q = query(usersRef,
-                            where('rollNumber', '==', rollValue),
-                            where('semester', '==', myProfile.semester),
-                            where('collegeId', '==', myProfile.collegeId)
-                        );
-
-                        const querySnapshot = await getDocs(q);
-
-                        if (querySnapshot.empty) {
-                            // No classmate found
-                            nameEl.textContent = 'No classmate found';
-                            timeEl.textContent = 'Roll not in your class';
-                            percentEl.textContent = '--';
-                            return;
-                        }
-
-                        // Get first matching user
-                        const foundUserDoc = querySnapshot.docs[0];
-                        const foundUser = foundUserDoc.data();
-                        const foundUserId = foundUserDoc.id;
-
-                        // Display name immediately
-                        nameEl.textContent = foundUser.name || 'Unknown';
-                        timeEl.textContent = 'Loading attendance...';
-
-                        // Fetch their summary document
-                        const summaryRef = doc(db, 'users', foundUserId, 'summary', 'summary');
-                        const summarySnap = await getDoc(summaryRef);
-
-                        if (!summarySnap.exists()) {
-                            timeEl.textContent = 'No records yet';
-                            percentEl.textContent = '0%';
-                            return;
-                        }
-
-                        const summaryData = summarySnap.data();
-
-                        // Calculate overall percentage from subjects
-                        let totalClasses = 0;
-                        let totalPresent = 0;
-
-                        if (summaryData.subjects && typeof summaryData.subjects === 'object') {
-                            Object.values(summaryData.subjects).forEach(sub => {
-                                totalClasses += (sub.total || 0);
-                                totalPresent += (sub.present || 0);
-                            });
-                        }
-
-                        const overallPercent = totalClasses > 0
-                            ? Math.round((totalPresent / totalClasses) * 100)
-                            : 0;
-
-                        // Update display
-                        timeEl.textContent = `Roll: ${rollValue}`;
-                        percentEl.textContent = `${overallPercent}%`;
-
-                    } catch (error) {
-                        console.error('Roll search error:', error);
-                        nameEl.textContent = 'Search failed';
-                        timeEl.textContent = 'Check connection';
+                    if (querySnapshot.empty) {
+                        // No classmate found
+                        nameEl.textContent = 'No classmate found';
+                        timeEl.textContent = 'Roll not in your class';
                         percentEl.textContent = '--';
+                        return;
                     }
-                });
-            }
 
-            // --- CLICK OUTSIDE TO CLOSE SEARCH ---
-            document.addEventListener('click', (e) => {
-                if (body.classList.contains('search-mode')) {
-                    const isNav = e.target.closest('.noise-nav');
-                    const isHud = e.target.closest('.search-layer');
-                    if (!isNav && !isHud) {
-                        window.switchTab('dashboard');
+                    // Get first matching user
+                    const foundUserDoc = querySnapshot.docs[0];
+                    const foundUser = foundUserDoc.data();
+                    const foundUserId = foundUserDoc.id;
+
+                    // Display name immediately
+                    nameEl.textContent = foundUser.name || 'Unknown';
+                    timeEl.textContent = 'Loading attendance...';
+
+                    // Fetch their summary document
+                    const summaryRef = doc(db, 'users', foundUserId, 'summary', 'summary');
+                    const summarySnap = await getDoc(summaryRef);
+
+                    if (!summarySnap.exists()) {
+                        timeEl.textContent = 'No records yet';
+                        percentEl.textContent = '0%';
+                        return;
                     }
+
+                    const summaryData = summarySnap.data();
+
+                    // Calculate overall percentage from subjects
+                    let totalClasses = 0;
+                    let totalPresent = 0;
+
+                    if (summaryData.subjects && typeof summaryData.subjects === 'object') {
+                        Object.values(summaryData.subjects).forEach(sub => {
+                            totalClasses += (sub.total || 0);
+                            totalPresent += (sub.present || 0);
+                        });
+                    }
+
+                    const overallPercent = totalClasses > 0
+                        ? Math.round((totalPresent / totalClasses) * 100)
+                        : 0;
+
+                    // Update display
+                    timeEl.textContent = `Roll: ${rollValue}`;
+                    percentEl.textContent = `${overallPercent}%`;
+
+                } catch (error) {
+                    console.error('Roll search error:', error);
+                    nameEl.textContent = 'Search failed';
+                    timeEl.textContent = 'Check connection';
+                    percentEl.textContent = '--';
                 }
             });
-        </script>
+        }
 
-        <!-- Your main dashboard logic -->
-        <script type="module" src="app.js"></script>
+        // --- CLICK OUTSIDE TO CLOSE SEARCH ---
+        document.addEventListener('click', (e) => {
+            if (body.classList.contains('search-mode')) {
+                const isNav = e.target.closest('.noise-nav');
+                const isHud = e.target.closest('.search-layer');
+                if (!isNav && !isHud) {
+                    window.switchTab('dashboard');
+                }
+            }
+        });
+    </script>
+
+    <!-- Your main dashboard logic -->
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>
