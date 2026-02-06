@@ -2839,6 +2839,19 @@
         transition-delay: 300ms;
     }
 
+    /* --- LAYOUT UTILITIES (for skeleton) --- */
+    .flex-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .flex-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
     /* --- SKELETON UI STYLES --- */
     .skeleton {
         background-color: #e0e0e0;
