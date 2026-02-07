@@ -24,7 +24,7 @@
 
 </head>
 
-<body>
+<body class="skeleton-loading">
     <div id="skeleton">
 
         <div class="skeleton-header flex-row">
@@ -102,7 +102,7 @@
                     </div>
                 </div>
 
-                <button class="icon-btn notif-rev" aria-label="Notifications" onclick="openNotificationPanel()">
+                <button class="icon-btn notif-rev" aria-label="Notifications" onclick="switchTab('updates')">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path
                             d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"
@@ -673,9 +673,11 @@
                         // 3. Fade out the skeleton
                         skeleton.style.opacity = '0';
 
-                        // 4. Remove it from DOM after the fade finishes
+                        // 4. Remove skeleton-loading class and element after fade finishes
                         setTimeout(() => {
                             skeleton.remove();
+                            // Show navbar now that skeleton is gone
+                            document.body.classList.remove('skeleton-loading');
                         }, 400); // Matches the 0.4s CSS transition
                     });
                 }
@@ -839,6 +841,18 @@
             panel.classList.add('notif-closing');
             panel.classList.remove('notif-open');
             document.body.classList.remove('no-scroll');
+
+            // Reset navbar to dashboard when closing panel
+            const navItems = {
+                dashboard: document.getElementById('btnDashboard'),
+                search: document.getElementById('btnSearch'),
+                updates: document.getElementById('btnUpdates')
+            };
+            Object.values(navItems).forEach(el => {
+                if (el) el.classList.remove('active');
+            });
+            if (navItems.dashboard) navItems.dashboard.classList.add('active');
+
             // Reset after animation
             setTimeout(() => {
                 panel.classList.remove('notif-closing');
@@ -1030,28 +1044,28 @@
             if (navItems[tab]) navItems[tab].classList.add('active');
 
             // 2. Handle Specific Tab Logic
+            // Close notification panel if open when switching tabs
+            const notifPanel = document.getElementById('notificationOverlay');
+            if (notifPanel && notifPanel.classList.contains('notif-open') && tab !== 'updates') {
+                if (typeof closeNotificationPanel === 'function') {
+                    closeNotificationPanel();
+                }
+            }
+
             if (tab === 'search') {
                 body.classList.add('search-mode');
-                setTimeout(() => {
-                    if (rollInput) rollInput.focus();
-                }, 200);
+                // Don't auto-focus to prevent keyboard from opening automatically
             } else if (tab === 'dashboard') {
                 body.classList.remove('search-mode');
                 resetSearch();
             } else if (tab === 'updates') {
                 body.classList.remove('search-mode');
                 resetSearch();
-                // Open the notification panel
+                // Open the notification panel - keep Updates tab active
                 if (typeof openNotificationPanel === 'function') {
                     openNotificationPanel();
                 }
-                // Reset navbar to dashboard after a short delay
-                setTimeout(() => {
-                    Object.values(navItems).forEach(el => {
-                        if (el) el.classList.remove('active');
-                    });
-                    if (navItems.dashboard) navItems.dashboard.classList.add('active');
-                }, 100);
+                // Tab stays active while panel is open
             }
         };
 
@@ -1134,7 +1148,7 @@
                     timeEl.textContent = 'Loading attendance...';
 
                     // Fetch their summary document
-                    const summaryRef = doc(db, 'users', foundUserId, 'summary', 'summary');
+                    const summaryRef = doc(db, 'users', foundUserId, 'metadata', 'summary');
                     const summarySnap = await getDoc(summaryRef);
 
                     if (!summarySnap.exists()) {
