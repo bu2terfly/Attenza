@@ -1265,7 +1265,6 @@
     }
 
     
-
     /* ---------------- PERIODICAL RECORDS SECTION STYLES ---------------- */
 
     :root {
@@ -3161,18 +3160,28 @@
     /* --- SEARCH MODE BODY STATE --- */
     body.search-mode .content-body {
         filter: blur(8px) grayscale(0.4);
-        transform: scale(0.96);
         pointer-events: none;
-        transition: filter 0.4s ease, transform 0.4s var(--ease-spring);
-        transform-origin: center 80%;
+        transition: filter 0.4s ease;
+    }
+
+    /* --- HIDE NAVBAR DURING SKELETON LOADING --- */
+    body.skeleton-loading .noise-nav,
+    body.skeleton-loading .search-layer {
+        display: none !important;
+    }
+
+    /* --- HIDE NAVBAR WHEN MENU IS OPEN --- */
+    body.menu-open .noise-nav,
+    body.menu-open .search-layer {
+        display: none !important;
     }
 
     /* --- SEARCH LAYER --- */
     .search-layer {
         position: fixed;
-        bottom: 105px;
+        top: 100px;
         left: 50%;
-        transform: translate(-50%, 20px);
+        transform: translate(-50%, -20px);
         width: 340px;
         z-index: 10001;
         pointer-events: none;
