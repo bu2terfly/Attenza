@@ -1283,7 +1283,10 @@ async function saveEditRecord(subjectName) {
 // --- Expose for HTML access ---
 window.openMenu = function () {
     const menu = document.getElementById("menuOverlay");
-    if (menu) menu.style.left = "0";
+    if (menu) {
+        menu.style.left = "0";
+        document.body.classList.add('menu-open');
+    }
 }
 
 // --- Timeline Item Expand/Collapse Logic ---
@@ -1760,3 +1763,14 @@ function resetCardStatusInternal(domId, subjectName) {
 
 // Expose for window access
 window.resetCardStatus = resetCardStatusInternal;
+
+// --- Handle Menu Close from iframe ---
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'CLOSE_MENU') {
+        const menu = document.getElementById("menuOverlay");
+        if (menu) {
+            menu.style.left = "-100vw";
+        }
+        document.body.classList.remove('menu-open');
+    }
+});
