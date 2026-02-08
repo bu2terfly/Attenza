@@ -1500,7 +1500,6 @@ function selectPeriodChip(mode) {
     currentPeriodMode = mode;
     const container = document.getElementById('periodSelector');
     const chips = container.querySelectorAll('.period-chip');
-    const helperText = document.getElementById('periodHelperText');
 
     // Update chip active states
     chips.forEach(chip => {
@@ -1514,15 +1513,10 @@ function selectPeriodChip(mode) {
 
     if (mode === 'all') {
         // All Time: signup to today
-        if (helperText) helperText.textContent = 'for all time (since signup)';
         calculatePeriodicalStats(userSignupKey || todayKey, todayKey, true);
-    } else if (mode === '7days') {
-        // Last 7 Days
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const startKey = sevenDaysAgo.toISOString().split('T')[0];
-        if (helperText) helperText.textContent = 'for last 7 days';
-        calculatePeriodicalStats(startKey, todayKey, false);
+    } else if (mode === 'thisweek') {
+        // This Week: fetches current week's aggregate (data already stored per week)
+        calculatePeriodicalStats(todayKey, todayKey, false);
     } else if (mode === 'custom') {
         // Open date picker sheet
         openDatePickerSheet();
@@ -1823,18 +1817,33 @@ function dpHandleAction() {
     const startTs = new Date(sY, dpState.start.month, dpState.start.day).getTime();
     const endTs = new Date(eY, dpState.end.month, dpState.end.day).getTime();
     const todayTs = new Date().setHours(0, 0, 0, 0);
+    const oneDayMs = 24 * 60 * 60 * 1000;
 
     const btn = document.getElementById('dpActionBtn');
     const originalText = "Apply Custom Range";
 
-    // Validation
+    // Validation: No future dates
     if (startTs > todayTs || endTs > todayTs) {
         dpShowError(btn, "Cannot select future dates", originalText);
         return;
     }
 
+    // Validation: End cannot be before start
     if (startTs > endTs) {
         dpShowError(btn, "End date cannot be before start", originalText);
+        return;
+    }
+
+    // Validation: No same start and end date
+    if (startTs === endTs) {
+        dpShowError(btn, "Start and end date cannot be same", originalText);
+        return;
+    }
+
+    // Validation: Minimum 2 days interval (e.g., Feb 1 to Feb 3, not Feb 2 to Feb 3)
+    const daysDiff = Math.round((endTs - startTs) / oneDayMs);
+    if (daysDiff < 2) {
+        dpShowError(btn, "Minimum 2 days interval required", originalText);
         return;
     }
 
@@ -1847,14 +1856,6 @@ function dpHandleAction() {
 
     const startKey = toKey(sY, dpState.start.month, dpState.start.day);
     const endKey = toKey(eY, dpState.end.month, dpState.end.day);
-
-    // Update helper text
-    const helperText = document.getElementById('periodHelperText');
-    if (helperText) {
-        const startStr = `${dpMonths[dpState.start.month].substring(0, 3)} ${dpState.start.day}`;
-        const endStr = `${dpMonths[dpState.end.month].substring(0, 3)} ${dpState.end.day}, ${eY}`;
-        helperText.textContent = `${startStr} - ${endStr}`;
-    }
 
     closeDatePickerSheet();
     calculatePeriodicalStats(startKey, endKey, false);
