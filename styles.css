@@ -1324,10 +1324,9 @@
 
     .period-chip {
         appearance: none;
-        border: none;
         outline: none;
         cursor: pointer;
-        padding: 10px 20px;
+        padding: 9px 18px;
         border-radius: 9999px;
         font-size: 14px;
         font-weight: 500;
@@ -1335,9 +1334,9 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        background-color: #f3f4f6;
+        background-color: #ffffff;
         color: #4b5563;
-        border: 1px solid transparent;
+        border: 1.5px solid #444444;
         flex-shrink: 0;
     }
 
@@ -1351,6 +1350,7 @@
 
     .period-chip.active {
         background-color: #8381FC;
+        border: none;
         color: #ffffff;
         font-weight: 600;
     }
