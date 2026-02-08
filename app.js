@@ -20,6 +20,8 @@ let userProfile = null;
 let unsubscribeToday = null; // Listener for today's attendance
 let todaySubjectsList = []; // Track today's subjects globally
 let pendingResetSubject = null; // Track subject being reset to prevent listener override
+let currentPeriodMode = 'all'; // 'all' | '7days' | 'custom'
+let userSignupKey = null; // Cached signup date for "All Time" calculations
 
 // ============================================
 // === AGGRESSIVE CACHING LAYER (Production) ===
@@ -157,13 +159,12 @@ window.initializeDashboard = async function (profileData) {
         // 5. Load Major Subjects (Local Cache + Calc)
         loadMajorSubjects();
 
-        // 6. Load Default Periodical View (signup to today - uses cached summary, 0 reads)
+        // 6. Initialize Period Chips and load Default Periodical View
         const signupDate = profileData.createdAt
             ? (profileData.createdAt.toDate ? profileData.createdAt.toDate() : new Date(profileData.createdAt))
             : new Date();
-        const signupKey = signupDate.toISOString().split('T')[0];
-        const todayKey = getTodayKey();
-        calculatePeriodicalStats(signupKey, todayKey, true);
+        userSignupKey = signupDate.toISOString().split('T')[0];
+        initPeriodChips();
 
         // 7. Load Date-wise Section (default: yesterday)
         initDateWiseSection();
@@ -1477,36 +1478,416 @@ window.addEventListener('message', (event) => {
     }
 });
 
-// === Calendar Logic (Periodical Records) ===
-const rangePicker = document.getElementById("rangePicker");
-if (rangePicker && window.flatpickr) {
-    flatpickr(rangePicker, {
-        mode: "range",
-        dateFormat: "Y-m-d",
-        onChange: function (selectedDates, dateStr, instance) {
-            const startSpan = document.getElementById("startDate");
-            const endSpan = document.getElementById("endDate");
+// === Period Chips & Date Picker Logic ===
 
-            if (selectedDates.length > 0) {
-                if (startSpan) startSpan.innerText = selectedDates[0].toLocaleDateString();
-                if (startSpan) startSpan.classList.remove('empty');
-            }
-            if (selectedDates.length > 1) {
-                if (endSpan) endSpan.innerText = selectedDates[1].toLocaleDateString();
-                if (endSpan) endSpan.classList.remove('empty');
+function initPeriodChips() {
+    const container = document.getElementById('periodSelector');
+    if (!container) return;
 
-                const start = selectedDates[0];
-                const end = selectedDates[1];
-                const toKey = (d) => {
-                    const offset = d.getTimezoneOffset() * 60000;
-                    return new Date(d.getTime() - offset).toISOString().split('T')[0];
-                };
+    const chips = container.querySelectorAll('.period-chip');
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const period = chip.dataset.period;
+            selectPeriodChip(period);
+        });
+    });
 
-                calculatePeriodicalStats(toKey(start), toKey(end));
-            }
+    // Load default "All Time" on init
+    selectPeriodChip('all');
+}
+
+function selectPeriodChip(mode) {
+    currentPeriodMode = mode;
+    const container = document.getElementById('periodSelector');
+    const chips = container.querySelectorAll('.period-chip');
+    const helperText = document.getElementById('periodHelperText');
+
+    // Update chip active states
+    chips.forEach(chip => {
+        chip.classList.remove('active');
+        if (chip.dataset.period === mode) {
+            chip.classList.add('active');
         }
     });
+
+    const todayKey = getTodayKey();
+
+    if (mode === 'all') {
+        // All Time: signup to today
+        if (helperText) helperText.textContent = 'for all time (since signup)';
+        calculatePeriodicalStats(userSignupKey || todayKey, todayKey, true);
+    } else if (mode === '7days') {
+        // Last 7 Days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const startKey = sevenDaysAgo.toISOString().split('T')[0];
+        if (helperText) helperText.textContent = 'for last 7 days';
+        calculatePeriodicalStats(startKey, todayKey, false);
+    } else if (mode === 'custom') {
+        // Open date picker sheet
+        openDatePickerSheet();
+    }
 }
+
+// === Date Picker Sheet Logic ===
+const dpMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const dpFixedYears = [2024, 2025, 2026, 2027, 2028];
+
+let dpState = {
+    mode: 'start',
+    isYearExpanded: false,
+    start: { year: new Date().getFullYear(), month: null, day: null },
+    end: { year: null, month: null, day: null },
+    visualMonth: new Date().getMonth(),
+    visualYear: new Date().getFullYear()
+};
+
+function openDatePickerSheet() {
+    // Reset state
+    dpState = {
+        mode: 'start',
+        isYearExpanded: false,
+        start: { year: new Date().getFullYear(), month: null, day: null },
+        end: { year: null, month: null, day: null },
+        visualMonth: new Date().getMonth(),
+        visualYear: new Date().getFullYear()
+    };
+
+    const overlay = document.getElementById('datepickerOverlay');
+    const sheet = document.getElementById('datepickerSheet');
+
+    if (overlay && sheet) {
+        overlay.classList.add('active');
+        sheet.classList.add('active');
+        document.body.classList.add('no-scroll');
+
+        // Initialize picker UI
+        dpRenderMonths();
+        dpRenderDays();
+        dpRenderYearList();
+        dpHighlightUI();
+        dpUpdateHeaderUI();
+        dpSetMode('start');
+        setTimeout(() => dpMoveHighlight('start'), 50);
+    }
+
+    // Setup overlay click to close
+    overlay.onclick = closeDatePickerSheet;
+}
+
+function closeDatePickerSheet() {
+    const overlay = document.getElementById('datepickerOverlay');
+    const sheet = document.getElementById('datepickerSheet');
+
+    if (overlay && sheet) {
+        overlay.classList.remove('active');
+        sheet.classList.remove('active');
+        document.body.classList.remove('no-scroll');
+    }
+}
+
+function dpRenderMonths() {
+    const leftList = document.getElementById('dpLeftList');
+    if (!leftList) return;
+    leftList.innerHTML = '';
+
+    dpMonths.forEach((m, i) => {
+        const el = document.createElement('div');
+        el.className = 'dp-list-item';
+        el.textContent = m;
+        el.onclick = () => dpHandleMonthClick(i);
+        el.dataset.val = i;
+        leftList.appendChild(el);
+    });
+
+    const yearText = document.getElementById('dpStaticYearText');
+    if (yearText) yearText.textContent = dpState.visualYear;
+}
+
+function dpRenderYearList() {
+    const container = document.getElementById('dpYearListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    dpFixedYears.forEach(y => {
+        const item = document.createElement('div');
+        item.className = `dp-year-item ${y === dpState.visualYear ? 'active' : ''}`;
+        item.textContent = y;
+        item.onclick = (e) => {
+            e.stopPropagation();
+            dpHandleYearSelect(y, item);
+        };
+        container.appendChild(item);
+    });
+}
+
+function dpGetDaysInMonth(m, y) {
+    return new Date(y, m + 1, 0).getDate();
+}
+
+function dpRenderDays() {
+    const grid = document.getElementById('dpDayGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const daysCount = dpGetDaysInMonth(dpState.visualMonth, dpState.visualYear);
+
+    for (let i = 1; i <= daysCount; i++) {
+        const el = document.createElement('div');
+        el.className = 'dp-day-item';
+        el.textContent = i;
+        el.onclick = () => dpHandleDayClick(i);
+        el.dataset.day = i;
+        grid.appendChild(el);
+    }
+}
+
+function dpSetMode(mode) {
+    dpState.mode = mode;
+    dpCloseYearBar();
+
+    const startDisplay = document.getElementById('dpStartDisplay');
+    const endDisplay = document.getElementById('dpEndDisplay');
+
+    if (mode === 'start') {
+        startDisplay?.classList.add('active');
+        endDisplay?.classList.remove('active');
+    } else {
+        startDisplay?.classList.remove('active');
+        endDisplay?.classList.add('active');
+    }
+
+    dpMoveHighlight(mode);
+
+    const currentData = dpState[mode];
+    dpState.visualMonth = currentData.month !== null ? currentData.month : dpState.visualMonth;
+    if (currentData.year !== null) {
+        dpState.visualYear = currentData.year;
+    }
+
+    dpRenderDays();
+    dpHighlightUI();
+    dpCheckButtonVisibility();
+}
+
+function dpMoveHighlight(mode) {
+    const highlight = document.getElementById('dpHighlight');
+    const target = mode === 'start'
+        ? document.getElementById('dpStartDisplay')
+        : document.getElementById('dpEndDisplay');
+
+    if (highlight && target) {
+        highlight.style.width = `${target.offsetWidth}px`;
+        highlight.style.transform = `translateX(${target.offsetLeft}px)`;
+    }
+}
+
+function dpToggleYearExpand() {
+    dpState.isYearExpanded ? dpCloseYearBar() : dpOpenYearBar();
+}
+
+function dpOpenYearBar() {
+    dpState.isYearExpanded = true;
+    dpRenderYearList();
+    document.getElementById('dpExpandableBar')?.classList.add('active');
+}
+
+function dpCloseYearBar() {
+    dpState.isYearExpanded = false;
+    document.getElementById('dpExpandableBar')?.classList.remove('active');
+}
+
+function dpHandleYearSelect(year, eventEl) {
+    const allItems = document.querySelectorAll('.dp-year-item');
+    allItems.forEach(el => el.classList.remove('active'));
+    eventEl.classList.add('active');
+
+    setTimeout(() => {
+        dpState.visualYear = year;
+        dpState[dpState.mode].year = year;
+        dpRenderDays();
+        dpHighlightUI();
+        dpUpdateHeaderUI();
+        dpCloseYearBar();
+    }, 350);
+}
+
+function dpHandleMonthClick(monthIdx) {
+    dpState[dpState.mode].month = monthIdx;
+    dpState.visualMonth = monthIdx;
+
+    if (dpState[dpState.mode].year === null) {
+        dpState[dpState.mode].year = dpState.visualYear;
+    }
+
+    dpRenderDays();
+    dpHighlightUI();
+    dpUpdateHeaderUI();
+}
+
+function dpHandleDayClick(day) {
+    if (dpState[dpState.mode].month === null) dpState[dpState.mode].month = dpState.visualMonth;
+    if (dpState[dpState.mode].year === null) dpState[dpState.mode].year = dpState.visualYear;
+
+    dpState[dpState.mode].day = day;
+    dpUpdateHeaderUI();
+
+    const clickedEl = document.querySelector(`.dp-day-item[data-day="${day}"]`);
+    if (clickedEl) clickedEl.classList.add('confirmed');
+
+    if (dpState.mode === 'start') {
+        setTimeout(() => dpSetMode('end'), 500);
+    } else {
+        setTimeout(() => {
+            dpHighlightUI();
+            dpCheckButtonVisibility();
+        }, 400);
+    }
+}
+
+function dpHighlightUI() {
+    // Month highlight
+    const leftList = document.getElementById('dpLeftList');
+    if (leftList) {
+        const mItems = leftList.querySelectorAll('.dp-list-item');
+        mItems.forEach(el => el.classList.remove('selected'));
+        const activeM = leftList.querySelector(`[data-val="${dpState.visualMonth}"]`);
+        if (activeM) {
+            activeM.classList.add('selected');
+            activeM.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+    // Day highlight
+    const dayGrid = document.getElementById('dpDayGrid');
+    if (dayGrid) {
+        dayGrid.querySelectorAll('.dp-day-item').forEach(el => {
+            el.classList.remove('selected', 'confirmed');
+        });
+
+        const stored = dpState[dpState.mode];
+        const yearCheck = stored.year === null ? dpState.visualYear : stored.year;
+
+        if (stored.day !== null &&
+            stored.month === dpState.visualMonth &&
+            yearCheck === dpState.visualYear) {
+            const dEl = dayGrid.querySelector(`[data-day="${stored.day}"]`);
+            if (dEl) dEl.classList.add('selected');
+        }
+    }
+
+    const yearText = document.getElementById('dpStaticYearText');
+    if (yearText) yearText.textContent = dpState.visualYear;
+}
+
+function dpUpdateHeaderUI() {
+    const fmt = (dObj) => {
+        if (dObj.day !== null && dObj.month !== null) {
+            const y = dObj.year || dpState.visualYear;
+            return `${dpMonths[dObj.month].substring(0, 3)} ${dObj.day}, ${y}`;
+        }
+        return "Select Date";
+    };
+
+    const startVal = document.getElementById('dpStartVal');
+    const endVal = document.getElementById('dpEndVal');
+
+    if (startVal) {
+        startVal.textContent = fmt(dpState.start);
+        startVal.style.color = dpState.start.day ? '#000' : '#B0B0B0';
+        startVal.style.fontWeight = dpState.start.day ? '600' : '400';
+    }
+
+    if (endVal) {
+        endVal.textContent = fmt(dpState.end);
+        endVal.style.color = dpState.end.day ? '#000' : '#B0B0B0';
+        endVal.style.fontWeight = dpState.end.day ? '600' : '400';
+    }
+}
+
+function dpCheckButtonVisibility() {
+    const btn = document.getElementById('dpActionBtn');
+    if (btn) {
+        if (dpState.start.day !== null && dpState.end.day !== null) {
+            btn.classList.remove('dp-hidden');
+        } else {
+            btn.classList.add('dp-hidden');
+        }
+    }
+}
+
+function dpHandleAction() {
+    const sY = dpState.start.year || new Date().getFullYear();
+    const eY = dpState.end.year || new Date().getFullYear();
+
+    const startTs = new Date(sY, dpState.start.month, dpState.start.day).getTime();
+    const endTs = new Date(eY, dpState.end.month, dpState.end.day).getTime();
+    const todayTs = new Date().setHours(0, 0, 0, 0);
+
+    const btn = document.getElementById('dpActionBtn');
+    const originalText = "Apply Custom Range";
+
+    // Validation
+    if (startTs > todayTs || endTs > todayTs) {
+        dpShowError(btn, "Cannot select future dates", originalText);
+        return;
+    }
+
+    if (startTs > endTs) {
+        dpShowError(btn, "End date cannot be before start", originalText);
+        return;
+    }
+
+    // Success - apply the range
+    const toKey = (y, m, d) => {
+        const date = new Date(y, m, d);
+        const offset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offset).toISOString().split('T')[0];
+    };
+
+    const startKey = toKey(sY, dpState.start.month, dpState.start.day);
+    const endKey = toKey(eY, dpState.end.month, dpState.end.day);
+
+    // Update helper text
+    const helperText = document.getElementById('periodHelperText');
+    if (helperText) {
+        const startStr = `${dpMonths[dpState.start.month].substring(0, 3)} ${dpState.start.day}`;
+        const endStr = `${dpMonths[dpState.end.month].substring(0, 3)} ${dpState.end.day}, ${eY}`;
+        helperText.textContent = `${startStr} - ${endStr}`;
+    }
+
+    closeDatePickerSheet();
+    calculatePeriodicalStats(startKey, endKey, false);
+}
+
+function dpShowError(btn, msg, originalText) {
+    if (!btn) return;
+    btn.classList.add('error');
+    btn.innerText = msg;
+    setTimeout(() => {
+        btn.classList.remove('error');
+        btn.innerText = originalText;
+    }, 2000);
+}
+
+// Setup event listeners for date picker sheet elements
+document.addEventListener('DOMContentLoaded', () => {
+    // Year bar toggle
+    const expandableBar = document.getElementById('dpExpandableBar');
+    if (expandableBar) {
+        expandableBar.onclick = dpToggleYearExpand;
+    }
+
+    // Start/End display clicks
+    const startDisplay = document.getElementById('dpStartDisplay');
+    const endDisplay = document.getElementById('dpEndDisplay');
+    if (startDisplay) startDisplay.onclick = () => dpSetMode('start');
+    if (endDisplay) endDisplay.onclick = () => dpSetMode('end');
+
+    // Action button
+    const actionBtn = document.getElementById('dpActionBtn');
+    if (actionBtn) actionBtn.onclick = dpHandleAction;
+});
 
 // --- Periodical Stats Logic (CACHED with Weekly Aggregates) ---
 window.calculatePeriodicalStats = async function (startKey, endKey, isDefaultView = false) {
