@@ -1961,8 +1961,9 @@
         stroke: #9a7acf;
         stroke-width: 8;
         stroke-linecap: round;
-        stroke-dasharray: 377;
-        stroke-dashoffset: 94;
+        stroke-dasharray: 301;
+        stroke-dashoffset: 301;
+        transition: stroke-dashoffset 0.6s ease-out;
     }
 
     .circle-center {
