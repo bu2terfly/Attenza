@@ -84,20 +84,35 @@ function clearUserCache() {
 // --- Date Utility Functions ---
 
 function getWeekKey(dateStr) {
-    // Convert yyyy-mm-dd to ISO week key: yyyy-Www
-    const d = new Date(dateStr + 'T00:00:00');
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    // Convert yyyy-mm-dd to ISO week key: yyyy-Www (using LOCAL timezone)
+    const d = new Date(dateStr + 'T12:00:00'); // Use noon to avoid DST issues
+    const dayNum = d.getDay() || 7; // Sunday = 7
+    // Adjust to Thursday of the same week (ISO week standard)
+    d.setDate(d.getDate() + 4 - dayNum);
+    const yearStart = new Date(d.getFullYear(), 0, 1);
     const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+    return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+function getWeekBoundaries(dateStr) {
+    // Returns { start: 'yyyy-mm-dd', end: 'yyyy-mm-dd' } for the week containing dateStr
+    const d = new Date(dateStr + 'T12:00:00');
+    const dayNum = d.getDay() || 7; // Sunday = 7
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - dayNum + 1);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return {
+        start: monday.toISOString().split('T')[0],
+        end: sunday.toISOString().split('T')[0]
+    };
 }
 
 function getWeeksInRange(startKey, endKey) {
     // Returns array of week keys between two dates
     const weeks = new Set();
-    const start = new Date(startKey + 'T00:00:00');
-    const end = new Date(endKey + 'T00:00:00');
+    const start = new Date(startKey + 'T12:00:00');
+    const end = new Date(endKey + 'T12:00:00');
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         weeks.add(getWeekKey(d.toISOString().split('T')[0]));
     }
@@ -1914,7 +1929,9 @@ window.calculatePeriodicalStats = async function (startKey, endKey, isDefaultVie
     if (!currentUser) return;
     console.log(`[Periodical] Filtering from ${startKey} to ${endKey}${isDefaultView ? ' (default view)' : ''}`);
 
-    document.getElementById('percentageText').innerText = '...';
+    // Set periodical ring loading state (NOT welcome ring!)
+    const periodRingPercent = document.getElementById('periodRingPercent');
+    if (periodRingPercent) periodRingPercent.innerText = '...';
 
     try {
         let periodTotal = 0;
@@ -1939,11 +1956,25 @@ window.calculatePeriodicalStats = async function (startKey, endKey, isDefaultVie
                 subjectAgg[sub.name] = { total: pastT + trackT, attended: pastP + trackP };
             });
         } else {
-            // Custom range: Use weekly aggregates (fetches only needed weeks)
-            const weeks = getWeeksInRange(startKey, endKey);
-            console.log(`[Periodical] Need ${weeks.length} weeks:`, weeks);
+            // SMART FETCHING: Minimize reads with partial week + full week strategy
+            // Example: Jan 31 - Feb 11 (today) = 
+            //   - Jan 31 to Feb 1 (partial week 5): fetch individual dates = 2 reads
+            //   - Feb 2 to Feb 8 (complete week 6): fetch weekly aggregate = 1 read
+            //   - Feb 9 to Feb 11 (current week 7): use weekly aggregate = 1 read
+            //   Total: 4 reads instead of 12
 
-            // Try to load from memory/localStorage cache first
+            const todayKey = getTodayKey();
+            const startWeekKey = getWeekKey(startKey);
+            const endWeekKey = getWeekKey(endKey);
+            const startBounds = getWeekBoundaries(startKey);
+            const endBounds = getWeekBoundaries(endKey);
+
+            // Determine all unique weeks in range
+            const allWeeks = getWeeksInRange(startKey, endKey);
+            console.log(`[Periodical] Smart fetch for ${startKey} to ${endKey}`);
+            console.log(`[Periodical] Weeks involved:`, allWeeks);
+
+            // Load cached weekly data
             let cachedWeekly = memoryCache.weeklyAggregates;
             if (!Object.keys(cachedWeekly).length) {
                 const stored = loadFromLocalStorage(CACHE_KEYS.WEEKLY);
@@ -1953,32 +1984,32 @@ window.calculatePeriodicalStats = async function (startKey, endKey, isDefaultVie
                 }
             }
 
-            // Fetch only weeks not in cache
-            const missingWeeks = weeks.filter(w => !cachedWeekly[w]);
-            if (missingWeeks.length > 0) {
-                console.log(`[Firestore] Fetching ${missingWeeks.length} missing weeks`);
-                for (const weekKey of missingWeeks) {
-                    const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
-                    const weekSnap = await getDoc(weekRef);
-                    if (weekSnap.exists()) {
-                        cachedWeekly[weekKey] = weekSnap.data();
-                    } else {
-                        // Week doesn't exist in Firestore yet, initialize empty
-                        cachedWeekly[weekKey] = { total: 0, present: 0, subjects: {} };
-                    }
-                }
-                memoryCache.weeklyAggregates = cachedWeekly;
-                saveToLocalStorage(CACHE_KEYS.WEEKLY, cachedWeekly);
-            } else {
-                console.log('[Cache] All weeks found in cache (0 reads)');
-            }
+            // Load cached attendance by date
+            let cachedDates = memoryCache.attendanceByDate || {};
 
-            // Aggregate from weeks
-            weeks.forEach(weekKey => {
-                const weekData = cachedWeekly[weekKey] || { total: 0, present: 0, subjects: {} };
+            // Helper to aggregate from day data
+            const aggregateFromDay = (dayData) => {
+                if (!dayData || !dayData.records) return;
+                Object.entries(dayData.records).forEach(([subName, record]) => {
+                    if (!subjectAgg[subName]) subjectAgg[subName] = { total: 0, attended: 0 };
+                    if (record.status === 'present') {
+                        periodTotal++;
+                        periodPresent++;
+                        subjectAgg[subName].total++;
+                        subjectAgg[subName].attended++;
+                    } else if (record.status === 'absent') {
+                        periodTotal++;
+                        subjectAgg[subName].total++;
+                    }
+                    // Skip 'skip' and 'not_held' as they don't count
+                });
+            };
+
+            // Helper to aggregate from week data
+            const aggregateFromWeek = (weekData) => {
+                if (!weekData) return;
                 periodTotal += weekData.total || 0;
                 periodPresent += weekData.present || 0;
-
                 if (weekData.subjects) {
                     Object.entries(weekData.subjects).forEach(([subName, stat]) => {
                         if (!subjectAgg[subName]) subjectAgg[subName] = { total: 0, attended: 0 };
@@ -1986,7 +2017,125 @@ window.calculatePeriodicalStats = async function (startKey, endKey, isDefaultVie
                         subjectAgg[subName].attended += stat.attended || 0;
                     });
                 }
-            });
+            };
+
+            let totalReads = 0;
+
+            for (let i = 0; i < allWeeks.length; i++) {
+                const weekKey = allWeeks[i];
+                const isFirstWeek = (i === 0);
+                const isLastWeek = (i === allWeeks.length - 1);
+                const weekBounds = getWeekBoundaries(
+                    // Find a date that belongs to this week
+                    isFirstWeek ? startKey : (isLastWeek ? endKey : startBounds.start)
+                );
+
+                // Recalculate bounds for each week properly
+                const wStart = new Date(startKey + 'T12:00:00');
+                const wEnd = new Date(endKey + 'T12:00:00');
+                const thisWeekStart = new Date(weekBounds.start + 'T12:00:00');
+                const thisWeekEnd = new Date(weekBounds.end + 'T12:00:00');
+
+                // Check if this is a partial week
+                const isPartialStart = isFirstWeek && startKey > weekBounds.start;
+                const isPartialEnd = isLastWeek && endKey < weekBounds.end && endKey !== todayKey;
+                const isCurrentWeekEnding = isLastWeek && endKey === todayKey;
+
+                if (isFirstWeek && isLastWeek && startWeekKey === endWeekKey) {
+                    // Same week - check if it's current week ending today
+                    if (endKey === todayKey) {
+                        // Use weekly aggregate as-is (ongoing week)
+                        console.log(`[Smart] Same week ${weekKey}, ends today - using weekly aggregate`);
+                        let weekData = cachedWeekly[weekKey];
+                        if (!weekData) {
+                            const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
+                            const weekSnap = await getDoc(weekRef);
+                            weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {} };
+                            cachedWeekly[weekKey] = weekData;
+                            totalReads++;
+                        }
+                        aggregateFromWeek(weekData);
+                    } else {
+                        // Partial week not ending today - fetch individual dates
+                        console.log(`[Smart] Same week ${weekKey}, partial - fetching individual dates`);
+                        for (let d = new Date(startKey + 'T12:00:00'); d <= new Date(endKey + 'T12:00:00'); d.setDate(d.getDate() + 1)) {
+                            const dateKey = d.toISOString().split('T')[0];
+                            let dayData = cachedDates[dateKey];
+                            if (!dayData) {
+                                const dateRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
+                                const dateSnap = await getDoc(dateRef);
+                                dayData = dateSnap.exists() ? dateSnap.data() : { records: {} };
+                                cachedDates[dateKey] = dayData;
+                                totalReads++;
+                            }
+                            aggregateFromDay(dayData);
+                        }
+                    }
+                } else if (isFirstWeek && isPartialStart) {
+                    // Partial start week - fetch individual dates from startKey to end of week
+                    const partialEnd = weekBounds.end < endKey ? weekBounds.end : endKey;
+                    console.log(`[Smart] Partial start week ${weekKey}: ${startKey} to ${partialEnd}`);
+                    for (let d = new Date(startKey + 'T12:00:00'); d <= new Date(partialEnd + 'T12:00:00'); d.setDate(d.getDate() + 1)) {
+                        const dateKey = d.toISOString().split('T')[0];
+                        let dayData = cachedDates[dateKey];
+                        if (!dayData) {
+                            const dateRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
+                            const dateSnap = await getDoc(dateRef);
+                            dayData = dateSnap.exists() ? dateSnap.data() : { records: {} };
+                            cachedDates[dateKey] = dayData;
+                            totalReads++;
+                        }
+                        aggregateFromDay(dayData);
+                    }
+                } else if (isLastWeek && isCurrentWeekEnding) {
+                    // Current week ending today - use weekly aggregate as-is
+                    console.log(`[Smart] Current week ${weekKey} ending today - using weekly aggregate`);
+                    let weekData = cachedWeekly[weekKey];
+                    if (!weekData) {
+                        const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
+                        const weekSnap = await getDoc(weekRef);
+                        weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {} };
+                        cachedWeekly[weekKey] = weekData;
+                        totalReads++;
+                    }
+                    aggregateFromWeek(weekData);
+                } else if (isLastWeek && isPartialEnd) {
+                    // Partial end week not ending today - fetch individual dates
+                    const partialStart = weekBounds.start > startKey ? weekBounds.start : startKey;
+                    console.log(`[Smart] Partial end week ${weekKey}: ${partialStart} to ${endKey}`);
+                    for (let d = new Date(partialStart + 'T12:00:00'); d <= new Date(endKey + 'T12:00:00'); d.setDate(d.getDate() + 1)) {
+                        const dateKey = d.toISOString().split('T')[0];
+                        let dayData = cachedDates[dateKey];
+                        if (!dayData) {
+                            const dateRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
+                            const dateSnap = await getDoc(dateRef);
+                            dayData = dateSnap.exists() ? dateSnap.data() : { records: {} };
+                            cachedDates[dateKey] = dayData;
+                            totalReads++;
+                        }
+                        aggregateFromDay(dayData);
+                    }
+                } else {
+                    // Complete week in middle - fetch weekly aggregate
+                    console.log(`[Smart] Complete week ${weekKey} - using weekly aggregate`);
+                    let weekData = cachedWeekly[weekKey];
+                    if (!weekData) {
+                        const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
+                        const weekSnap = await getDoc(weekRef);
+                        weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {} };
+                        cachedWeekly[weekKey] = weekData;
+                        totalReads++;
+                    }
+                    aggregateFromWeek(weekData);
+                }
+            }
+
+            console.log(`[Smart] Total Firestore reads: ${totalReads}`);
+
+            // Save caches
+            memoryCache.weeklyAggregates = cachedWeekly;
+            memoryCache.attendanceByDate = cachedDates;
+            saveToLocalStorage(CACHE_KEYS.WEEKLY, cachedWeekly);
         }
 
         const overallPct = periodTotal > 0 ? Math.round((periodPresent / periodTotal) * 100) : 0;
