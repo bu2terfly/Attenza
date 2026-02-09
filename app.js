@@ -284,6 +284,25 @@ function updateRingUI(percent) {
     }
 }
 
+// Update Periodical Section Ring (separate from welcome ring)
+function updatePeriodicalRingUI(percent, isDefaultView = false) {
+    const text = document.getElementById('periodRingPercent');
+    const circle = document.getElementById('periodRingCircle');
+    const label = document.getElementById('periodRingLabel');
+
+    if (text) text.innerText = `${percent}%`;
+
+    if (circle) {
+        const radius = 48;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (percent / 100) * circumference;
+        circle.style.strokeDasharray = `${circumference}`;
+        circle.style.strokeDashoffset = offset;
+    }
+
+    if (label) label.innerText = isDefaultView ? 'All subjects combined' : 'Selected period';
+}
+
 // --- UPDATED QUOTE LOGIC (Targets Notebook) ---
 function updateQuote(percentage) {
     const notebookEl = document.getElementById('notebookQuote');
@@ -1971,10 +1990,7 @@ window.calculatePeriodicalStats = async function (startKey, endKey, isDefaultVie
         }
 
         const overallPct = periodTotal > 0 ? Math.round((periodPresent / periodTotal) * 100) : 0;
-        updateRingUI(overallPct);
-
-        const label = document.querySelector('.percentage-label');
-        if (label) label.innerText = isDefaultView ? "Overall" : "Period";
+        updatePeriodicalRingUI(overallPct, isDefaultView);
 
         const stored = localStorage.getItem('attenza_majors');
         const majors = stored ? JSON.parse(stored) : [];
