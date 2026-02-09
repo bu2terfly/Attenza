@@ -305,8 +305,8 @@
                         <button class="period-chip active" data-period="all">
                             Default : All Time
                         </button>
-                        <button class="period-chip" data-period="week">
-                            This week
+                        <button class="period-chip" data-period="thisweek">
+                            This Week
                         </button>
                         <button class="period-chip" data-period="custom">
                             Custom Range
@@ -335,11 +335,11 @@
                                 <div class="circle-shell">
                                     <svg viewBox="0 0 140 140">
                                         <circle class="circle-outer-ring" cx="70" cy="70" r="60" />
-                                        <circle class="circle-inner-value" cx="70" cy="70" r="48" />
+                                        <circle class="circle-inner-value" id="periodRingCircle" cx="70" cy="70" r="48" />
                                     </svg>
-                                    <div class="circle-center"><span>100%</span></div>
+                                    <div class="circle-center"><span id="periodRingPercent">...</span></div>
                                 </div>
-                                <div class="card-footer">All subjects combined</div>
+                                <div class="card-footer" id="periodRingLabel">All subjects combined</div>
                             </div>
                         </article>
 
