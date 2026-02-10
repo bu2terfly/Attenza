@@ -1168,90 +1168,263 @@ async function loadDateRecords(dateKey, btnElement) {
 
             if (snap.exists()) {
                 const data = snap.data();
-                memoryCache.attendanceByDate[dateKey] = data; // Cache it
+                memoryCache.attendanceByDate[dateKey] = data;
                 records = data.records || {};
             } else {
-                memoryCache.attendanceByDate[dateKey] = { records: {} }; // Cache empty
+                memoryCache.attendanceByDate[dateKey] = { records: {} };
                 records = {};
             }
         } catch (e) {
             console.error("Date Load Error:", e);
-            cardsContainer.innerHTML = `<div class="error">Failed to load: ${e.message} (${e.code || ''})</div>`;
+            cardsContainer.innerHTML = `<div class="dwr-empty-state">Failed to load: ${e.message}</div>`;
             return;
         }
     }
 
-    // Render
+    // 3. Get user subjects for non-marked detection (0 reads - cached)
+    const userSubjects = await fetchUserSubjects();
+    const userSubjectNames = userSubjects.map(s => s.name);
+    const markedNames = Object.keys(records);
+
+    // 4. Determine unmarked subjects
+    const unmarkedNames = userSubjectNames.filter(name => !markedNames.includes(name));
+
+    // 5. Render
     cardsContainer.innerHTML = '';
 
-    if (!records || Object.keys(records).length === 0) {
-        cardsContainer.innerHTML = '<div class="empty-state">No classes marked.</div>';
-        return;
+    // --- Marked cards ---
+    const markedList = document.createElement('div');
+    markedList.className = 'dwr-stream-list';
+    markedList.id = 'dwrMarkedList';
+
+    if (markedNames.length > 0) {
+        markedNames.forEach(subName => {
+            const rec = records[subName];
+            markedList.appendChild(createDwrCard(subName, rec));
+        });
+    }
+    cardsContainer.appendChild(markedList);
+
+    // --- Unmarked section ---
+    if (unmarkedNames.length > 0) {
+        const unmarkedSection = document.createElement('div');
+        unmarkedSection.className = 'dwr-unmarked-section';
+        unmarkedSection.id = 'dwrUnmarkedSection';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'dwr-toggle-unmarked-btn';
+        toggleBtn.textContent = `Remaining non marked classes (${unmarkedNames.length})`;
+        toggleBtn.onclick = () => dwrToggleUnmarked();
+        unmarkedSection.appendChild(toggleBtn);
+
+        const unmarkedList = document.createElement('div');
+        unmarkedList.className = 'dwr-stream-list dwr-unmarked-list';
+        unmarkedList.id = 'dwrUnmarkedList';
+
+        unmarkedNames.forEach(subName => {
+            unmarkedList.appendChild(createDwrUnmarkedCard(subName));
+        });
+
+        unmarkedSection.appendChild(unmarkedList);
+        cardsContainer.appendChild(unmarkedSection);
     }
 
-    Object.keys(records).forEach(subName => {
-        const rec = records[subName];
-        cardsContainer.appendChild(createDateRecordCard(subName, rec));
-    });
+    // If nothing at all (no marked, no unmarked)
+    if (markedNames.length === 0 && unmarkedNames.length === 0) {
+        cardsContainer.innerHTML = '<div class="dwr-empty-state">No subjects configured.</div>';
+    }
+
+    // If no marked but there are unmarked, show a hint
+    if (markedNames.length === 0 && unmarkedNames.length > 0) {
+        const hint = document.createElement('div');
+        hint.className = 'dwr-empty-state';
+        hint.textContent = 'No classes marked for this date.';
+        markedList.appendChild(hint);
+    }
 }
 
-function createDateRecordCard(subjectName, record) {
-    const art = document.createElement('article');
-    art.className = 'record-card';
-    art.dataset.subject = subjectName;
-    art.dataset.status = record.status;
-    art.dataset.remarks = record.remarks || '';
-
-    art.innerHTML = `
-    <div class="card-header">
-      <div class="card-header-left">
-        <div class="subject-name">${subjectName}</div>
-        <div class="status-badge ${record.status}">${record.status}</div>
-      </div>
-      <button class="edit-btn" onclick="openEditModalFromCard(this)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
-          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-        </svg>
-        Edit record
-      </button>
-    </div>
-    <div class="remarks">
-      <div class="remarks-label">REMARKS</div>
-      <div class="remarks-content">${record.remarks || 'No notes.'}</div>
-    </div>
-  `;
-    return art;
+// --- Status mapping helpers ---
+function dwrFirebaseToUI(firebaseStatus) {
+    if (firebaseStatus === 'present') return 'Attended';
+    if (firebaseStatus === 'absent') return 'Skipped';
+    if (firebaseStatus === 'not-held') return 'NotHeld';
+    return 'NotMarked';
 }
 
-window.openEditModalFromCard = function (btn) {
-    const card = btn.closest('.record-card');
-    const subject = card.dataset.subject;
-    const status = card.dataset.status;
-    const remarks = card.dataset.remarks;
-    openEditModal(subject, status, remarks);
+function dwrUIToFirebase(uiStatus) {
+    if (uiStatus === 'Attended') return 'present';
+    if (uiStatus === 'Skipped') return 'absent';
+    if (uiStatus === 'NotHeld') return 'not-held';
+    return null;
+}
+
+function dwrStatusLabel(uiStatus) {
+    if (uiStatus === 'NotHeld') return 'Not Held';
+    return uiStatus;
+}
+
+// --- Create marked card ---
+function createDwrCard(subjectName, record) {
+    const uiStatus = dwrFirebaseToUI(record.status);
+    const statusLabel = dwrStatusLabel(uiStatus);
+
+    // Remark logic
+    let displayRemark;
+    if (uiStatus === 'Skipped' || uiStatus === 'NotHeld') {
+        displayRemark = 'Remarks - No remarks saved';
+    } else {
+        displayRemark = record.remarks ? `Remarks - ${record.remarks}` : 'Remarks - No remarks saved';
+    }
+
+    const itemId = `dwr-${subjectName.replace(/\s+/g, '_')}`;
+
+    const div = document.createElement('div');
+    div.className = `dwr-stream-item dwr-status-${uiStatus}`;
+    div.id = itemId;
+    div.dataset.subject = subjectName;
+    div.dataset.status = record.status;
+    div.dataset.remarks = record.remarks || '';
+
+    div.innerHTML = `
+        <div class="dwr-status-spine"></div>
+        <div class="dwr-item-content">
+            <div class="dwr-top-row">
+                <div class="dwr-subject-name">${subjectName}</div>
+                <div class="dwr-status-pill">${statusLabel}</div>
+            </div>
+            <div class="dwr-footer-area">
+                <div class="dwr-view-mode-container">
+                    <div class="dwr-remark-text">${displayRemark}</div>
+                    <div class="dwr-dash-divider"></div>
+                    <div class="dwr-link-row">
+                        <div class="dwr-change-link" onclick="dwrSetMode('${itemId}', 'options')">Change marking</div>
+                    </div>
+                </div>
+                <div class="dwr-options-mode-container">
+                    <button class="dwr-opt-btn dwr-opt-attend" onclick="dwrSelectOption('${itemId}', 'Attended')">Attended</button>
+                    <button class="dwr-opt-btn dwr-opt-skip" onclick="dwrSelectOption('${itemId}', 'Skipped')">Skipped</button>
+                    <button class="dwr-opt-btn dwr-opt-held" onclick="dwrSelectOption('${itemId}', 'NotHeld')">Not Held</button>
+                </div>
+                <div class="dwr-input-mode-container">
+                    <input type="text" class="dwr-remark-input" id="input-${itemId}"
+                           placeholder="Enter remarks..."
+                           value=""
+                           oninput="dwrCheckInput('${itemId}')">
+                    <button class="dwr-btn-save" id="btn-save-${itemId}" onclick="dwrSaveInput('${itemId}')">Skip</button>
+                </div>
+            </div>
+        </div>
+    `;
+    return div;
+}
+
+// --- Create unmarked card ---
+function createDwrUnmarkedCard(subjectName) {
+    const itemId = `dwr-${subjectName.replace(/\s+/g, '_')}`;
+
+    const div = document.createElement('div');
+    div.className = 'dwr-stream-item dwr-status-NotMarked';
+    div.id = itemId;
+    div.dataset.subject = subjectName;
+    div.dataset.status = '';
+    div.dataset.remarks = '';
+
+    const displayRemark = "Non marked classes are not calculated. It treats as not held.";
+
+    div.innerHTML = `
+        <div class="dwr-status-spine"></div>
+        <div class="dwr-item-content">
+            <div class="dwr-top-row">
+                <div class="dwr-subject-name">${subjectName}</div>
+                <div class="dwr-info-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </div>
+            </div>
+            <div class="dwr-footer-area">
+                <div class="dwr-view-mode-container">
+                    <div class="dwr-remark-text">${displayRemark}</div>
+                    <div class="dwr-dash-divider"></div>
+                    <div class="dwr-link-row">
+                        <div class="dwr-change-link" onclick="dwrSetMode('${itemId}', 'options')">Mark this class</div>
+                    </div>
+                </div>
+                <div class="dwr-options-mode-container">
+                    <button class="dwr-opt-btn dwr-opt-attend" onclick="dwrSelectOption('${itemId}', 'Attended')">Attended</button>
+                    <button class="dwr-opt-btn dwr-opt-skip" onclick="dwrSelectOption('${itemId}', 'Skipped')">Skipped</button>
+                    <button class="dwr-opt-btn dwr-opt-held" onclick="dwrSelectOption('${itemId}', 'NotHeld')">Not Held</button>
+                </div>
+                <div class="dwr-input-mode-container">
+                    <input type="text" class="dwr-remark-input" id="input-${itemId}"
+                           placeholder="Enter remarks..."
+                           value=""
+                           oninput="dwrCheckInput('${itemId}')">
+                    <button class="dwr-btn-save" id="btn-save-${itemId}" onclick="dwrSaveInput('${itemId}')">Skip</button>
+                </div>
+            </div>
+        </div>
+    `;
+    return div;
+}
+
+// --- Interaction Handlers ---
+
+window.dwrToggleUnmarked = function () {
+    const list = document.getElementById('dwrUnmarkedList');
+    if (list) list.classList.toggle('dwr-is-visible');
 };
 
-window.openEditModal = function (subject, status, remarks) {
-    const modal = document.getElementById('editModal');
-    if (!modal) return;
+window.dwrSetMode = function (itemId, mode) {
+    const el = document.getElementById(itemId);
+    if (!el) return;
+    el.classList.remove('dwr-show-options', 'dwr-show-input');
 
-    document.getElementById('modalSubject').innerText = subject;
-    document.getElementById('modalStatus').value = status;
-    document.getElementById('modalRemarks').value = remarks;
-
-    modal.classList.remove('hidden');
-
-    document.getElementById('modalSave').onclick = () => saveEditRecord(subject);
-    document.getElementById('modalCancel').onclick = () => modal.classList.add('hidden');
+    if (mode === 'options') {
+        el.classList.add('dwr-show-options');
+    } else if (mode === 'input') {
+        el.classList.add('dwr-show-input');
+        setTimeout(() => {
+            const inp = document.getElementById(`input-${itemId}`);
+            if (inp) {
+                inp.focus();
+                dwrCheckInput(itemId);
+            }
+        }, 50);
+    }
 };
 
-async function saveEditRecord(subjectName) {
-    const status = document.getElementById('modalStatus').value;
-    const remarks = document.getElementById('modalRemarks').value;
+window.dwrCheckInput = function (itemId) {
+    const val = document.getElementById(`input-${itemId}`)?.value || '';
+    const btn = document.getElementById(`btn-save-${itemId}`);
+    if (btn) {
+        btn.innerText = val.trim().length > 0 ? 'Save' : 'Skip';
+    }
+};
+
+window.dwrSelectOption = function (itemId, choice) {
+    if (choice === 'Attended') {
+        dwrSetMode(itemId, 'input');
+    } else {
+        // Skipped / NotHeld → save directly with no remarks
+        const el = document.getElementById(itemId);
+        const subjectName = el?.dataset.subject;
+        if (!subjectName) return;
+        const firebaseStatus = dwrUIToFirebase(choice);
+        dwrSaveRecord(subjectName, firebaseStatus, '');
+    }
+};
+
+window.dwrSaveInput = function (itemId) {
+    const el = document.getElementById(itemId);
+    const subjectName = el?.dataset.subject;
+    if (!subjectName) return;
+    const val = document.getElementById(`input-${itemId}`)?.value || '';
+    dwrSaveRecord(subjectName, 'present', val.trim());
+};
+
+// --- Firebase Save (adapted from old saveEditRecord) ---
+async function dwrSaveRecord(subjectName, status, remarks) {
     const dateKey = currentSelectedDateKey;
-
-    if (!currentUser) return;
+    if (!currentUser || !dateKey) return;
 
     const todayRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
     const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
@@ -1267,6 +1440,7 @@ async function saveEditRecord(subjectName) {
             const summarySnap = await transaction.get(summaryRef);
             let summaryData = summarySnap.exists() ? summarySnap.data() : { trackedTotal: 0, trackedPresent: 0, subjects: {} };
 
+            // Revert old status from summary
             if (oldStatus !== status) {
                 if (oldStatus === 'present') {
                     summaryData.trackedTotal--;
@@ -1282,6 +1456,7 @@ async function saveEditRecord(subjectName) {
                     }
                 }
 
+                // Apply new status
                 if (status === 'present') {
                     summaryData.trackedTotal++;
                     summaryData.trackedPresent++;
@@ -1303,13 +1478,19 @@ async function saveEditRecord(subjectName) {
 
             transaction.set(todayRef, todayData);
             transaction.set(summaryRef, summaryData, { merge: true });
+
+            // Update memory cache
+            memoryCache.attendanceByDate[dateKey] = todayData;
+            memoryCache.summary = summaryData;
+            saveToLocalStorage(CACHE_KEYS.SUMMARY, summaryData);
         });
 
-        document.getElementById('editModal').classList.add('hidden');
+        // Re-render and refresh summary
         loadDateRecords(dateKey, null);
         loadSummary();
+
     } catch (e) {
-        console.error("Save Edit Error:", e);
+        console.error("DWR Save Error:", e);
         alert("Failed to save changes.");
     }
 }
