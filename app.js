@@ -1155,11 +1155,13 @@ async function loadDateRecords(dateKey, btnElement) {
         if (matchBtn) matchBtn.classList.add('selected');
     }
 
-    // Auto-center selected date in the strip viewport
-    const activeBtn = document.querySelector('.date-item.selected');
-    if (activeBtn) {
-        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
+    // Auto-center selected date in the strip viewport (delayed to ensure layout)
+    setTimeout(() => {
+        const activeBtn = document.querySelector('.date-item.selected');
+        if (activeBtn) {
+            activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+    }, 100);
 
     document.getElementById('selectedDateLabel').innerText = new Date(dateKey).toDateString();
 
@@ -1428,6 +1430,12 @@ window.dwrSelectOption = function (itemId, choice) {
         const el = document.getElementById(itemId);
         const subjectName = el?.dataset.subject;
         if (!subjectName) return;
+
+        // Add loading state
+        let btnClass = choice === 'Skipped' ? '.dwr-opt-skip' : '.dwr-opt-held';
+        const btn = el.querySelector(btnClass);
+        if (btn) btn.classList.add('dwr-btn-loading');
+
         const firebaseStatus = dwrUIToFirebase(choice);
         dwrSaveRecord(subjectName, firebaseStatus, '');
     }
@@ -1437,7 +1445,13 @@ window.dwrSaveInput = function (itemId) {
     const el = document.getElementById(itemId);
     const subjectName = el?.dataset.subject;
     if (!subjectName) return;
+
     const val = document.getElementById(`input-${itemId}`)?.value || '';
+
+    // Add loading state
+    const btn = document.getElementById(`btn-save-${itemId}`);
+    if (btn) btn.classList.add('dwr-btn-loading');
+
     dwrSaveRecord(subjectName, 'present', val.trim());
 };
 
