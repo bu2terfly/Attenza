@@ -2318,7 +2318,7 @@
     .dwr-stream-list {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
     }
 
     .dwr-stream-item {
@@ -2329,12 +2329,12 @@
         overflow: hidden;
         display: flex;
         transition: background-color 0.2s ease;
-        border: 1px solid transparent; 
     }
 
     /* Status: Attended (green) */
     .dwr-stream-item.dwr-status-Attended {
-        background: #F0FDF4;
+        background: #FFFFFF;
+        border: 1px solid #10B981;
     }
 
     .dwr-status-Attended .dwr-status-spine {
@@ -2349,7 +2349,8 @@
 
     /* Status: Skipped (red) */
     .dwr-stream-item.dwr-status-Skipped {
-        background: #FEF2F2;
+        background: #FFFFFF;
+        border: 1px solid #EF4444;
     }
 
     .dwr-status-Skipped .dwr-status-spine {
@@ -2364,7 +2365,8 @@
 
     /* Status: NotHeld (gray) */
     .dwr-stream-item.dwr-status-NotHeld {
-        background: #F8FAFC;
+        background: #FFFFFF;
+        border: 1px solid #94A3B8;
     }
 
     .dwr-status-NotHeld .dwr-status-spine {
@@ -2380,6 +2382,7 @@
     /* Status: NotMarked (white/neutral) */
     .dwr-stream-item.dwr-status-NotMarked {
         background: #FFFFFF;
+        border: 1px solid #CBD5E1;
     }
 
     .dwr-status-NotMarked .dwr-status-spine {
