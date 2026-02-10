@@ -335,7 +335,8 @@
                                 <div class="circle-shell">
                                     <svg viewBox="0 0 140 140">
                                         <circle class="circle-outer-ring" cx="70" cy="70" r="60" />
-                                        <circle class="circle-inner-value" id="periodRingCircle" cx="70" cy="70" r="48" />
+                                        <circle class="circle-inner-value" id="periodRingCircle" cx="70" cy="70"
+                                            r="48" />
                                     </svg>
                                     <div class="circle-center"><span id="periodRingPercent">...</span></div>
                                 </div>
@@ -547,31 +548,7 @@
 
             </div>
         </div>
-        <div class="modal-backdrop hidden" id="editModal">
-            <div class="modal">
-                <h3>Edit record</h3>
-                <div class="modal-subject" id="modalSubject"></div>
-
-                <div class="form-group">
-                    <label for="modalStatus">Status</label>
-                    <select id="modalStatus">
-                        <option value="present">Present</option>
-                        <option value="absent">Absent</option>
-                        <option value="not-held">Class not held</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="modalRemarks">Remarks / Notes</label>
-                    <textarea id="modalRemarks" placeholder="Add your notes for this class"></textarea>
-                </div>
-
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" id="modalCancel">Cancel</button>
-                    <button class="btn btn-primary" id="modalSave">Save changes</button>
-                </div>
-            </div>
-        </div>
+        <!-- Edit modal removed: inline editing in new card UI -->
 
         <div id="menuOverlay" style="
       position: fixed;
