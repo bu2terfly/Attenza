@@ -2329,6 +2329,7 @@
         overflow: hidden;
         display: flex;
         transition: background-color 0.2s ease;
+        border: 1px solid transparent; 
     }
 
     /* Status: Attended (green) */
