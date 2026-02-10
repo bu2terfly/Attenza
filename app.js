@@ -1145,12 +1145,32 @@ function renderDateStrip(centerDate, autoLoad = false) {
 async function loadDateRecords(dateKey, btnElement) {
     currentSelectedDateKey = dateKey;
 
+    // Reselect active date button (fixes active state lost on re-render)
     document.querySelectorAll('.date-item').forEach(b => b.classList.remove('selected'));
-    if (btnElement) btnElement.classList.add('selected');
+    if (btnElement) {
+        btnElement.classList.add('selected');
+    } else {
+        // Find the button by data-date attribute when btnElement is null
+        const matchBtn = document.querySelector(`.date-item[data-date="${dateKey}"]`);
+        if (matchBtn) matchBtn.classList.add('selected');
+    }
+
+    // Auto-center selected date in the strip viewport
+    const activeBtn = document.querySelector('.date-item.selected');
+    if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
 
     document.getElementById('selectedDateLabel').innerText = new Date(dateKey).toDateString();
 
     cardsContainer.innerHTML = '<div class="loader">Loading...</div>';
+
+    // Future date guard — zero Firebase reads
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (dateKey > todayStr) {
+        cardsContainer.innerHTML = '<div class="dwr-empty-state">It is a future date.</div>';
+        return;
+    }
 
     if (!currentUser) return;
 
@@ -1429,44 +1449,79 @@ async function dwrSaveRecord(subjectName, status, remarks) {
     const todayRef = doc(db, 'users', currentUser.uid, 'attendance', dateKey);
     const summaryRef = doc(db, 'users', currentUser.uid, 'metadata', 'summary');
 
+    // Weekly aggregation ref
+    const weekKey = getWeekKey(dateKey);
+    const weekRef = doc(db, 'users', currentUser.uid, 'weekly', weekKey);
+
     try {
+        let savedOldStatus = null;
         await runTransaction(db, async (transaction) => {
             const todaySnap = await transaction.get(todayRef);
             let todayData = todaySnap.exists() ? todaySnap.data() : { date: dateKey, records: {} };
             let oldStatus = todayData.records[subjectName]?.status;
+            savedOldStatus = oldStatus || null;
 
             if (oldStatus === status && todayData.records[subjectName]?.remarks === remarks) return;
 
+            // Read summary
             const summarySnap = await transaction.get(summaryRef);
             let summaryData = summarySnap.exists() ? summarySnap.data() : { trackedTotal: 0, trackedPresent: 0, subjects: {} };
 
-            // Revert old status from summary
+            // Read weekly
+            const weekSnap = await transaction.get(weekRef);
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {} };
+
+            // Revert old status from summary + weekly
             if (oldStatus !== status) {
                 if (oldStatus === 'present') {
-                    summaryData.trackedTotal--;
-                    summaryData.trackedPresent--;
-                    if (summaryData.subjects[subjectName]) {
+                    summaryData.trackedTotal = (summaryData.trackedTotal || 0) - 1;
+                    summaryData.trackedPresent = (summaryData.trackedPresent || 0) - 1;
+                    if (summaryData.subjects && summaryData.subjects[subjectName]) {
                         summaryData.subjects[subjectName].trackedTotal--;
                         summaryData.subjects[subjectName].trackedPresent--;
                     }
+                    weekData.total = Math.max(0, (weekData.total || 0) - 1);
+                    weekData.present = Math.max(0, (weekData.present || 0) - 1);
+                    if (weekData.subjects && weekData.subjects[subjectName]) {
+                        weekData.subjects[subjectName].total--;
+                        weekData.subjects[subjectName].attended--;
+                    }
                 } else if (oldStatus === 'absent') {
-                    summaryData.trackedTotal--;
-                    if (summaryData.subjects[subjectName]) {
+                    summaryData.trackedTotal = (summaryData.trackedTotal || 0) - 1;
+                    if (summaryData.subjects && summaryData.subjects[subjectName]) {
                         summaryData.subjects[subjectName].trackedTotal--;
+                    }
+                    weekData.total = Math.max(0, (weekData.total || 0) - 1);
+                    if (weekData.subjects && weekData.subjects[subjectName]) {
+                        weekData.subjects[subjectName].total--;
                     }
                 }
 
-                // Apply new status
+                // Apply new status to summary + weekly
                 if (status === 'present') {
-                    summaryData.trackedTotal++;
-                    summaryData.trackedPresent++;
+                    summaryData.trackedTotal = (summaryData.trackedTotal || 0) + 1;
+                    summaryData.trackedPresent = (summaryData.trackedPresent || 0) + 1;
+                    if (!summaryData.subjects) summaryData.subjects = {};
                     if (!summaryData.subjects[subjectName]) summaryData.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
                     summaryData.subjects[subjectName].trackedTotal++;
                     summaryData.subjects[subjectName].trackedPresent++;
+
+                    weekData.total = (weekData.total || 0) + 1;
+                    weekData.present = (weekData.present || 0) + 1;
+                    if (!weekData.subjects) weekData.subjects = {};
+                    if (!weekData.subjects[subjectName]) weekData.subjects[subjectName] = { total: 0, visited: 0, attended: 0 };
+                    weekData.subjects[subjectName].total++;
+                    weekData.subjects[subjectName].attended++;
                 } else if (status === 'absent') {
-                    summaryData.trackedTotal++;
+                    summaryData.trackedTotal = (summaryData.trackedTotal || 0) + 1;
+                    if (!summaryData.subjects) summaryData.subjects = {};
                     if (!summaryData.subjects[subjectName]) summaryData.subjects[subjectName] = { trackedTotal: 0, trackedPresent: 0 };
                     summaryData.subjects[subjectName].trackedTotal++;
+
+                    weekData.total = (weekData.total || 0) + 1;
+                    if (!weekData.subjects) weekData.subjects = {};
+                    if (!weekData.subjects[subjectName]) weekData.subjects[subjectName] = { total: 0, visited: 0, attended: 0 };
+                    weekData.subjects[subjectName].total++;
                 }
             }
 
@@ -1478,12 +1533,19 @@ async function dwrSaveRecord(subjectName, status, remarks) {
 
             transaction.set(todayRef, todayData);
             transaction.set(summaryRef, summaryData, { merge: true });
+            transaction.set(weekRef, weekData, { merge: true });
 
-            // Update memory cache
+            // Update memory caches
             memoryCache.attendanceByDate[dateKey] = todayData;
             memoryCache.summary = summaryData;
             saveToLocalStorage(CACHE_KEYS.SUMMARY, summaryData);
+
+            memoryCache.weeklyAggregates[weekKey] = weekData;
+            saveToLocalStorage(CACHE_KEYS.WEEKLY, memoryCache.weeklyAggregates);
         });
+
+        // Also update weekly memory cache helper
+        updateWeeklyCacheAfterMark(weekKey, subjectName, savedOldStatus, status);
 
         // Re-render and refresh summary
         loadDateRecords(dateKey, null);
