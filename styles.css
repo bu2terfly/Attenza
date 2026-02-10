@@ -2335,7 +2335,7 @@
 
     /* Status: Attended (green) */
     .dwr-stream-item.dwr-status-Attended {
-        background: #FFFFFF;
+        background: #F0FDF4;
         border: 1px solid #10B981;
     }
 
@@ -2351,7 +2351,7 @@
 
     /* Status: Skipped (red) */
     .dwr-stream-item.dwr-status-Skipped {
-        background: #FFFFFF;
+        background: #FEF2F2;
         border: 1px solid #EF4444;
     }
 
@@ -2367,7 +2367,7 @@
 
     /* Status: NotHeld (gray) */
     .dwr-stream-item.dwr-status-NotHeld {
-        background: #FFFFFF;
+        background: #F8FAFC;
         border: 1px solid #94A3B8;
     }
 
