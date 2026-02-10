@@ -2399,10 +2399,10 @@
 
     .dwr-item-content {
         flex-grow: 1;
-        padding: 12px 16px 14px 14px;
+        padding: 10px 12px 12px 14px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
     }
 
     .dwr-top-row {
@@ -2453,7 +2453,7 @@
         font-size: 0.85rem;
         color: #64748B;
         font-weight: 500;
-        margin-bottom: 6px;
+        margin-bottom: 2px;
         line-height: 1.4;
     }
 
@@ -2461,7 +2461,7 @@
         width: 100%;
         border-bottom: 1px dashed #E2E8F0;
         height: 1px;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         opacity: 0.6;
     }
 
