@@ -1158,8 +1158,14 @@ async function loadDateRecords(dateKey, btnElement) {
     // Auto-center selected date in the strip viewport (delayed to ensure layout)
     setTimeout(() => {
         const activeBtn = document.querySelector('.date-item.selected');
-        if (activeBtn) {
-            activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        const strip = document.getElementById('dateStrip');
+        if (activeBtn && strip) {
+            // Robust centering using BoundingClientRect
+            const stripRect = strip.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            const offsetLeft = btnRect.left - stripRect.left + strip.scrollLeft;
+            const scrollLeft = offsetLeft - (strip.clientWidth / 2) + (activeBtn.clientWidth / 2);
+            strip.scrollTo({ left: scrollLeft, behavior: 'smooth' });
         }
     }, 100);
 
