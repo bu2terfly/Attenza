@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Attendmark - Student Attendance Tracker</title>
+  <title>Attendmark - Student Attendance</title>
   <meta name="description"
     content="Attendmark — a self-driven student attendance tracker with detailed stats, AI insights, and real-time updates.">
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -16,29 +16,27 @@
           colors: { primary: "#918BFF", "background-dark": "#1e1e1e", "surface-input-dark": "#2a2a2a", peach: "#FFCBA4" },
           fontFamily: { display: ["Plus Jakarta Sans", "sans-serif"], sans: ["Inter", "sans-serif"] },
           borderRadius: { xl: "0.75rem" },
-        },
+        }
       },
     };
   </script>
   <link
     href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=LINE+Seed+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <style>
-    /* ===== VARIABLES ===== */
     :root {
       --purple: #918BFF;
-      --purple-light: #b8b4ff;
-      --purple-bg: #f0eeff;
       --dark: #1F1A1C;
-      --bg-landing: #ffffff;
+      --bg-landing: #f5f3ef;
       --bg-auth: #1e1e1e;
       --btn-bg: #3a3336;
-      --text-primary: #1a1a2e;
+      --arrow-bg: #8381fc;
+      --text: #111;
       --text-secondary: #555;
       --text-muted: #999;
-      --card-bg: #fafafa;
-      --card-border: #f0eefc;
-      --section-bg: #f8f7ff;
+      --accent: #8381fc;
     }
 
     * {
@@ -61,7 +59,27 @@
       min-height: 100vh;
       overflow-x: hidden;
       transition: background-color 0.8s ease;
-      color: var(--text-primary);
+      color: var(--text);
+      word-spacing: 0.1em;
+      position: relative;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body>* {
+      position: relative;
+      z-index: 1;
     }
 
     body.auth-active {
@@ -69,177 +87,135 @@
       overflow-y: auto !important;
     }
 
-    /* ===== NAVBAR ===== */
-    .landing-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+    body.auth-active::before {
+      display: none;
+    }
+
+    /* ===== HEADER ===== */
+    .header-container {
+      position: relative;
       z-index: 4000;
-      padding: 16px 20px;
+      padding: 16px 16px 0 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-      transition: all 0.4s ease;
-    }
-
-    .landing-nav.scrolled {
-      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+      transition: all 0.5s ease;
     }
 
     .nav-logo {
       font-size: 22px;
       font-weight: 800;
-      color: var(--text-primary);
+      color: var(--btn-bg);
       letter-spacing: -0.02em;
+      transition: color 0.5s ease;
     }
 
     .nav-logo span {
       color: var(--purple);
     }
 
-    .nav-cta {
-      background: var(--purple);
-      color: #fff;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 50px;
-      font-size: 13px;
-      font-weight: 700;
+    body.auth-active .nav-logo {
+      color: #ffffff;
+    }
+
+    .btn-text {
+      word-spacing: 0.17em;
+    }
+
+    /* ===== MENU BUTTON ===== */
+    .menu-btn {
+      width: 32px;
+      height: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       cursor: pointer;
-      transition: all 0.3s ease;
-      letter-spacing: 0.02em;
+      z-index: 5000;
+      flex-shrink: 0;
     }
 
-    .nav-cta:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(145, 139, 255, 0.35);
+    .menu-btn span {
+      height: 3px;
+      background: #353839;
+      border-radius: 2.5px;
+      transition: background 0.5s ease;
     }
 
-    /* ===== HERO ===== */
-    .hero-section {
-      padding: 100px 20px 40px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+    body.auth-active .menu-btn span {
+      background: #ffffff;
     }
 
-    .hero-illustration {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto 10px;
+    .menu-dropdown {
+      position: fixed;
+      top: 45px;
+      right: 15px;
+      min-width: 180px;
+      background: #fff;
+      border: 1px solid #e3e3e3;
+      border-radius: 12px;
+      padding: 3px 0;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+      display: none;
+      z-index: 6000;
     }
 
-    .hero-illustration img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--purple-bg);
-      color: var(--purple);
-      padding: 8px 16px;
-      border-radius: 50px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-
-    .hero-badge svg {
-      width: 14px;
-      height: 14px;
-    }
-
-    .hero-title {
-      font-size: clamp(32px, 8vw, 48px);
-      font-weight: 800;
-      line-height: 1.1;
-      color: var(--text-primary);
-      margin-bottom: 16px;
-      letter-spacing: -0.03em;
-    }
-
-    .hero-title .accent {
-      color: var(--purple);
-    }
-
-    .hero-sub {
-      font-size: 15px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      max-width: 380px;
-      margin: 0 auto 28px;
-      font-weight: 400;
-    }
-
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--purple);
-      color: #fff;
-      padding: 16px 36px;
-      border-radius: 60px;
-      font-size: 16px;
-      font-weight: 700;
+    .menu-dropdown a {
+      display: block;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #111;
       text-decoration: none;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 30px rgba(145, 139, 255, 0.3);
+      border-bottom: 1px solid #ededed;
     }
 
-    .hero-cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(145, 139, 255, 0.4);
+    .menu-dropdown a:last-child {
+      border-bottom: none;
     }
 
-    .hero-cta svg {
-      width: 18px;
-      height: 18px;
-      transition: transform 0.3s ease;
+    .menu-dropdown a:hover {
+      background: #f6f6f6;
     }
 
-    .hero-cta:hover svg {
-      transform: translateX(3px);
-    }
-
-    /* ===== SCROLL STRIP ===== */
+    /* ===== STRIP ===== */
     .strip {
-      margin: 0;
+      margin-top: 16px;
       width: 100%;
-      padding: 12px 0;
-      background: var(--purple-bg);
-      border-top: 1px solid rgba(145, 139, 255, 0.12);
-      border-bottom: 1px solid rgba(145, 139, 255, 0.12);
+      padding: 8px 0;
+      background: #f8e6d8;
+      border-top: 1px solid #f0c7a8;
+      border-bottom: 1px solid #f0c7a8;
       overflow: hidden;
+      position: relative;
+      z-index: 2000;
+      transition: background 0.5s ease, border-color 0.5s ease;
+    }
+
+    body.auth-active .strip {
+      background: #2a2a2a;
+      border-top-color: #3a3a3a;
+      border-bottom-color: #3a3a3a;
     }
 
     .strip-track {
       display: flex;
       width: max-content;
-      animation: stripMove 30s linear infinite;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
+      animation: stripMove 22s linear infinite;
+      font-size: 11px;
+      word-spacing: 0.4em;
+      font-weight: 600;
+      letter-spacing: .14em;
       text-transform: uppercase;
-      color: var(--purple);
+      color: #111;
+      transition: color 0.5s ease;
+    }
+
+    body.auth-active .strip-track {
+      color: #888;
     }
 
     .strip-track span {
-      padding: 0 28px;
+      padding: 0 24px;
       white-space: nowrap;
-      opacity: 0.7;
     }
 
     @keyframes stripMove {
@@ -252,9 +228,207 @@
       }
     }
 
-    /* ===== FEATURES ===== */
-    .features-section {
-      padding: 60px 20px;
+    /* ===== HERO / ILLUSTRATION ===== */
+    .hero-section {
+      padding: 20px 0 0;
+      text-align: center;
+    }
+
+    .illustration {
+      margin-left: -16px;
+      margin-right: -16px;
+      max-height: 38vh;
+      width: calc(100% + 32px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .illustration img {
+      width: 100%;
+      object-fit: contain;
+    }
+
+    /* ===== HERO TEXT ===== */
+    .hero-text {
+      padding: 0 20px;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .hero-heading {
+      font-size: clamp(28px, 7.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+
+    .hero-heading .accent {
+      color: var(--purple);
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      max-width: 340px;
+      margin: 0 auto 24px;
+      font-weight: 400;
+    }
+
+    /* ===== GET STARTED BUTTON (prototype style) ===== */
+    .button-area {
+      display: flex;
+      justify-content: center;
+      padding: 0 40px;
+      margin-bottom: 40px;
+    }
+
+    .button-area.fixed-bottom {
+      position: fixed;
+      bottom: 16px;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    .button-area.hide-btn {
+      transform: translateY(100px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .get-started {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 52px;
+      padding-left: 20px;
+      padding-right: 96px;
+      background: var(--btn-bg);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+      cursor: pointer;
+      border: none;
+    }
+
+    .get-started .arrow-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 52px;
+      height: 52px;
+      background: var(--arrow-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .get-started svg {
+      width: 34px;
+      height: 34px;
+      stroke: #fff;
+      stroke-width: 1.6;
+      fill: none;
+    }
+
+    /* ===== CARDS SECTION (prototype style) ===== */
+    .cards-wrap {
+      margin: 0 16px 40px;
+      padding: 22px;
+      background: #efeee9;
+      border: 1px solid #d8d6cf;
+      border-radius: 26px;
+    }
+
+    .cards-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      margin-top: -4px;
+    }
+
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid #e3e2dd;
+      transition: all 0.4s ease;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      background: #f0eeff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--purple);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .card p {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* ===== HOW IT WORKS ===== */
+    .how-section {
+      padding: 40px 16px 50px;
+      background: #efeee9;
+      border-top: 1px solid #d8d6cf;
+    }
+
+    .how-inner {
       max-width: 500px;
       margin: 0 auto;
     }
@@ -268,219 +442,91 @@
       text-transform: uppercase;
       letter-spacing: 0.12em;
       color: var(--purple);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .section-title {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 800;
-      color: var(--text-primary);
-      margin-bottom: 8px;
+      color: var(--text);
+      margin-bottom: 6px;
       letter-spacing: -0.02em;
       line-height: 1.2;
     }
 
     .section-desc {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-secondary);
-      margin-bottom: 32px;
+      margin-bottom: 28px;
       line-height: 1.6;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .feature-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px 16px;
-      transition: all 0.35s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(145, 139, 255, 0.1);
-      border-color: var(--purple-light);
-    }
-
-    .feature-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--purple-bg);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-
-    .feature-icon svg {
-      width: 20px;
-      height: 20px;
-      stroke: var(--purple);
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .feature-card h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-    }
-
-    .feature-card p {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .feature-card.full-width {
-      grid-column: 1 / -1;
-    }
-
-    /* ===== HOW IT WORKS ===== */
-    .how-section {
-      padding: 50px 20px 60px;
-      background: var(--section-bg);
-    }
-
-    .how-inner {
-      max-width: 500px;
-      margin: 0 auto;
     }
 
     .steps {
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      margin-top: 32px;
+      gap: 20px;
     }
 
     .step {
       display: flex;
       align-items: flex-start;
-      gap: 16px;
+      gap: 14px;
     }
 
     .step-num {
-      width: 44px;
-      height: 44px;
-      min-width: 44px;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
       background: var(--purple);
       color: #fff;
-      border-radius: 14px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
     }
 
     .step-content h3 {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 4px;
+      color: var(--text);
+      margin-bottom: 3px;
     }
 
     .step-content p {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--text-secondary);
       line-height: 1.5;
-    }
-
-    /* ===== CTA BANNER ===== */
-    .cta-banner {
-      margin: 40px 20px;
-      padding: 40px 24px;
-      background: linear-gradient(135deg, var(--purple) 0%, #7b75f0 100%);
-      border-radius: 24px;
-      text-align: center;
-    }
-
-    .cta-banner h2 {
-      font-size: 22px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 10px;
-    }
-
-    .cta-banner p {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-
-    .cta-banner button {
-      background: #fff;
-      color: var(--purple);
-      border: none;
-      padding: 14px 32px;
-      border-radius: 50px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .cta-banner button:hover {
-      transform: scale(1.04);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
     /* ===== FOOTER ===== */
     .landing-footer {
-      padding: 40px 20px 24px;
+      padding: 36px 20px 20px;
       text-align: center;
-      border-top: 1px solid #f0f0f0;
     }
 
-    .landing-footer .brand {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text-primary);
-      margin-bottom: 6px;
-    }
-
-    .landing-footer .brand span {
-      color: var(--purple);
-    }
-
-    .landing-footer .tagline {
+    .landing-footer .copy {
       font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 20px;
+      color: #666;
     }
 
     .landing-footer .links {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 20px;
+      margin: 6px 0;
     }
 
     .landing-footer .links a {
-      font-size: 12px;
-      color: var(--text-secondary);
+      color: #666;
       text-decoration: none;
-    }
-
-    .landing-footer .links a:hover {
-      color: var(--purple);
+      font-size: 12px;
     }
 
     .footer-made {
-      font-size: 13px;
-      color: #aaa;
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.4;
+      font-weight: 500;
+      color: #777;
+      margin-top: 14px;
     }
 
     .footer-logos {
@@ -492,19 +538,13 @@
 
     .footer-logos img {
       height: 18px;
-      opacity: 0.7;
-    }
-
-    .footer-copy {
-      font-size: 11px;
-      color: #ccc;
-      margin-top: 16px;
+      opacity: .85;
     }
 
     /* ===== ANIMATIONS ===== */
     .reveal {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(25px);
       transition: opacity 0.7s ease, transform 0.7s ease;
     }
 
@@ -513,26 +553,22 @@
       transform: translateY(0);
     }
 
-    .reveal-delay-1 {
+    .reveal-d1 {
       transition-delay: 0.1s;
     }
 
-    .reveal-delay-2 {
+    .reveal-d2 {
       transition-delay: 0.2s;
     }
 
-    .reveal-delay-3 {
+    .reveal-d3 {
       transition-delay: 0.3s;
-    }
-
-    .reveal-delay-4 {
-      transition-delay: 0.35s;
     }
 
     @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(20px)
+        transform: translateY(18px)
       }
 
       to {
@@ -541,38 +577,26 @@
       }
     }
 
-    @keyframes float {
-
-      0%,
-      100% {
-        transform: translateY(0)
-      }
-
-      50% {
-        transform: translateY(-8px)
-      }
-    }
-
-    .anim-fade-up {
+    .anim-up {
       animation: fadeInUp 0.8s ease forwards;
     }
 
-    .anim-fade-up-d1 {
-      animation: fadeInUp 0.8s ease 0.15s forwards;
+    .anim-up-d1 {
+      animation: fadeInUp 0.8s ease 0.12s forwards;
       opacity: 0;
     }
 
-    .anim-fade-up-d2 {
-      animation: fadeInUp 0.8s ease 0.3s forwards;
+    .anim-up-d2 {
+      animation: fadeInUp 0.8s ease 0.25s forwards;
       opacity: 0;
     }
 
-    .anim-fade-up-d3 {
-      animation: fadeInUp 0.8s ease 0.45s forwards;
+    .anim-up-d3 {
+      animation: fadeInUp 0.8s ease 0.4s forwards;
       opacity: 0;
     }
 
-    /* ===== AUTH (DARK) — UNCHANGED ===== */
+    /* ===== AUTH — UNCHANGED ===== */
     #auth-wrapper {
       opacity: 0;
       visibility: hidden;
@@ -618,109 +642,6 @@
       color: #f3f4f6;
     }
 
-    .btn-text {
-      word-spacing: 0.17em;
-    }
-
-    /* Nav hide in auth */
-    body.auth-active .landing-nav {
-      transform: translateY(-100%);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    body.auth-active .title-auth {
-      display: block;
-    }
-
-    /* Auth header */
-    .auth-header {
-      position: relative;
-      z-index: 4000;
-      padding: 16px 20px 0;
-      display: none;
-    }
-
-    body.auth-active .auth-header {
-      display: block;
-    }
-
-    .auth-title {
-      font-size: 28px;
-      font-weight: 750;
-      color: #fff;
-      line-height: 1.05;
-    }
-
-    .auth-with {
-      position: absolute;
-      top: 26px;
-      left: 40px;
-      font-family: 'Caveat', cursive;
-      font-size: 28px;
-      transform: rotate(-12deg);
-      color: var(--purple);
-    }
-
-    .auth-subtitle {
-      margin-top: 4px;
-      font-size: 8px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-    }
-
-    .menu-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 32px;
-      height: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-      z-index: 5000;
-    }
-
-    .menu-btn span {
-      height: 3px;
-      background: #fff;
-      border-radius: 2.5px;
-    }
-
-    .menu-dropdown {
-      position: absolute;
-      top: 44px;
-      right: 20px;
-      min-width: 180px;
-      background: #fff;
-      border: 1px solid #e3e3e3;
-      border-radius: 12px;
-      padding: 3px 0;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
-      display: none;
-      z-index: 6000;
-    }
-
-    .menu-dropdown a {
-      display: block;
-      padding: 12px 16px;
-      font-size: 14px;
-      color: #111;
-      text-decoration: none;
-      border-bottom: 1px solid #ededed;
-    }
-
-    .menu-dropdown a:last-child {
-      border-bottom: none;
-    }
-
-    .menu-dropdown a:hover {
-      background: #f6f6f6;
-    }
-
-    /* Landing view transitions */
     #landing-view {
       opacity: 1;
       transform: translateY(0);
@@ -742,142 +663,109 @@
 
 <body class="selection:bg-primary selection:text-white">
 
-  <!-- ===== NAVBAR ===== -->
-  <nav class="landing-nav" id="landingNav">
+  <!-- ===== HEADER ===== -->
+  <div class="header-container">
     <div class="nav-logo">Attend<span>mark</span></div>
-    <button class="nav-cta" id="navGetStarted">Get Started</button>
-  </nav>
-
-  <!-- ===== AUTH HEADER (shown only in auth mode) ===== -->
-  <div class="auth-header">
-    <div class="auth-title">Attendmark</div>
-    <div class="auth-title">Saar AI</div>
-    <div class="auth-with">with</div>
-    <div class="auth-subtitle">student academic & attendance responder</div>
-    <div class="menu-btn" id="authMenuBtn"><span></span><span></span></div>
+    <div class="menu-btn" id="menuBtn"><span></span><span></span></div>
     <div class="menu-dropdown" id="menuDropdown">
       <a href="#">Terms & Privacy</a>
       <a href="#">Contact Creator</a>
     </div>
   </div>
 
-  <!-- ===== LANDING PAGE ===== -->
-  <div id="landing-view">
+  <!-- ===== STRIP (prototype style) ===== -->
+  <div class="strip">
+    <div class="strip-track">
+      <span>Mark daily attendance</span><span>Subject wise tracking</span><span>Detailed analytics</span><span>AI
+        powered insights</span><span>College friendly</span><span>Search classmates</span><span>Edit anytime</span>
+      <span>Mark daily attendance</span><span>Subject wise tracking</span><span>Detailed analytics</span><span>AI
+        powered insights</span><span>College friendly</span><span>Search classmates</span><span>Edit anytime</span>
+    </div>
+  </div>
 
-    <!-- HERO -->
+  <!-- ===== LANDING VIEW ===== -->
+  <div id="landing-view" style="padding: 0 0 40px 0;">
+
+    <!-- ILLUSTRATION -->
     <section class="hero-section">
-      <div class="hero-illustration anim-fade-up">
+      <div class="illustration anim-up">
         <img src="Image/30719.png" alt="Attendmark Illustration" onerror="this.style.display='none'">
       </div>
-      <div class="hero-badge anim-fade-up-d1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-        </svg>
-        Built for college students
-      </div>
-      <h1 class="hero-title anim-fade-up-d2">Track your<br><span class="accent">Attendance</span><br>effortlessly</h1>
-      <p class="hero-sub anim-fade-up-d2">A self-driven student attendance tracker. Mark daily, get real-time stats,
-        plan smart — all from your phone.</p>
-      <button class="hero-cta anim-fade-up-d3" id="heroGetStarted">
-        Get Started
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      </button>
     </section>
 
-    <!-- STRIP -->
-    <div class="strip">
-      <div class="strip-track">
-        <span>Mark daily attendance</span><span>Subject wise tracking</span><span>Detailed analytics</span><span>AI
-          powered insights</span><span>College friendly</span><span>Search classmates</span><span>Edit anytime</span>
-        <span>Mark daily attendance</span><span>Subject wise tracking</span><span>Detailed analytics</span><span>AI
-          powered insights</span><span>College friendly</span><span>Search classmates</span><span>Edit anytime</span>
+    <!-- HERO TEXT -->
+    <div class="hero-text">
+      <h1 class="hero-heading anim-up-d1">mark your<br>daily <span class="accent">attendance</span><br>on attendmark
+      </h1>
+      <p class="hero-sub anim-up-d2">a self driven attendance tracking tool which help to track, get realtime & detailed
+        statistics effortlessly without confusion</p>
+    </div>
+
+    <!-- GET STARTED (prototype style, slightly smaller) -->
+    <div class="button-area anim-up-d3">
+      <div class="get-started" id="heroGetStarted" role="button">
+        Get&nbsp;Started
+        <div class="arrow-btn"><svg viewBox="0 0 24 24">
+            <path d="M7 17L17 7M9 7h8v8" />
+          </svg></div>
       </div>
     </div>
 
-    <!-- FEATURES -->
-    <section class="features-section">
-      <div class="section-label reveal">✦ Core Features</div>
-      <h2 class="section-title reveal">Everything you need to<br>stay on track</h2>
-      <p class="section-desc reveal">Simple, powerful tools built for students who want clarity and control over their
-        attendance.</p>
-      <div class="features-grid">
-        <div class="feature-card reveal reveal-delay-1">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-            </svg></div>
-          <h3>Mark Daily</h3>
-          <p>Tap to mark attendance for each subject, every day</p>
-        </div>
-        <div class="feature-card reveal reveal-delay-2">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <path d="M18 20V10" />
-              <path d="M12 20V4" />
-              <path d="M6 20v-6" />
-            </svg></div>
-          <h3>Detailed Stats</h3>
-          <p>Overall, subject-wise & major subjects analytics</p>
-        </div>
-        <div class="feature-card reveal reveal-delay-3">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <path d="M14 2v6h6" />
-              <path d="M16 13H8M16 17H8M10 9H8" />
-            </svg></div>
-          <h3>Save Remarks</h3>
-          <p>Add notes & remarks for attended classes</p>
-        </div>
-        <div class="feature-card reveal reveal-delay-4">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg></div>
-          <h3>Realtime Updates</h3>
-          <p>Instant sync — your data is always up to date</p>
-        </div>
-        <div class="feature-card reveal reveal-delay-1">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <path d="M16 2v4M8 2v4M3 10h18" />
-            </svg></div>
-          <h3>Periodical Records</h3>
-          <p>Custom date-range reports & weekly views</p>
-        </div>
-        <div class="feature-card reveal reveal-delay-2">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
-              <path d="M12 17h.01" />
-            </svg></div>
-          <h3>AI Insights</h3>
-          <p>Smart summaries & suggestions powered by AI</p>
-        </div>
-        <div class="feature-card reveal reveal-delay-3">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg></div>
-          <h3>Search Classmates</h3>
-          <p>Look up any classmate's attendance by roll number</p>
-        </div>
-        <div class="feature-card reveal reveal-delay-4">
-          <div class="feature-icon"><svg viewBox="0 0 24 24">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg></div>
-          <h3>Edit Anytime</h3>
-          <p>Made a mistake? Update your records anywhere</p>
-        </div>
-        <div class="feature-card full-width reveal">
-          <div style="display:flex;align-items:center;gap:14px;">
-            <div class="feature-icon"><svg viewBox="0 0 24 24">
-                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    <!-- FEATURES (prototype card style) -->
+    <section class="cards-wrap">
+      <div class="cards-title">Built for ambitious students aiming</div>
+      <div class="cards" id="featureCards">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><svg viewBox="0 0 24 24">
+                <path d="M18 20V10" />
+                <path d="M12 20V4" />
+                <path d="M6 20v-6" />
               </svg></div>
-            <div>
-              <h3>Date-wise Log View</h3>
-              <p>Browse your full attendance history day by day — see exactly what you attended</p>
-            </div>
+            <h3>Detailed stats</h3>
           </div>
+          <p>Get overall, subject-wise & major subject attendance analytics with clear visual breakdowns.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><svg viewBox="0 0 24 24">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg></div>
+            <h3>Realtime & changeable</h3>
+          </div>
+          <p>Instant sync across devices. Made a mistake? Update or edit your records anytime, anywhere.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><svg viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <path d="M14 2v6h6" />
+                <path d="M16 13H8M16 17H8M10 9H8" />
+              </svg></div>
+            <h3>Save remarks</h3>
+          </div>
+          <p>Add personal notes & remarks for attended classes — never forget what happened in a lecture.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><svg viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <path d="M16 2v4M8 2v4M3 10h18" />
+              </svg></div>
+            <h3>Periodical records</h3>
+          </div>
+          <p>Custom date-range reports, weekly summaries, and periodical attendance views at your fingertips.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                <path d="M12 17h.01" />
+              </svg></div>
+            <h3>AI insights</h3>
+          </div>
+          <p>Smart AI-powered summaries, tips and suggestions to help you plan bunks and study smarter.</p>
         </div>
       </div>
     </section>
@@ -889,50 +777,38 @@
         <h2 class="section-title reveal">Three simple steps</h2>
         <p class="section-desc reveal">No setup hassle. Just sign up and start marking.</p>
         <div class="steps">
-          <div class="step reveal reveal-delay-1">
+          <div class="step reveal reveal-d1">
             <div class="step-num">1</div>
             <div class="step-content">
               <h3>Sign Up & Set Subjects</h3>
               <p>Create your account and add the subjects from your timetable</p>
             </div>
           </div>
-          <div class="step reveal reveal-delay-2">
+          <div class="step reveal reveal-d2">
             <div class="step-num">2</div>
             <div class="step-content">
               <h3>Mark Daily Attendance</h3>
               <p>Each day, simply tap to mark which classes you attended or skipped</p>
             </div>
           </div>
-          <div class="step reveal reveal-delay-3">
+          <div class="step reveal reveal-d3">
             <div class="step-num">3</div>
             <div class="step-content">
               <h3>Track & Plan Smart</h3>
-              <p>Get detailed stats, AI insights, and know exactly when you can bunk safely</p>
+              <p>Get detailed stats, AI insights, and know exactly when you can safely skip</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA BANNER -->
-    <div class="cta-banner reveal">
-      <h2>Ready to take control?</h2>
-      <p>Join students who already track their attendance the smart way. Free forever.</p>
-      <button id="ctaGetStarted">Start Now — It's Free</button>
-    </div>
-
     <!-- FOOTER -->
     <footer class="landing-footer">
-      <div class="brand">Attend<span>mark</span></div>
-      <div class="tagline">Your attendance, your way.</div>
-      <div class="links">
-        <a href="#">Terms & Privacy</a>
-        <a href="#">Contact Creator</a>
-      </div>
+      <div class="copy">© Attendmark. All rights reserved.</div>
+      <div class="links"><a href="#">Terms & Privacy</a></div>
       <div class="footer-made">Made with ❤️ by a DCIAN<br>entirely using</div>
       <div class="footer-logos"><img src="Image/Ai3.webp" alt="ChatGPT"><img src="Image/Ai1.webp" alt="Claude"><img
           src="Image/Ai2.webp" alt="Gemini"></div>
-      <div class="footer-copy">© Attendmark. All rights reserved.</div>
     </footer>
   </div>
 
@@ -1160,7 +1036,7 @@
     </div>
   </div>
 
-  <!-- SCRIPTS PLACEHOLDER - will be added -->
+  <!-- PLACEHOLDER FOR SCRIPTS -->
   <script type="module">
     import { auth, db, googleProvider } from "./firebase-init.js";
     import { signInWithPopup, fetchSignInMethodsForEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, EmailAuthProvider, linkWithCredential, signOut, sendEmailVerification, updateProfile, getAdditionalUserInfo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -1200,32 +1076,25 @@
       document.getElementById('auth-wrapper').classList.remove('hidden');
       document.getElementById('auth-wrapper').classList.add('active-view');
       document.body.classList.add('auth-active');
-      document.getElementById('landingNav').style.display = 'none';
       ['view-login', 'view-forgot', 'view-registration', 'view-verify-email'].forEach(id => document.getElementById(id).classList.add('hidden'));
       document.getElementById(viewId).classList.remove('hidden');
     }
 
     function encodeEmailAsId(e) { return encodeURIComponent(e.toLowerCase()); }
-
-    async function logAuthEvent(type, payload = {}) {
-      try { await addDoc(collection(db, 'auth_logs'), { type, payload, ts: serverTimestamp() }); } catch (e) { console.warn('Logging failed', e); }
-    }
+    async function logAuthEvent(type, payload = {}) { try { await addDoc(collection(db, 'auth_logs'), { type, payload, ts: serverTimestamp() }); } catch (e) { } }
 
     async function savePendingProfileToFirestore(email, data) {
-      try { const id = encodeEmailAsId(email); await setDoc(doc(db, 'pending_regs', id), { email: email.toLowerCase(), data, createdAt: serverTimestamp() }, { merge: true }); sessionStorage.setItem(STATE_KEY, id); return id; } catch (e) { console.error('Failed to write pending profile', e); return null; }
+      try { const id = encodeEmailAsId(email); await setDoc(doc(db, 'pending_regs', id), { email: email.toLowerCase(), data, createdAt: serverTimestamp() }, { merge: true }); sessionStorage.setItem(STATE_KEY, id); return id; } catch (e) { return null; }
     }
-
     async function removePendingProfile(emailOrId) {
-      try { const id = (emailOrId || '').includes('%40') ? emailOrId : encodeEmailAsId(emailOrId || ''); if (!id) return; await deleteDoc(doc(db, 'pending_regs', id)); sessionStorage.removeItem(STATE_KEY); } catch (e) { console.warn('Failed to remove pending profile', e); }
+      try { const id = (emailOrId || '').includes('%40') ? emailOrId : encodeEmailAsId(emailOrId || ''); if (!id) return; await deleteDoc(doc(db, 'pending_regs', id)); sessionStorage.removeItem(STATE_KEY); } catch (e) { }
     }
-
     async function getPendingProfileByEmail(email) {
       try { const id = encodeEmailAsId(email); const snap = await getDoc(doc(db, 'pending_regs', id)); if (snap.exists()) return snap.data(); return null; } catch (e) { return null; }
     }
-
     async function saveUserProfile(uid, data) {
       const userRef = doc(db, "users", uid);
-      try { const existing = await getDoc(userRef); if (existing.exists()) { const ed = existing.data(); const payload = { ...ed, ...data, updatedAt: serverTimestamp() }; if (!ed.createdAt) payload.createdAt = serverTimestamp(); await setDoc(userRef, payload, { merge: true }); } else { await setDoc(userRef, { ...data, profileComplete: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true }); } } catch (e) { console.error('Failed to save user profile', e); throw e; }
+      try { const existing = await getDoc(userRef); if (existing.exists()) { const ed = existing.data(); const payload = { ...ed, ...data, updatedAt: serverTimestamp() }; if (!ed.createdAt) payload.createdAt = serverTimestamp(); await setDoc(userRef, payload, { merge: true }); } else { await setDoc(userRef, { ...data, profileComplete: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true }); } } catch (e) { throw e; }
     }
 
     onAuthStateChanged(auth, async (user) => {
@@ -1233,7 +1102,7 @@
         const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
         const isVerified = user.emailVerified || isGoogle;
         if (!isVerified) { switchAuthView('view-verify-email'); document.getElementById('verifyEmailDisplay').innerText = user.email || ''; startVerificationListener(user); return; }
-        try { const userRef = doc(db, "users", user.uid); const userSnap = await getDoc(userRef); if (userSnap.exists() && userSnap.data().profileComplete === true) { window.location.replace("index.html"); } else { switchAuthView('view-registration'); await setupRegistrationScreenValues(user); } } catch (err) { console.error("Profile check error:", err); alert("Connection error. Please check your internet."); }
+        try { const userRef = doc(db, "users", user.uid); const userSnap = await getDoc(userRef); if (userSnap.exists() && userSnap.data().profileComplete === true) { window.location.replace("index.html"); } else { switchAuthView('view-registration'); await setupRegistrationScreenValues(user); } } catch (err) { alert("Connection error. Please check your internet."); }
       }
     });
 
@@ -1246,7 +1115,6 @@
 
     async function handleGoogleLogin() {
       try { await signInWithPopup(auth, googleProvider); } catch (error) {
-        console.error('Google sign-in error', error);
         const code = error && error.code;
         const conflictEmail = (error && error.customData && error.customData.email) || (error && error.email) || null;
         try { window.pendingCredential = googleProvider.credentialFromError ? googleProvider.credentialFromError(error) : null; } catch (e) { window.pendingCredential = null; }
@@ -1269,13 +1137,13 @@
       try {
         let methods = []; try { methods = await fetchSignInMethodsForEmail(auth, emailValue); } catch (err) { methods = []; } await new Promise(r => setTimeout(r, 400));
         if (methods.length === 0) { document.getElementById('regEmailInput').value = emailValue; switchAuthView('view-registration'); regPasswordContainer.classList.remove('hidden'); } else { emailIconStatic.classList.add('hidden'); emailArrowBtn.classList.add('hidden'); passwordContainer.classList.remove('hidden'); continueBtn.classList.remove('hidden'); loginPassword.focus(); }
-      } catch (error) { console.error(error); alert("Network error. Please try again."); } finally { arrowBtn.innerHTML = originalContent; arrowBtn.disabled = false; }
+      } catch (error) { alert("Network error. Please try again."); } finally { arrowBtn.innerHTML = originalContent; arrowBtn.disabled = false; }
     }
 
     async function handleEmailLogin() {
       const email = emailInput.value.trim(); const password = loginPassword.value; if (!password) { alert("Please enter password"); return; }
       const btn = continueBtn; btn.textContent = "Verifying..."; btn.disabled = true;
-      try { await signInWithEmailAndPassword(auth, email, password); if (window.pendingCredential) { try { await linkWithCredential(auth.currentUser, window.pendingCredential); window.pendingCredential = null; } catch (e) { } } } catch (error) { console.error(error); alert("Invalid credentials. Please try again."); btn.textContent = "Continue"; btn.disabled = false; }
+      try { await signInWithEmailAndPassword(auth, email, password); if (window.pendingCredential) { try { await linkWithCredential(auth.currentUser, window.pendingCredential); window.pendingCredential = null; } catch (e) { } } } catch (error) { alert("Invalid credentials. Please try again."); btn.textContent = "Continue"; btn.disabled = false; }
     }
 
     async function initiateRegistration() {
@@ -1297,13 +1165,13 @@
           if (password) { if (password.length < 6) { alert("Password must be at least 6 characters."); btn.innerHTML = originalText; btn.disabled = false; return; } try { const cred = EmailAuthProvider.credential(user.email, password); await linkWithCredential(user, cred); } catch (e) { } }
           await saveUserProfile(user.uid, profileData); await removePendingProfile(email); window.location.replace("index.html");
         }
-      } catch (error) { console.error("Reg Error:", error); alert("Registration failed: " + (error.message || error)); btn.innerHTML = originalText; btn.disabled = false; }
+      } catch (error) { alert("Registration failed: " + (error.message || error)); btn.innerHTML = originalText; btn.disabled = false; }
     }
 
     function startVerificationListener(user) {
       if (verificationInterval) clearInterval(verificationInterval);
       verificationInterval = setInterval(async () => {
-        try { await user.reload(); if (user.emailVerified) { clearInterval(verificationInterval); let dataToSave = null; const email = (user && user.email) ? user.email.toLowerCase() : null; if (email) { const pending = await getPendingProfileByEmail(email); if (pending && pending.data) dataToSave = pending.data; } if (!dataToSave) { alert("Email verified! Please confirm your details to finish setup."); window.location.reload(); return; } await saveUserProfile(user.uid, dataToSave); await removePendingProfile(user.email); sessionStorage.removeItem(STATE_KEY); alert("Verification Successful!"); window.location.replace("index.html"); } } catch (e) { console.log(e); }
+        try { await user.reload(); if (user.emailVerified) { clearInterval(verificationInterval); let dataToSave = null; const email = (user && user.email) ? user.email.toLowerCase() : null; if (email) { const pending = await getPendingProfileByEmail(email); if (pending && pending.data) dataToSave = pending.data; } if (!dataToSave) { alert("Email verified! Please confirm your details to finish setup."); window.location.reload(); return; } await saveUserProfile(user.uid, dataToSave); await removePendingProfile(user.email); sessionStorage.removeItem(STATE_KEY); alert("Verification Successful!"); window.location.replace("index.html"); } } catch (e) { }
       }, 3000);
     }
 
@@ -1311,56 +1179,62 @@
 
     async function sendResetLink() {
       let email = document.getElementById('forgotEmailDisplay').innerText.trim(); if (!email) return;
-      const btn = document.getElementById('btnSendReset'); const originalText = btn.innerText; btn.innerText = "Sending..."; btn.disabled = true;
-      try { await sendPasswordResetEmail(auth, email); } catch (error) { console.error(error); }
-      document.getElementById('sentEmailSpan').textContent = email; document.getElementById('forgotStateInitial').classList.add('hidden'); document.getElementById('forgotStateSuccess').classList.remove('hidden'); btn.innerText = originalText; btn.disabled = false;
+      const btn = document.getElementById('btnSendReset'); const ot = btn.innerText; btn.innerText = "Sending..."; btn.disabled = true;
+      try { await sendPasswordResetEmail(auth, email); } catch (e) { }
+      document.getElementById('sentEmailSpan').textContent = email; document.getElementById('forgotStateInitial').classList.add('hidden'); document.getElementById('forgotStateSuccess').classList.remove('hidden'); btn.innerText = ot; btn.disabled = false;
     }
   </script>
 
   <script>
-    /* ===== LANDING UI SCRIPTS ===== */
+    /* ===== LANDING UI ===== */
 
-    // Scroll reveal
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    // Scroll reveal for .reveal elements
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
     }, { threshold: 0.15 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    // Nav scroll effect
-    const nav = document.getElementById('landingNav');
-    window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 40); });
+    // Card reveal with stagger
+    const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          const cards = document.querySelectorAll('#featureCards .card');
+          cards.forEach((card, idx) => {
+            setTimeout(() => card.classList.add('visible'), idx * 120);
+          });
+          cardObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    const featureCardsEl = document.getElementById('featureCards');
+    if (featureCardsEl) cardObserver.observe(featureCardsEl);
 
-    // Get Started buttons
+    // Menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const menuDropdown = document.getElementById('menuDropdown');
+    menuBtn.addEventListener('click', e => { e.stopPropagation(); menuDropdown.style.display = menuDropdown.style.display === 'block' ? 'none' : 'block'; });
+    document.addEventListener('click', () => { menuDropdown.style.display = 'none'; });
+
+    // Get Started -> Auth
     function transitionToAuth() { window.switchAuthView('view-login'); }
     document.getElementById('heroGetStarted').addEventListener('click', transitionToAuth);
-    document.getElementById('navGetStarted').addEventListener('click', transitionToAuth);
-    document.getElementById('ctaGetStarted').addEventListener('click', transitionToAuth);
-
-    // Auth menu
-    const authMenuBtn = document.getElementById('authMenuBtn');
-    const menuDropdown = document.getElementById('menuDropdown');
-    if (authMenuBtn) { authMenuBtn.addEventListener('click', e => { e.stopPropagation(); menuDropdown.style.display = menuDropdown.style.display === 'block' ? 'none' : 'block'; }); }
-    document.addEventListener('click', () => { if (menuDropdown) menuDropdown.style.display = 'none'; });
 
     // Input helpers
     function toggleArrow() {
-      const emailInput = document.getElementById('emailInput');
-      const arrowBtn = document.getElementById('emailArrowBtn');
-      const emailIcon = document.getElementById('emailIconStatic');
-      const pc = document.getElementById('passwordContainer');
-      if (!emailInput.disabled) {
-        if (emailInput.value.trim().length > 0 && pc.classList.contains('hidden')) { arrowBtn.classList.remove('hidden'); emailIcon.classList.add('hidden'); }
-        else if (pc.classList.contains('hidden')) { arrowBtn.classList.add('hidden'); emailIcon.classList.remove('hidden'); }
+      const ei = document.getElementById('emailInput'), ab = document.getElementById('emailArrowBtn'), ic = document.getElementById('emailIconStatic'), pc = document.getElementById('passwordContainer');
+      if (!ei.disabled) {
+        if (ei.value.trim().length > 0 && pc.classList.contains('hidden')) { ab.classList.remove('hidden'); ic.classList.add('hidden'); }
+        else if (pc.classList.contains('hidden')) { ab.classList.add('hidden'); ic.classList.remove('hidden'); }
       }
     }
     window.toggleArrow = toggleArrow;
 
-    function togglePasswordVisibility(id) { const input = document.getElementById(id); input.type = input.type === "password" ? "text" : "password"; }
+    function togglePasswordVisibility(id) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; }
     window.togglePasswordVisibility = togglePasswordVisibility;
 
     function switchToForgot() {
-      const emailValue = document.getElementById('emailInput').value.trim();
-      document.getElementById('forgotEmailDisplay').innerText = emailValue || "No email provided";
+      const v = document.getElementById('emailInput').value.trim();
+      document.getElementById('forgotEmailDisplay').innerText = v || "No email provided";
       document.getElementById('forgotStateInitial').classList.remove('hidden');
       document.getElementById('forgotStateSuccess').classList.add('hidden');
       document.getElementById('btnSendReset').innerText = "Send Link";
@@ -1368,11 +1242,10 @@
     }
     window.switchToForgot = switchToForgot;
 
-    function backToLogin(currentViewId) {
+    function backToLogin() {
       document.getElementById('passwordContainer').classList.add('hidden');
       document.getElementById('continueBtn').classList.add('hidden');
-      const emailInput = document.getElementById('emailInput');
-      emailInput.disabled = false;
+      document.getElementById('emailInput').disabled = false;
       toggleArrow();
     }
     window.backToLogin = backToLogin;
