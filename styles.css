@@ -2073,7 +2073,7 @@
     }
 
     .card.subject-card .subject-name {
-        font-size: 14px;
+        font-size: 18px;
         font-weight: 600;
         color: #111827;
         line-height: 1.2;
@@ -2108,7 +2108,7 @@
     }
 
     .subject-meta {
-        font-size: 12px;
+        font-size: 14px;
         color: #374151;
         margin: 0;
         line-height: 1.4;
