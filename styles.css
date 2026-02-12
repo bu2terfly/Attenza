@@ -2073,14 +2073,13 @@
     }
 
     .card.subject-card .subject-name {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 600;
         color: #111827;
         line-height: 1.2;
         flex: 1;
         word-break: break-word;
         white-space: normal;
-        transition: font-size 0.1s ease-out;
     }
 
     .card.subject-card .subject-icon {
