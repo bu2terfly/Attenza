@@ -1,6 +1,6 @@
 /**
  * aiWidget.js — Deterministic Rule-Based AI Insights Engine
- * Runs entirely client-side. Uses memoryCache from app.js.
+ * Runs entirely client-side. Reads from localStorage caches.
  * No external LLM calls. Randomized sentence assembly.
  */
 
@@ -135,28 +135,40 @@
         "{attended} classes attended from total {total} classes till now"
     ];
 
-    // --- Query 4: Predict Future ---
-    const FUTURE_OPENERS = [
-        "If current trend persists ,", "Based on current patterns,",
-        "Following current trend ,", "Tracking your pattern,",
-        "Current trajectory shows,", "At current pace,",
+    // --- Query 4: Forecast ---
+    const FORECAST_OPENERS = [
+        "Based on your attendance pattern,", "Following your current trend,",
+        "Tracking your pattern,", "Your trajectory shows,", "At current pace,",
         "Your trend indicates,", "Pattern analysis shows,",
         "Current rate indicates,", "Following this pattern,",
         "As per trajectory,"
     ];
 
-    const FUTURE_INTERPS = [
+    const FORECAST_INTERPS = [
         "Next week you'll be at {week1}%, in 15 days around {week2}%, by next month {week4}%.",
-        "Expect {week1}% in a week, {week2}% after 15 days, {month1}% by next month .",
-        "1 week from now it's {week1}%, 15 days later {week2}%, next month {month1}% .",
-        "Within a week you'll see {week1}%, by day 15 around {week2}%, next month {month1}%,",
+        "Expect {week1}% in a week, {week2}% after 15 days, {week4}% by next month .",
+        "1 week from now it's {week1}%, 15 days later {week2}%, next month {week4}% .",
+        "Within a week you'll see {week1}%, by day 15 around {week2}%, next month {week4}%,",
         "Next week puts you at {week1}%, 15 days at {week2}%, next month at {week4}% ."
     ];
 
-    const FUTURE_CLOSERS = [
+    const FORECAST_CLOSERS = [
         "Not fixed, varies as per your pattern", "Actual stats depends on you.",
         "This changes based on your marking", "It varies with your attendance habits.",
         "Not guaranteed, Just depends on you.", "Estimates only, you control results."
+    ];
+
+    const FORECAST_VELOCITY_PROMPTS = [
+        "One quick thing — roughly how many classes do you have on a normal scheduled day?",
+        "Just need one input — on a regular day, how many classes are usually scheduled?",
+        "Almost there — on a typical day, about how many classes do you attend?",
+        "Quick question — how many classes does a normal college day have for you?"
+    ];
+
+    const FORECAST_TOO_SHORT = [
+        "Your attendance history is too short. Please mark attendance correctly for at least 3 days to enable predictions.",
+        "Need more data! Mark your attendance for at least 3 days so I can calculate a reliable forecast.",
+        "Not enough data yet. Track attendance for 3+ days and I'll generate an accurate prediction for you."
     ];
 
     // --- Query 5: Absence Impact ---
@@ -196,6 +208,14 @@
         "Unsafe zone, think twice.", "Strongly advise against absences"
     ];
 
+    // Important words to highlight
+    const HIGHLIGHT_WORDS = [
+        'bunk', 'bunking', 'bunks', 'bunked', 'recover', 'recovery', 'attend', 'skip',
+        'safe', 'unsafe', 'critical', 'risk', 'threshold', 'consecutive', 'continuous',
+        'danger', 'improvement', 'healthy', 'strong', 'solid', 'failing', 'weak',
+        'absent', 'absences', 'strictly', 'allowed', 'compulsory', 'majors'
+    ];
+
 
     // =============================================
     // 2. HELPERS
@@ -213,24 +233,37 @@
 
     /**
      * Build a contentArray for the typewriter from assembled parts.
-     * Each "part" is a string. We highlight numbers and key data inside parts.
+     * Highlights numbers AND important keywords.
      */
     function buildContentArray(parts) {
         const result = [];
+        const wordSet = new Set(HIGHLIGHT_WORDS);
+
         parts.forEach((part, idx) => {
             if (!part) return;
-            // Add separator between parts
             if (idx > 0 && part) {
                 result.push({ text: ' ', type: 'normal' });
             }
-            // Find patterns to highlight: numbers with %, counts, subject names
-            const segments = part.split(/(\d+\.?\d*%?)/);
+
+            // Split on numbers, %, and word boundaries for keyword matching
+            const segments = part.split(/(\d+\.?\d*%?|\s+)/);
             segments.forEach(seg => {
                 if (!seg) return;
                 if (/^\d+\.?\d*%?$/.test(seg)) {
                     result.push({ text: seg, type: 'highlight' });
-                } else {
+                } else if (/^\s+$/.test(seg)) {
                     result.push({ text: seg, type: 'normal' });
+                } else {
+                    // Check each word for keyword match
+                    const words = seg.split(/\b/);
+                    words.forEach(w => {
+                        if (!w) return;
+                        if (wordSet.has(w.toLowerCase())) {
+                            result.push({ text: w, type: 'highlight' });
+                        } else {
+                            result.push({ text: w, type: 'normal' });
+                        }
+                    });
                 }
             });
         });
@@ -242,14 +275,7 @@
     // 3. DATA ACCESS LAYER
     // =============================================
 
-    /**
-     * Gets the memoryCache from app.js – it's a module-level variable.
-     * We access it through the window or by reading the summary from localStorage.
-     */
     function getSummaryData() {
-        // Try window-level memoryCache first (set by app.js module)
-        // Since app.js is a module, memoryCache isn't on window.
-        // We read from localStorage as the reliable bridge.
         try {
             const raw = localStorage.getItem('attenza_summary_v2');
             if (!raw) return null;
@@ -344,9 +370,6 @@
         } catch (e) { return {}; }
     }
 
-    /**
-     * Get last N week keys sorted descending (most recent first).
-     */
     function getLastNWeekKeys(n) {
         const aggregates = getWeeklyAggregates();
         const keys = Object.keys(aggregates).sort().reverse();
@@ -354,38 +377,32 @@
     }
 
     /**
-     * Compute average classes per day from past 4 weeks.
-     * Total classes held across 4 weeks / (4 * 6.5)
-     * 6.5 because we don't know if Sunday is scheduled.
+     * Calculate velocity (daily class count) from weekly aggregates.
+     * Uses activeDays (week-index array) for accuracy.
+     * Returns { velocity, weeksAnalyzed, weekData[] }
      */
-    function getAvgClassesPerDay() {
+    function calculateVelocity() {
         const aggregates = getWeeklyAggregates();
         const weekKeys = getLastNWeekKeys(4);
 
-        if (!weekKeys.length) {
-            // Fallback: use number of subjects as rough estimate
-            const subjects = getSubjectsData();
-            return subjects.length || 5;
-        }
-
+        const weekData = [];
         let totalClasses = 0;
-        let weeksUsed = 0;
+        let totalActiveDays = 0;
+
         weekKeys.forEach(key => {
-            const week = aggregates[key];
-            if (week && week.total > 0) {
-                totalClasses += week.total;
-                weeksUsed++;
+            const w = aggregates[key];
+            if (w && w.total > 0) {
+                const days = (w.activeDays && w.activeDays.length) || 0;
+                const speed = days > 0 ? w.total / days : 0;
+                const successRate = w.total > 0 ? w.present / w.total : 0;
+                weekData.push({ key, total: w.total, present: w.present, activeDays: days, speed, successRate });
+                totalClasses += w.total;
+                totalActiveDays += days;
             }
         });
 
-        if (weeksUsed === 0) {
-            const subjects = getSubjectsData();
-            return subjects.length || 5;
-        }
-
-        // Average classes per day = total across weeks / (weeks * 6.5)
-        const avgPerDay = totalClasses / (weeksUsed * 6.5);
-        return Math.round(avgPerDay * 10) / 10; // 1 decimal
+        const velocity = totalActiveDays > 0 ? totalClasses / totalActiveDays : 0;
+        return { velocity, weeksAnalyzed: weekData.length, weekData, totalActiveDays };
     }
 
 
@@ -395,18 +412,11 @@
 
     /**
      * Query 1: Can I Bunk?
-     * Safe bunks = floor((attended - 0.75 * total) / 0.25)
-     * If percentage < 75 → 0 safe bunks
      */
     function queryBunk() {
         const data = getOverallData();
         const vars = { current: data.percentage };
 
-        // Calculate safe bunks: how many classes can miss and stay >= 75%
-        // After missing X classes: attended / (total + X) >= 0.75
-        // attended >= 0.75 * (total + X)
-        // attended - 0.75 * total >= 0.75 * X
-        // X <= (attended - 0.75 * total) / 0.75
         let safeBunks = Math.floor((data.attended - 0.75 * data.total) / 0.75);
         if (safeBunks < 0) safeBunks = 0;
         vars.count = safeBunks;
@@ -420,17 +430,12 @@
             return buildContentArray([opener, dataSt, interp, closer]);
         } else {
             const interp = fillTemplate(pickRandom(BUNK_INTERP_NOT_ALLOWED), vars);
-            // CRITICAL: No closer when not allowed
             return buildContentArray([opener, dataSt, interp]);
         }
     }
 
     /**
      * Query 2: Recovery Plan
-     * Consecutive classes needed = ceil((0.75 * total - attended) / 0.25)
-     * After attending X more: (attended + X) / (total + X) >= 0.75
-     * 0.25 * X >= 0.75 * total - attended
-     * X >= (0.75 * total - attended) / 0.25
      */
     function queryRecovery() {
         const data = getOverallData();
@@ -454,12 +459,10 @@
 
         const parts = [opener, dataSt, interp];
 
-        // Subject alert
         if (lowest && lowest.percentage < 75) {
             parts.push(fillTemplate(pickRandom(SUBJECT_ALERTS), { subject: lowest.name }));
         }
 
-        // Major alert
         if (majorsAtRisk) {
             parts.push(pickRandom(MAJOR_ALERTS));
         }
@@ -469,8 +472,6 @@
 
     /**
      * Query 3: Attendance Summary (Run Analysis)
-     * Structure: [Category Opener] + [Summary Data Statement] + [Subject Alert] + [Major Alert]
-     * No interpretations.
      */
     function queryAnalysis() {
         const data = getOverallData();
@@ -507,61 +508,103 @@
     }
 
     /**
-     * Query 4: Predict Trend (Future Trajectory)
-     * Uses last 4 weekly aggregates to compute weekly delta.
-     * Projects 1 week, 15 days (~2 weeks), 30 days (~4 weeks).
-     * Structure: [Future Opener] + [Future Interpretation] + [Future Closer]
+     * Query 4: Forecast
+     * Two-path logic: New user (<3 weeks) vs Established user (≥3 weeks)
      */
-    function queryPredict() {
-        const data = getOverallData();
+    function queryForecast() {
         const aggregates = getWeeklyAggregates();
         const weekKeys = getLastNWeekKeys(4);
 
-        // Calculate weekly percentages in chronological order
-        let weeklyPcts = [];
-        const sortedKeys = [...weekKeys].reverse(); // chronological
-
-        sortedKeys.forEach(key => {
-            const w = aggregates[key];
-            if (w && w.total > 0) {
-                weeklyPcts.push((w.present / w.total) * 100);
-            }
-        });
-
-        // Compute average weekly delta
-        let avgDelta = 0;
-        if (weeklyPcts.length >= 2) {
-            let totalDelta = 0;
-            for (let i = 1; i < weeklyPcts.length; i++) {
-                totalDelta += weeklyPcts[i] - weeklyPcts[i - 1];
-            }
-            avgDelta = totalDelta / (weeklyPcts.length - 1);
+        // Check: No weekly aggregates at all
+        if (!weekKeys.length) {
+            return { type: 'error', content: buildContentArray([pickRandom(FORECAST_TOO_SHORT)]) };
         }
 
-        // Project from current overall
-        const currentPct = data.percentage;
-        const week1 = Math.min(100, Math.max(0, currentPct + avgDelta)).toFixed(1);
-        const week2 = Math.min(100, Math.max(0, currentPct + avgDelta * 2)).toFixed(1);
-        const week4 = Math.min(100, Math.max(0, currentPct + avgDelta * 4)).toFixed(1);
+        const { velocity, weeksAnalyzed, weekData, totalActiveDays } = calculateVelocity();
+
+        // Check: activeDays < 3 across all available weeks
+        if (totalActiveDays < 3) {
+            return { type: 'error', content: buildContentArray([pickRandom(FORECAST_TOO_SHORT)]) };
+        }
+
+        // Path B: Established user (≥ 3 weeks with data)
+        if (weeksAnalyzed >= 3) {
+            return forecastEstablishedUser(weekData);
+        }
+
+        // Path A: New user (1-2 weeks) — needs velocity confirmation
+        const roundedVelocity = Math.floor(velocity);
+        const options = generateVelocityOptions(roundedVelocity);
+        return {
+            type: 'velocity_prompt',
+            content: buildContentArray([pickRandom(FORECAST_VELOCITY_PROMPTS)]),
+            options: options,
+            weekData: weekData
+        };
+    }
+
+    function generateVelocityOptions(baseVelocity) {
+        const center = Math.max(2, Math.min(6, baseVelocity));
+        const opts = new Set();
+        for (let i = Math.max(2, center - 1); i <= Math.min(7, center + 2); i++) {
+            opts.add(i);
+        }
+        return Array.from(opts).sort((a, b) => a - b);
+    }
+
+    function forecastEstablishedUser(weekData) {
+        // Step A: Per-week analysis already in weekData (speed + successRate)
+        // Step B: Optimistic filter — remove weakest week
+        const sorted = [...weekData].sort((a, b) => a.successRate - b.successRate);
+        const filtered = sorted.slice(1); // Remove lowest successRate
+
+        // Step C: Average the remaining weeks
+        let avgSpeed = 0;
+        let avgHabit = 0;
+        filtered.forEach(w => {
+            avgSpeed += w.speed;
+            avgHabit += w.successRate;
+        });
+        avgSpeed /= filtered.length;
+        avgHabit /= filtered.length;
+
+        // Step D: Forecast
+        return generateForecastResult(avgSpeed, avgHabit);
+    }
+
+    function forecastWithUserVelocity(userVelocity) {
+        const data = getOverallData();
+        const habit = data.percentage / 100;
+        return generateForecastResult(userVelocity, habit);
+    }
+
+    function generateForecastResult(speed, habit) {
+        const data = getOverallData();
+
+        const forecast = [7, 15, 30].map(days => {
+            const futureClasses = Math.round(days * speed);
+            const futureAttends = Math.round(futureClasses * habit);
+            const newTotal = data.total + futureClasses;
+            const newAttended = data.attended + futureAttends;
+            const newPct = newTotal > 0 ? parseFloat(((newAttended / newTotal) * 100).toFixed(1)) : 0;
+            return newPct;
+        });
 
         const vars = {
-            week1: week1,
-            week2: week2,
-            week4: week4,
-            month1: week4 // month1 alias for week4
+            week1: forecast[0],
+            week2: forecast[1],
+            week4: forecast[2]
         };
 
-        const opener = pickRandom(FUTURE_OPENERS);
-        const interp = fillTemplate(pickRandom(FUTURE_INTERPS), vars);
-        const closer = pickRandom(FUTURE_CLOSERS);
+        const opener = pickRandom(FORECAST_OPENERS);
+        const interp = fillTemplate(pickRandom(FORECAST_INTERPS), vars);
+        const closer = pickRandom(FORECAST_CLOSERS);
 
-        return buildContentArray([opener, interp, closer]);
+        return { type: 'result', content: buildContentArray([opener, interp, closer]) };
     }
 
     /**
      * Query 5: Absence Impact
-     * Step 1: Show input prompt
-     * Step 2: After input → calculate new %
      */
     function queryAbsencePrompt() {
         return buildContentArray([pickRandom(ABSENCE_INPUT_PROMPTS)]);
@@ -594,10 +637,6 @@
     // 5. INPUT PARSER (Absence Impact)
     // =============================================
 
-    /**
-     * Parse user input for Absence Impact query.
-     * Returns: { valid: boolean, count: number, unit: 'class'|'day', label: string, error?: string }
-     */
     function parseAbsenceInput(raw) {
         if (!raw || !raw.trim()) {
             return { valid: false, error: "Please enter a number of classes or days." };
@@ -605,36 +644,15 @@
 
         let input = raw.trim().toLowerCase();
 
-        // Check 1: Only special characters → invalid
         if (/^[^a-z0-9]+$/.test(input)) {
             return { valid: false, error: "Invalid input. Please enter a number." };
         }
 
-        // Remove leading special chars if followed by content
-        // e.g. "& 5 days" → "5 days" (keep the rest)
-
-        // Extract the first number from the input
-        // Handle edge cases:
-        // - "-2" → 2 (typing mistake)
-        // - "2.5" → 25 (no decimal support, concat digits)
-        // - "13 4" (no words between) → 134
-
-        // Step: Remove negative signs attached to numbers
         let cleaned = input.replace(/-(\d)/g, '$1');
-
-        // Step: Remove decimal points between digits (2.5 → 25)
         cleaned = cleaned.replace(/(\d)\.(\d)/g, '$1$2');
 
-        // Step: Concatenate numbers separated only by spaces (no words between)
-        // "13 4" → "134" but "13 day 4" stays as is
-        cleaned = cleaned.replace(/(\d+)\s+(?=\d)/g, (match, p1) => {
-            // Check if there are only spaces (no letters) between numbers
-            return p1;
-        });
-        // More precise: find all number groups, check what's between them
         const numberMerged = mergeAdjacentNumbers(cleaned);
 
-        // Extract first number
         const numMatch = numberMerged.match(/\d+/);
         if (!numMatch) {
             return { valid: false, error: "No number found. Please type a number like 3 or 5 days." };
@@ -642,18 +660,14 @@
 
         let count = parseInt(numMatch[0], 10);
 
-        // Check: number is 0 → invalid
         if (count === 0) {
             return { valid: false, error: "Zero is not valid. Enter at least 1." };
         }
 
-        // Determine unit: DAY vs CLASS
-        // Priority 1: DAY regex
         const dayRegex = /\d+\s*(d[aysin]*)\b/;
-        // Priority 2: CLASS regex
         const classRegex = /\d+\s*(c[lass]*|k[las]*|l[ec]*|p[eriod]*)\b/;
 
-        let unit = 'class'; // default
+        let unit = 'class';
         let label = count + ' classes (assumed)';
 
         if (dayRegex.test(numberMerged)) {
@@ -663,17 +677,11 @@
             unit = 'class';
             label = count + ' classes';
         }
-        // If neither matches → default to class, no popup, specify assumption in response
 
         return { valid: true, count, unit, label };
     }
 
-    /**
-     * Merge numbers that are only separated by whitespace (no letters between).
-     * "13 4" → "134"   but   "13 day 4" → "13 day 4"
-     */
     function mergeAdjacentNumbers(str) {
-        // Split into tokens
         const tokens = str.split(/\s+/);
         const result = [];
         let numBuffer = '';
@@ -694,19 +702,45 @@
         return result.join(' ');
     }
 
+    /**
+     * Calculate velocity for day-to-class conversion in Simulate Impact.
+     * Same logic as Forecast — uses activeDays from weekly aggregates.
+     * Requires at least 3 activeDays to be reliable.
+     */
+    function getVelocityForImpact() {
+        const { velocity, totalActiveDays, weeksAnalyzed, weekData } = calculateVelocity();
+
+        if (totalActiveDays < 3) {
+            // Fallback: use subject count as rough estimate
+            const subjects = getSubjectsData();
+            return subjects.length || 4;
+        }
+
+        // For established users (≥3 weeks), use optimistic filter
+        if (weeksAnalyzed >= 3) {
+            const sorted = [...weekData].sort((a, b) => a.successRate - b.successRate);
+            const filtered = sorted.slice(1);
+            let avgSpeed = 0;
+            filtered.forEach(w => { avgSpeed += w.speed; });
+            return avgSpeed / filtered.length;
+        }
+
+        return velocity;
+    }
+
 
     // =============================================
     // 6. UI INTEGRATION
     // =============================================
 
-    // DOM References (set after DOM ready)
     let aiText, queryDock, activeQueryDock, activeScrollTrack;
     let activeContentRow, activeInputArea, activePill, activePillText;
     let gradientStrip, aiInput, sendBtn;
     let typingAbortController = null;
     let currentActiveQuery = '';
     let hasActivated = false;
-    let currentQueryType = ''; // tracks which query is active
+    let currentQueryType = '';
+    let lastDefaultHTML = ''; // Store last default analysis HTML for line-reveal
 
     function initDomRefs() {
         aiText = document.getElementById('ai-text');
@@ -796,13 +830,100 @@
         aiText.classList.remove('cursor');
     }
 
+    /**
+     * Line-reveal animation: renders stored HTML instantly but with
+     * gentle per-word fade-in from top, simulating AI re-reading.
+     */
+    function lineReveal(html) {
+        if (!aiText) return;
+        if (typingAbortController) typingAbortController.abort();
+
+        aiText.innerHTML = '';
+        aiText.classList.remove('cursor');
+
+        // Create a temp container to parse the HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+
+        // Extract all text nodes and element nodes
+        const walker = document.createTreeWalker(temp, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+            acceptNode: (node) => {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) return NodeFilter.FILTER_ACCEPT;
+                if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'SPAN') return NodeFilter.FILTER_ACCEPT;
+                return NodeFilter.FILTER_SKIP;
+            }
+        });
+
+        // Wrap each segment in a span for animation
+        const fragments = [];
+        let node;
+        while (node = walker.nextNode()) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                // Split text into word-chunks
+                const words = node.textContent.split(/(\s+)/);
+                words.forEach(w => {
+                    if (w) {
+                        const span = document.createElement('span');
+                        span.textContent = w;
+                        span.style.opacity = '0';
+                        span.style.display = 'inline';
+                        fragments.push(span);
+                    }
+                });
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const clone = node.cloneNode(true);
+                clone.style.opacity = '0';
+                clone.style.display = 'inline';
+                fragments.push(clone);
+            }
+        }
+
+        fragments.forEach(f => aiText.appendChild(f));
+
+        // Stagger reveal
+        fragments.forEach((f, i) => {
+            setTimeout(() => {
+                f.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                f.style.opacity = '1';
+            }, i * 40);
+        });
+    }
+
+    // --- VELOCITY OPTIONS UI ---
+
+    function showVelocityOptions(options, onSelect) {
+        // Clear existing options
+        const existing = document.querySelector('.velocity-options');
+        if (existing) existing.remove();
+
+        const container = document.createElement('div');
+        container.className = 'velocity-options';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'velocity-option';
+            btn.textContent = opt;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                container.remove();
+                onSelect(opt);
+            });
+            container.appendChild(btn);
+        });
+
+        // Insert after query dock area
+        const summaryBlock = document.querySelector('.summary-block');
+        if (summaryBlock) {
+            summaryBlock.parentNode.insertBefore(container, summaryBlock.nextSibling);
+        }
+    }
+
     // --- QUERY MAPPING ---
 
     const QUERY_MAP = {
         'Can I Bunk?': { handler: queryBunk, requiresInput: false, type: 'bunk' },
         'Recovery Plan': { handler: queryRecovery, requiresInput: false, type: 'recovery' },
-        'Comprehensive Midterm Risk Analysis & Audit': { handler: queryAnalysis, requiresInput: false, type: 'analysis' },
-        'Forecast': { handler: queryPredict, requiresInput: false, type: 'forecast' },
+        'Forecast': { handler: null, requiresInput: false, type: 'forecast' },
         'Simulate Impact': { handler: null, requiresInput: true, type: 'impact' }
     };
 
@@ -810,6 +931,10 @@
 
     function handleQueryClick(queryName, requiresInput) {
         if (!queryDock || !activeQueryDock) return;
+
+        // Remove any velocity options
+        const velOpts = document.querySelector('.velocity-options');
+        if (velOpts) velOpts.remove();
 
         // Swap views
         queryDock.style.display = 'none';
@@ -822,7 +947,7 @@
         if (activePillText) activePillText.textContent = queryName;
         if (aiInput) {
             aiInput.value = '';
-            aiInput.placeholder = 'Type number of classes/days...';
+            aiInput.placeholder = 'e.g. 3 days or 5 classes';
         }
         if (sendBtn) sendBtn.classList.remove('visible');
 
@@ -841,27 +966,46 @@
         const pillWidth = activePill ? activePill.offsetWidth : 120;
 
         if (activeContentRow) activeContentRow.style.width = pillWidth + 'px';
-        if (gradientStrip) gradientStrip.style.width = pillWidth + 'px';
+        if (gradientStrip) gradientStrip.style.width = '100%';
 
         // Force reflow
         if (activeContentRow) void activeContentRow.offsetWidth;
 
         if (requiresInput) {
-            // Absence Impact — show input prompt
+            // Simulate Impact — show input prompt
             const promptContent = queryAbsencePrompt();
             typeWriter(promptContent).then(() => {
                 if (typingAbortController && typingAbortController.signal.aborted) return;
                 expandInputArea(pillWidth);
             });
+        } else if (currentQueryType === 'forecast') {
+            // Forecast has special multi-step logic
+            handleForecastQuery();
         } else {
             // Non-input queries — generate and type result
             const config = QUERY_MAP[queryName];
             if (config && config.handler) {
                 const result = config.handler();
                 typeWriter(result);
-            } else {
-                typeWriter(buildContentArray(["Processing your query..."]));
             }
+        }
+    }
+
+    function handleForecastQuery() {
+        const result = queryForecast();
+
+        if (result.type === 'error') {
+            typeWriter(result.content);
+        } else if (result.type === 'velocity_prompt') {
+            typeWriter(result.content).then(() => {
+                if (typingAbortController && typingAbortController.signal.aborted) return;
+                showVelocityOptions(result.options, (selected) => {
+                    const forecast = forecastWithUserVelocity(selected);
+                    typeWriter(forecast.content);
+                });
+            });
+        } else if (result.type === 'result') {
+            typeWriter(result.content);
         }
     }
 
@@ -877,7 +1021,7 @@
         if (activeInputArea) activeInputArea.style.transition = 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
 
         if (activeContentRow) activeContentRow.style.width = targetTotalWidth + 'px';
-        if (gradientStrip) gradientStrip.style.width = targetTotalWidth + 'px';
+        if (gradientStrip) gradientStrip.style.width = '100%';
 
         activeInputArea.style.width = calculatedInputWidth + 'px';
         activeInputArea.style.opacity = '1';
@@ -889,12 +1033,21 @@
     function cancelActive() {
         if (typingAbortController) typingAbortController.abort();
 
+        // Remove velocity options if any
+        const velOpts = document.querySelector('.velocity-options');
+        if (velOpts) velOpts.remove();
+
         if (activeQueryDock) activeQueryDock.style.display = 'none';
         if (queryDock) queryDock.style.display = 'block';
 
         currentQueryType = '';
-        // Show default analysis on cancel
-        runDefaultInsight();
+        currentActiveQuery = '';
+
+        // Don't re-trigger analysis — keep previous response with gentle line-reveal
+        if (lastDefaultHTML && aiText) {
+            lineReveal(lastDefaultHTML);
+        }
+        // If no stored HTML, leave current content as-is
     }
 
     function handleSendClick() {
@@ -905,13 +1058,12 @@
         const parsed = parseAbsenceInput(rawInput);
 
         if (!parsed.valid) {
-            // Show error in the input area — flash the input bar
             aiInput.value = '';
             aiInput.placeholder = parsed.error;
             aiInput.classList.add('input-error');
             setTimeout(() => {
                 aiInput.classList.remove('input-error');
-                aiInput.placeholder = 'Type number of classes/days...';
+                aiInput.placeholder = 'e.g. 3 days or 5 classes';
             }, 2500);
             return;
         }
@@ -919,16 +1071,14 @@
         // Calculate class count
         let classCount = parsed.count;
         if (parsed.unit === 'day') {
-            const avgPerDay = getAvgClassesPerDay();
+            // Use velocity for day-to-class conversion
+            const avgPerDay = getVelocityForImpact();
             classCount = Math.round(parsed.count * avgPerDay);
             parsed.label = parsed.count + ' days (~' + classCount + ' classes)';
         }
 
         // Update pill text
         if (activePillText) activePillText.textContent = parsed.label + ', Impact';
-
-        // Measure new pill width
-        const newPillWidth = activePill ? activePill.offsetWidth : 120;
 
         // Collapse input area
         if (activeInputArea) {
@@ -937,8 +1087,9 @@
             activeInputArea.style.paddingRight = '0px';
         }
 
+        const newPillWidth = activePill ? activePill.offsetWidth : 120;
         if (activeContentRow) activeContentRow.style.width = newPillWidth + 'px';
-        if (gradientStrip) gradientStrip.style.width = newPillWidth + 'px';
+        if (gradientStrip) gradientStrip.style.width = '100%';
 
         if (activeScrollTrack) activeScrollTrack.scrollLeft = 0;
 
@@ -952,20 +1103,49 @@
     function runDefaultInsight() {
         const data = getOverallData();
         if (data.total === 0) {
-            // No data yet — show welcome message
-            typeWriter(buildContentArray([
+            const welcomeContent = buildContentArray([
                 "Welcome to AI Insights! Start marking your attendance to get personalized analysis."
-            ]));
+            ]);
+            typeWriter(welcomeContent).then(() => {
+                if (aiText) lastDefaultHTML = aiText.innerHTML;
+            });
             return;
         }
         const result = queryAnalysis();
-        typeWriter(result);
+        typeWriter(result).then(() => {
+            // Store the final HTML for line-reveal on cancel
+            if (aiText) lastDefaultHTML = aiText.innerHTML;
+        });
     }
 
-    // --- RESET ---
+    // --- RESET: Re-run current active query with fresh data ---
 
     function resetWidget() {
-        cancelActive();
+        // Remove velocity options if any
+        const velOpts = document.querySelector('.velocity-options');
+        if (velOpts) velOpts.remove();
+
+        if (currentActiveQuery && QUERY_MAP[currentActiveQuery]) {
+            // Re-run the same query with fresh stats
+            const config = QUERY_MAP[currentActiveQuery];
+            if (config.type === 'forecast') {
+                handleForecastQuery();
+            } else if (config.type === 'impact') {
+                // For impact, just re-show the prompt
+                const promptContent = queryAbsencePrompt();
+                typeWriter(promptContent).then(() => {
+                    if (typingAbortController && typingAbortController.signal.aborted) return;
+                    const pillWidth = activePill ? activePill.offsetWidth : 120;
+                    expandInputArea(pillWidth);
+                });
+            } else if (config.handler) {
+                const result = config.handler();
+                typeWriter(result);
+            }
+        } else {
+            // No active query — re-run default insight
+            runDefaultInsight();
+        }
     }
 
     // =============================================
@@ -985,18 +1165,16 @@
         pills.forEach(pill => {
             const originalOnclick = pill.getAttribute('onclick');
             if (originalOnclick) {
-                // Remove old onclick — we'll handle it
                 pill.removeAttribute('onclick');
             }
         });
 
-        // Re-assign click handlers for all query pills
+        // Pill configs: 4 queries (Comprehensive Midterm removed)
         const pillConfigs = [
             { index: 0, name: 'Can I Bunk?', input: false },
-            { index: 1, name: 'Comprehensive Midterm Risk Analysis & Audit', input: false },
-            { index: 2, name: 'Recovery Plan', input: false },
-            { index: 3, name: 'Forecast', input: false },
-            { index: 4, name: 'Simulate Impact', input: true }
+            { index: 1, name: 'Recovery Plan', input: false },
+            { index: 2, name: 'Forecast', input: false },
+            { index: 3, name: 'Simulate Impact', input: true }
         ];
 
         pillConfigs.forEach(cfg => {
@@ -1042,7 +1220,7 @@
             });
         }
 
-        // Refresh icon
+        // Refresh icon — re-run current query with fresh data
         const refreshIcon = document.querySelector('.ai-widget-wrapper .refresh-icon');
         if (refreshIcon) {
             refreshIcon.addEventListener('click', (e) => {
@@ -1058,7 +1236,6 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting && !hasActivated) {
                         hasActivated = true;
-                        // Small delay after viewport entry
                         setTimeout(() => runDefaultInsight(), 300);
                     }
                 });
