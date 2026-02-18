@@ -805,7 +805,8 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
                 timestamp: serverTimestamp()
             };
 
-            // Track active day as bitmask (bit 0=Mon, bit 6=Sun). Single integer, no Firebase array issues.
+            // Track active day via bitmask (bit 0=Mon, bit 6=Sun)
+            // Normalize: old array data → reset to 0
             if (typeof weekData.activeDays !== 'number') weekData.activeDays = 0;
             const dayOfWeek = (new Date(today + 'T12:00:00').getDay() + 6) % 7;
             weekData.activeDays |= (1 << dayOfWeek);
@@ -1494,7 +1495,7 @@ async function dwrSaveRecord(subjectName, status, remarks) {
 
             // Read weekly
             const weekSnap = await transaction.get(weekRef);
-            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: 0 };
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: [] };
 
             // Revert old status from summary + weekly
             if (oldStatus !== status) {
@@ -1556,7 +1557,7 @@ async function dwrSaveRecord(subjectName, status, remarks) {
                 timestamp: serverTimestamp()
             };
 
-            // Track active day as bitmask (bit 0=Mon, bit 6=Sun)
+            // Track active day via bitmask (bit 0=Mon, bit 6=Sun)
             if (typeof weekData.activeDays !== 'number') weekData.activeDays = 0;
             const dayOfWeek = (new Date(dateKey + 'T12:00:00').getDay() + 6) % 7;
             weekData.activeDays |= (1 << dayOfWeek);
