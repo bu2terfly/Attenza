@@ -441,7 +441,15 @@
             const w = aggregates[key];
             if (w && w.total > 0) {
                 sumClasses += w.total;
-                sumActiveDays += (w.activeDays && w.activeDays.length) || 0;
+            
+            // ✅ FIX: Handle both array AND object from Firebase
+                if (w.activeDays) {
+                    if (Array.isArray(w.activeDays)) {
+                        sumActiveDays += w.activeDays.length;
+                    } else if (typeof w.activeDays === 'object') {
+                        sumActiveDays += Object.keys(w.activeDays).length;
+                    }
+                }
             }
         });
 
@@ -449,7 +457,7 @@
             velocity: sumActiveDays > 0 ? sumClasses / sumActiveDays : 0,
             totalActiveDays: sumActiveDays,
             totalClasses: sumClasses
-        };
+       };
     }
 
     /**
