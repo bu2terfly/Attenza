@@ -807,6 +807,10 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
 
             // Track active day (0=Mon, 6=Sun)
             if (!weekData.activeDays) weekData.activeDays = [];
+            // Normalize: Firebase may return arrays as objects with numeric keys
+            if (!Array.isArray(weekData.activeDays)) {
+                weekData.activeDays = Object.values(weekData.activeDays);
+            }
             const dayOfWeek = (new Date(today + 'T12:00:00').getDay() + 6) % 7;
             if (!weekData.activeDays.includes(dayOfWeek)) {
                 weekData.activeDays.push(dayOfWeek);
@@ -1560,6 +1564,10 @@ async function dwrSaveRecord(subjectName, status, remarks) {
 
             // Track active day (0=Mon, 6=Sun)
             if (!weekData.activeDays) weekData.activeDays = [];
+            // Normalize: Firebase may return arrays as objects with numeric keys
+            if (!Array.isArray(weekData.activeDays)) {
+                weekData.activeDays = Object.values(weekData.activeDays);
+            }
             const dayOfWeek = (new Date(dateKey + 'T12:00:00').getDay() + 6) % 7;
             if (!weekData.activeDays.includes(dayOfWeek)) {
                 weekData.activeDays.push(dayOfWeek);
@@ -2598,4 +2606,3 @@ window.addEventListener('message', (event) => {
         document.body.classList.remove('menu-open');
     }
 });
-
