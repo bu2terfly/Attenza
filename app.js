@@ -733,7 +733,7 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
 
             // Read Weekly
             const weekSnap = await transaction.get(weekRef);
-            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {} };
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: [] };
 
             // 1. Revert Old Stats
             if (oldStatus === 'present') {
@@ -805,6 +805,13 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
                 timestamp: serverTimestamp()
             };
 
+            // Track active day (0=Mon, 6=Sun)
+            if (!weekData.activeDays) weekData.activeDays = [];
+            const dayOfWeek = (new Date(today + 'T12:00:00').getDay() + 6) % 7;
+            if (!weekData.activeDays.includes(dayOfWeek)) {
+                weekData.activeDays.push(dayOfWeek);
+            }
+
             transaction.set(todayRef, todayData);
             transaction.set(summaryRef, summaryData, { merge: true });
             transaction.set(weekRef, weekData, { merge: true });
@@ -837,7 +844,7 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
 // Helper: Update weekly aggregate cache after marking attendance
 function updateWeeklyCacheAfterMark(weekKey, subjectName, oldStatus, newStatus) {
     if (!memoryCache.weeklyAggregates[weekKey]) {
-        memoryCache.weeklyAggregates[weekKey] = { total: 0, present: 0, subjects: {} };
+        memoryCache.weeklyAggregates[weekKey] = { total: 0, present: 0, subjects: {}, activeDays: [] };
     }
     const week = memoryCache.weeklyAggregates[weekKey];
 
@@ -1489,7 +1496,7 @@ async function dwrSaveRecord(subjectName, status, remarks) {
 
             // Read weekly
             const weekSnap = await transaction.get(weekRef);
-            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {} };
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: [] };
 
             // Revert old status from summary + weekly
             if (oldStatus !== status) {
@@ -1550,6 +1557,13 @@ async function dwrSaveRecord(subjectName, status, remarks) {
                 remarks: remarks,
                 timestamp: serverTimestamp()
             };
+
+            // Track active day (0=Mon, 6=Sun)
+            if (!weekData.activeDays) weekData.activeDays = [];
+            const dayOfWeek = (new Date(dateKey + 'T12:00:00').getDay() + 6) % 7;
+            if (!weekData.activeDays.includes(dayOfWeek)) {
+                weekData.activeDays.push(dayOfWeek);
+            }
 
             transaction.set(todayRef, todayData);
             transaction.set(summaryRef, summaryData, { merge: true });
@@ -2584,3 +2598,4 @@ window.addEventListener('message', (event) => {
         document.body.classList.remove('menu-open');
     }
 });
+
