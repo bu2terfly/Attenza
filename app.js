@@ -733,7 +733,7 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
 
             // Read Weekly
             const weekSnap = await transaction.get(weekRef);
-            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: [] };
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: 0 };
 
             // 1. Revert Old Stats
             if (oldStatus === 'present') {
@@ -805,16 +805,10 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
                 timestamp: serverTimestamp()
             };
 
-            // Track active day (0=Mon, 6=Sun)
-            if (!weekData.activeDays) weekData.activeDays = [];
-            // Normalize: Firebase may return arrays as objects with numeric keys
-            if (!Array.isArray(weekData.activeDays)) {
-                weekData.activeDays = Object.values(weekData.activeDays);
-            }
+            // Track active day as bitmask (bit 0=Mon, bit 6=Sun). Single integer, no Firebase array issues.
+            if (typeof weekData.activeDays !== 'number') weekData.activeDays = 0;
             const dayOfWeek = (new Date(today + 'T12:00:00').getDay() + 6) % 7;
-            if (!weekData.activeDays.includes(dayOfWeek)) {
-                weekData.activeDays.push(dayOfWeek);
-            }
+            weekData.activeDays |= (1 << dayOfWeek);
 
             transaction.set(todayRef, todayData);
             transaction.set(summaryRef, summaryData, { merge: true });
@@ -848,7 +842,7 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
 // Helper: Update weekly aggregate cache after marking attendance
 function updateWeeklyCacheAfterMark(weekKey, subjectName, oldStatus, newStatus) {
     if (!memoryCache.weeklyAggregates[weekKey]) {
-        memoryCache.weeklyAggregates[weekKey] = { total: 0, present: 0, subjects: {}, activeDays: [] };
+        memoryCache.weeklyAggregates[weekKey] = { total: 0, present: 0, subjects: {}, activeDays: 0 };
     }
     const week = memoryCache.weeklyAggregates[weekKey];
 
@@ -1500,7 +1494,7 @@ async function dwrSaveRecord(subjectName, status, remarks) {
 
             // Read weekly
             const weekSnap = await transaction.get(weekRef);
-            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: [] };
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: 0 };
 
             // Revert old status from summary + weekly
             if (oldStatus !== status) {
@@ -1562,16 +1556,10 @@ async function dwrSaveRecord(subjectName, status, remarks) {
                 timestamp: serverTimestamp()
             };
 
-            // Track active day (0=Mon, 6=Sun)
-            if (!weekData.activeDays) weekData.activeDays = [];
-            // Normalize: Firebase may return arrays as objects with numeric keys
-            if (!Array.isArray(weekData.activeDays)) {
-                weekData.activeDays = Object.values(weekData.activeDays);
-            }
+            // Track active day as bitmask (bit 0=Mon, bit 6=Sun)
+            if (typeof weekData.activeDays !== 'number') weekData.activeDays = 0;
             const dayOfWeek = (new Date(dateKey + 'T12:00:00').getDay() + 6) % 7;
-            if (!weekData.activeDays.includes(dayOfWeek)) {
-                weekData.activeDays.push(dayOfWeek);
-            }
+            weekData.activeDays |= (1 << dayOfWeek);
 
             transaction.set(todayRef, todayData);
             transaction.set(summaryRef, summaryData, { merge: true });
