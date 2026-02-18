@@ -798,6 +798,18 @@ async function markAttendanceInternal(subjectName, status, optionalRemark = "") 
                 weekData.subjects[subjectName].total++;
             }
 
+            // 2b. Momentum EMA Update (for forecasting)
+            // Only update for present/absent (not for not-held/skip)
+            if (status === 'present' || status === 'absent') {
+                const score = (status === 'present') ? 100 : 0;
+                const learningRate = 0.09;
+                const totalSoFar = (summaryData.pastTotalClasses || 0) + (summaryData.trackedTotal || 0);
+                const attendedSoFar = (summaryData.pastAttendedClasses || 0) + (summaryData.trackedPresent || 0);
+                const fallbackPct = totalSoFar > 0 ? (attendedSoFar / totalSoFar) * 100 : 75;
+                const oldMomentum = (summaryData.momentum != null) ? summaryData.momentum : fallbackPct;
+                summaryData.momentum = parseFloat((oldMomentum + ((score - oldMomentum) * learningRate)).toFixed(2));
+            }
+
             // 3. Update Record
             todayData.records[subjectName] = {
                 status: status,
@@ -1495,7 +1507,7 @@ async function dwrSaveRecord(subjectName, status, remarks) {
 
             // Read weekly
             const weekSnap = await transaction.get(weekRef);
-            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: [] };
+            let weekData = weekSnap.exists() ? weekSnap.data() : { total: 0, present: 0, subjects: {}, activeDays: 0 };
 
             // Revert old status from summary + weekly
             if (oldStatus !== status) {
