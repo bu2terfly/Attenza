@@ -429,9 +429,49 @@
     // =============================================
 
     /**
+     * Normalize activeDays from Firebase.
+     * Firebase may return arrays as objects with numeric keys: {0: 0, 1: 2, 2: 4}
+     * JavaScript .length and .includes() don't work on plain objects.
+     */
+    function normalizeActiveDays(ad) {
+        if (!ad) return [];
+        if (Array.isArray(ad)) return ad;
+        if (typeof ad === 'object') return Object.values(ad);
+        return [];
+    }
+
+    /**
+     * Robust active-days estimator.
+     * Uses activeDays if present AND reasonable (avg ≤ 10 classes/day).
+     * Falls back to subjects-count estimation for legacy data.
+     */
+    function getEstimatedActiveDays(weekData) {
+        const total = weekData.total || 0;
+        if (total === 0) return 0;
+
+        const normalized = normalizeActiveDays(weekData.activeDays);
+        const activeDaysLen = normalized.length;
+
+        // If activeDays exists and looks reasonable, use it
+        if (activeDaysLen > 0) {
+            const avgPerDay = total / activeDaysLen;
+            if (avgPerDay <= 10) return activeDaysLen; // Legit data
+        }
+
+        // Fallback: estimate from total classes / number of subjects
+        const subjectsCount = weekData.subjects ? Object.keys(weekData.subjects).length : 0;
+        if (subjectsCount > 0) {
+            return Math.min(6, Math.max(1, Math.round(total / subjectsCount)));
+        }
+
+        // Last resort: assume ~5 classes per day
+        return Math.min(6, Math.max(1, Math.round(total / 5)));
+    }
+
+    /**
      * ENGINE 1: VELOCITY — "The Liquid Pool"
      * Pour all weekly data into one pool. Sum total classes / sum active days.
-     * Handles partial weeks, holidays, missed tracking days automatically.
+     * Uses robust estimator for legacy data without activeDays.
      */
     function calculateGlobalVelocity(weekKeys, aggregates) {
         let sumClasses = 0;
@@ -441,15 +481,7 @@
             const w = aggregates[key];
             if (w && w.total > 0) {
                 sumClasses += w.total;
-            
-            // ✅ FIX: Handle both array AND object from Firebase
-                if (w.activeDays) {
-                    if (Array.isArray(w.activeDays)) {
-                        sumActiveDays += w.activeDays.length;
-                    } else if (typeof w.activeDays === 'object') {
-                        sumActiveDays += Object.keys(w.activeDays).length;
-                    }
-                }
+                sumActiveDays += getEstimatedActiveDays(w);
             }
         });
 
@@ -457,7 +489,7 @@
             velocity: sumActiveDays > 0 ? sumClasses / sumActiveDays : 0,
             totalActiveDays: sumActiveDays,
             totalClasses: sumClasses
-       };
+        };
     }
 
     /**
@@ -655,13 +687,13 @@
         const aggregates = getWeeklyAggregates();
         const weekKeys = Object.keys(aggregates).sort().reverse().slice(0, 4);
 
-        const { velocity, totalActiveDays } = calculateGlobalVelocity(weekKeys, aggregates);
-
-        if (totalActiveDays < 3) {
+        if (!weekKeys.length) {
             const subjects = getSubjectsData();
-            return subjects.length || 4; // Fallback
+            return subjects.length || 4;
         }
-        return velocity;
+
+        const { velocity, totalActiveDays } = calculateGlobalVelocity(weekKeys, aggregates);
+        return velocity > 0 ? velocity : (getSubjectsData().length || 4);
     }
 
 
@@ -918,10 +950,8 @@
 
         currentActiveQuery = '';
 
-        // Show previous default response with gentle fade (no re-trigger, no duplication)
-        if (lastDefaultHTML && aiText) {
-            lineReveal(lastDefaultHTML);
-        }
+        // Re-trigger fresh default analysis (matches original behavior)
+        runDefaultInsight();
     }
 
     function handleSendClick() {
