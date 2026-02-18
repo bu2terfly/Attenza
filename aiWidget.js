@@ -145,11 +145,11 @@
     ];
 
     const FORECAST_INTERPS = [
-        "Next week you'll be at {week1}%, in 15 days around {week2}%, by next month {week4}%.",
-        "Expect {week1}% in a week, {week2}% after 15 days, {week4}% by next month .",
-        "1 week from now it's {week1}%, 15 days later {week2}%, next month {week4}% .",
-        "Within a week you'll see {week1}%, by day 15 around {week2}%, next month {week4}%,",
-        "Next week puts you at {week1}%, 15 days at {week2}%, next month at {week4}% ."
+        "In next 7 days at your current pace, overall will be around {forecast}%.",
+        "Expect your attendance to be about {forecast}% by end of next week.",
+        "Next week's projection puts you at {forecast}% overall.",
+        "By the end of 7 days, you'll likely be at {forecast}% overall.",
+        "Your next week forecast shows {forecast}% overall attendance."
     ];
 
     const FORECAST_CLOSERS = [
@@ -178,6 +178,13 @@
         "Sure! To calculate impact, Say how many classes or days will you miss( absent ) .",
         "Got it . so for impact calculation, how many classes/days are you planning to skip .",
         "Understood! But I need the count of classes / days you will skip ( absent) . Just tell me ."
+    ];
+
+    const IMPACT_VELOCITY_PROMPTS = [
+        "On an average working day, how many classes do you have?",
+        "How many classes usually happen in one day for you?",
+        "Quick — how many classes are scheduled on a normal day?",
+        "Just need one more thing — how many classes per day on average?"
     ];
 
     const ABSENCE_DATA_STATEMENTS = [
@@ -425,199 +432,42 @@
     }
 
     // =============================================
-    // 4a. FORECAST — Two-Engine Architecture
+    // 4a. FORECAST — Hybrid Momentum Engine
     // =============================================
 
     /**
-     * Count active days from bitmask (bit 0=Mon, bit 6=Sun).
-     * Backward compatible: converts old array/object formats to count.
-     */
-    function countActiveDaysBitmask(activeDays) {
-        if (typeof activeDays === 'number') {
-            // Bitmask: count set bits (Brian Kernighan)
-            let n = activeDays, count = 0;
-            while (n) { n &= n - 1; count++; }
-            return count;
-        }
-        // Legacy: array or firebase object → count entries
-        if (Array.isArray(activeDays)) return activeDays.length;
-        if (activeDays && typeof activeDays === 'object') return Object.keys(activeDays).length;
-        return 0;
-    }
-
-    /**
-     * Robust active-days estimator.
-     * Uses bitmask activeDays if present AND reasonable.
-     * Falls back to subjects-count estimation for legacy data.
-     */
-    function getEstimatedActiveDays(weekData) {
-        const total = weekData.total || 0;
-        if (total === 0) return 0;
-
-        const activeDaysCount = countActiveDaysBitmask(weekData.activeDays);
-
-        // If activeDays exists and looks reasonable, use it
-        if (activeDaysCount > 0) {
-            const avgPerDay = total / activeDaysCount;
-            if (avgPerDay <= 10) return activeDaysCount;
-        }
-
-        // Fallback: estimate from total classes / number of subjects
-        const subjectsCount = weekData.subjects ? Object.keys(weekData.subjects).length : 0;
-        if (subjectsCount > 0) {
-            return Math.min(6, Math.max(1, Math.round(total / subjectsCount)));
-        }
-
-        // Last resort: assume ~5 classes per day
-        return Math.min(6, Math.max(1, Math.round(total / 5)));
-    }
-
-    /**
-     * ENGINE 1: VELOCITY — "The Liquid Pool"
-     * Pour all weekly data into one pool. Sum total classes / sum active days.
-     * Uses robust estimator for legacy data without activeDays.
-     */
-    function calculateGlobalVelocity(weekKeys, aggregates) {
-        let sumClasses = 0;
-        let sumActiveDays = 0;
-
-        weekKeys.forEach(key => {
-            const w = aggregates[key];
-            if (w && w.total > 0) {
-                sumClasses += w.total;
-                sumActiveDays += getEstimatedActiveDays(w);
-            }
-        });
-
-        return {
-            velocity: sumActiveDays > 0 ? sumClasses / sumActiveDays : 0,
-            totalActiveDays: sumActiveDays,
-            totalClasses: sumClasses
-        };
-    }
-
-    /**
-     * ENGINE 2: HABIT — "Protected Optimism with Smart Thresholds"
-     * Step 1: Separate current week (NEVER filtered)
-     * Step 2: Filter past weeks (remove anomaly week if < 60% of normal avg)
-     * Step 3: Combine filtered past + unfiltered current → Global Habit
-     */
-    function calculateGlobalHabit(currentWeekKey, pastWeekKeys, aggregates) {
-        // Build past week data
-        const pastWeeks = pastWeekKeys.map(k => {
-            const w = aggregates[k];
-            return {
-                key: k,
-                total: (w && w.total) || 0,
-                present: (w && w.present) || 0,
-                successRate: (w && w.total > 0) ? w.present / w.total : 0
-            };
-        }).filter(w => w.total > 0);
-
-        // Step 2: Filter past weeks — "40% Crash Rule"
-        let filteredPast = [...pastWeeks];
-
-        if (pastWeeks.length >= 2) {
-            const sorted = [...pastWeeks].sort((a, b) => a.successRate - b.successRate);
-            const candidate = sorted[0]; // Lowest success rate
-            const others = sorted.slice(1);
-
-            // Calculate "Normal Average" from the other past weeks
-            let othersAttended = 0, othersTotal = 0;
-            others.forEach(w => { othersAttended += w.present; othersTotal += w.total; });
-            const normalAvg = othersTotal > 0 ? othersAttended / othersTotal : 0;
-
-            // Only remove if candidate crashed > 40% below normal (i.e. < 60% of normal)
-            if (candidate.successRate < normalAvg * 0.6) {
-                filteredPast = others; // Anomaly removed (sickness etc.)
-            }
-            // Otherwise keep it (laziness — fair game)
-        }
-
-        // Step 3: Re-integrate with current week (never filtered)
-        let habitAttended = 0, habitTotal = 0;
-        filteredPast.forEach(w => { habitAttended += w.present; habitTotal += w.total; });
-
-        const currentWeek = aggregates[currentWeekKey];
-        if (currentWeek && currentWeek.total > 0) {
-            habitAttended += currentWeek.present || 0;
-            habitTotal += currentWeek.total || 0;
-        }
-
-        return habitTotal > 0 ? habitAttended / habitTotal : 0;
-    }
-
-    /**
-     * Main Forecast Handler — Decision Tree
-     * Newbie (0-1 weeks): velocity prompt for user confirmation
-     * Veteran (2+ weeks): Two-Engine automatic forecast
+     * Hybrid Momentum Forecast
+     * Always asks user for velocity (classes per day).
+     * Uses momentum EMA (recent form) + overallPercentage (career history).
      */
     function queryForecast() {
-        const aggregates = getWeeklyAggregates();
-        const allWeekKeys = Object.keys(aggregates).sort().reverse();
-
-        if (!allWeekKeys.length) {
+        const data = getOverallData();
+        if (data.total < 5) {
             return { type: 'error', content: buildContentArray([pickRandom(FORECAST_TOO_SHORT)]) };
         }
-
-        // Determine current week
-        const today = new Date().toISOString().split('T')[0];
-        const currentWeekKey = getWeekKeyLocal(today);
-
-        // Split into current + up to 3 past weeks
-        const pastWeekKeys = allWeekKeys.filter(k => k !== currentWeekKey).slice(0, 3);
-        const relevantKeys = aggregates[currentWeekKey] && aggregates[currentWeekKey].total > 0
-            ? [currentWeekKey, ...pastWeekKeys]
-            : [...pastWeekKeys];
-
-        // Minimum data check: need at least 3 active days total
-        const { velocity, totalActiveDays } = calculateGlobalVelocity(relevantKeys, aggregates);
-        if (totalActiveDays < 3) {
-            return { type: 'error', content: buildContentArray([pickRandom(FORECAST_TOO_SHORT)]) };
-        }
-
-        // Count weeks with actual data
-        const weeksWithData = relevantKeys.filter(k => aggregates[k] && aggregates[k].total > 0).length;
-
-        // --- NEWBIE PATH (0-1 weeks with data) ---
-        if (weeksWithData < 2) {
-            const roundedV = Math.max(2, Math.min(6, Math.round(velocity)));
-            const options = [];
-            for (let i = Math.max(2, roundedV - 1); i <= Math.min(7, roundedV + 2); i++) options.push(i);
-            return {
-                type: 'velocity_prompt',
-                content: buildContentArray([pickRandom(FORECAST_VELOCITY_PROMPTS)]),
-                options: options
-            };
-        }
-
-        // --- VETERAN PATH (2+ weeks with data) ---
-        // Engine 1: Velocity (Liquid Pool)
-        const globalVelocity = velocity; // Already calculated from all relevant keys
-
-        // Engine 2: Habit (Protected Optimism)
-        const globalHabit = calculateGlobalHabit(currentWeekKey, pastWeekKeys, aggregates);
-
-        return generateForecastResult(globalVelocity, globalHabit);
+        // Always ask user for velocity
+        return {
+            type: 'velocity_prompt',
+            content: buildContentArray([pickRandom(FORECAST_VELOCITY_PROMPTS)]),
+            options: [3, 4, 5, 6, 7, 8]
+        };
     }
 
     function forecastWithUserVelocity(userVelocity) {
         const data = getOverallData();
-        const habit = data.percentage / 100;
-        return generateForecastResult(userVelocity, habit);
-    }
+        const summary = getSummaryData();
+        // Momentum EMA (recent form), default to overallPercentage
+        const momentum = (summary && summary.momentum != null) ? summary.momentum : data.percentage;
+        // Hybrid formula: 70% momentum + 30% overall
+        const effectiveRate = (0.70 * momentum) + (0.30 * data.percentage);
+        // 6 working days (Sunday off)
+        const futureTotalClasses = Math.round(userVelocity * 6);
+        const futureAttended = Math.round(futureTotalClasses * (effectiveRate / 100));
+        const newTotal = data.total + futureTotalClasses;
+        const newAttended = data.attended + futureAttended;
+        const forecastPct = newTotal > 0 ? parseFloat(((newAttended / newTotal) * 100).toFixed(1)) : 0;
 
-    function generateForecastResult(speed, habit) {
-        const data = getOverallData();
-        const forecast = [7, 15, 30].map(days => {
-            const futureClasses = Math.round(days * speed);
-            const futureAttends = Math.round(futureClasses * habit);
-            const newTotal = data.total + futureClasses;
-            const newAttended = data.attended + futureAttends;
-            return newTotal > 0 ? parseFloat(((newAttended / newTotal) * 100).toFixed(1)) : 0;
-        });
-
-        const vars = { week1: forecast[0], week2: forecast[1], week4: forecast[2] };
+        const vars = { forecast: forecastPct, current: data.percentage };
         const opener = pickRandom(FORECAST_OPENERS);
         const interp = fillTemplate(pickRandom(FORECAST_INTERPS), vars);
         const closer = pickRandom(FORECAST_CLOSERS);
@@ -656,7 +506,7 @@
         let input = raw.trim().toLowerCase();
         if (/^[^a-z0-9]+$/.test(input)) return { valid: false, error: "Invalid input." };
 
-        let cleaned = input.replace(/-(\d)/g, '$1').replace(/(\d)\.(\d)/g, '$1$2');
+        let cleaned = input.replace(/(-)(?=\d)/g, '').replace(/(\d)\.(\d)/g, '$1$2');
         const merged = mergeAdjacentNumbers(cleaned);
         const numMatch = merged.match(/\d+/);
         if (!numMatch) return { valid: false, error: "No number found. Type like 3 or 5 days." };
@@ -684,20 +534,6 @@
         }
         if (numBuffer) result.push(numBuffer);
         return result.join(' ');
-    }
-
-    /** Velocity for day-to-class conversion in Simulate Impact */
-    function getVelocityForImpact() {
-        const aggregates = getWeeklyAggregates();
-        const weekKeys = Object.keys(aggregates).sort().reverse().slice(0, 4);
-
-        if (!weekKeys.length) {
-            const subjects = getSubjectsData();
-            return subjects.length || 4;
-        }
-
-        const { velocity, totalActiveDays } = calculateGlobalVelocity(weekKeys, aggregates);
-        return velocity > 0 ? velocity : (getSubjectsData().length || 4);
     }
 
 
@@ -908,11 +744,12 @@
             typeWriter(result.content).then(() => {
                 if (typingAbortController && typingAbortController.signal.aborted) return;
                 showVelocityOptions(result.options, (selected) => {
-                    typeWriter(forecastWithUserVelocity(selected).content);
+                    // Validate: only 1-10 allowed
+                    const v = parseInt(selected, 10);
+                    if (isNaN(v) || v < 1 || v > 10) return;
+                    typeWriter(forecastWithUserVelocity(v).content);
                 });
             });
-        } else if (result.type === 'result') {
-            typeWriter(result.content);
         }
     }
 
@@ -953,10 +790,14 @@
         if (queryDock) queryDock.style.display = 'block';
 
         currentActiveQuery = '';
+        pendingImpactDays = null;
 
         // Re-trigger fresh default analysis (matches original behavior)
         runDefaultInsight();
     }
+
+    // Pending impact state for day-based input (two-step flow)
+    let pendingImpactDays = null;
 
     function handleSendClick() {
         if (!aiInput) return;
@@ -975,17 +816,45 @@
             return;
         }
 
-        let classCount = parsed.count;
         if (parsed.unit === 'day') {
-            const avgPerDay = getVelocityForImpact();
-            classCount = Math.round(parsed.count * avgPerDay);
-            parsed.label = parsed.count + ' days (~' + classCount + ' classes)';
+            // Step 1: Stash days, collapse input, ask for velocity
+            pendingImpactDays = parsed.count;
+
+            // Collapse input area
+            if (activeInputArea) {
+                activeInputArea.style.width = '0px';
+                activeInputArea.style.opacity = '0';
+                activeInputArea.style.paddingRight = '0px';
+            }
+            const newPillWidth = activePill ? activePill.offsetWidth : 120;
+            if (activeContentRow) activeContentRow.style.width = newPillWidth + 'px';
+            if (gradientStrip) gradientStrip.style.width = newPillWidth + 'px';
+            if (activeScrollTrack) activeScrollTrack.scrollLeft = 0;
+
+            // Ask how many classes per day (same UI as forecast velocity)
+            typeWriter(buildContentArray([pickRandom(IMPACT_VELOCITY_PROMPTS)])).then(() => {
+                if (typingAbortController && typingAbortController.signal.aborted) return;
+                showVelocityOptions([3, 4, 5, 6, 7, 8], (selected) => {
+                    const v = parseInt(selected, 10);
+                    if (isNaN(v) || v < 1 || v > 10) return;
+                    const classCount = Math.round(pendingImpactDays * v);
+                    const label = pendingImpactDays + ' days (~' + classCount + ' classes)';
+                    pendingImpactDays = null;
+
+                    if (activePillText) activePillText.textContent = label + ', Impact';
+                    typeWriter(queryAbsenceResult(classCount, label));
+                });
+            });
+            return;
         }
+
+        // Direct class input — compute immediately
+        let classCount = parsed.count;
 
         // Update pill text with result
         if (activePillText) activePillText.textContent = parsed.label + ', Impact';
 
-        // Collapse input, shrink to pill (matches original)
+        // Collapse input, shrink to pill
         if (activeInputArea) {
             activeInputArea.style.width = '0px';
             activeInputArea.style.opacity = '0';
