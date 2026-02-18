@@ -429,33 +429,28 @@
     // =============================================
 
     /**
-     * Normalize activeDays from Firebase.
-     * Firebase may return arrays as objects with numeric keys: {0: 0, 1: 2, 2: 4}
-     * JavaScript .length and .includes() don't work on plain objects.
+     * Count set bits in a bitmask (popcount).
+     * activeDays is stored as integer bitmask: bit 0=Mon, bit 6=Sun.
+     * Example: Mon+Tue+Wed = 0b111 = 7 → popcount = 3
      */
-    function normalizeActiveDays(ad) {
-        if (!ad) return [];
-        if (Array.isArray(ad)) return ad;
-        if (typeof ad === 'object') return Object.values(ad);
-        return [];
+    function popcount(n) {
+        let count = 0;
+        while (n) { count += n & 1; n >>>= 1; }
+        return count;
     }
 
     /**
-     * Robust active-days estimator.
-     * Uses activeDays if present AND reasonable (avg ≤ 10 classes/day).
-     * Falls back to subjects-count estimation for legacy data.
+     * Robust active-days counter.
+     * Reads bitmask if number, estimates from subjects if legacy data.
      */
     function getEstimatedActiveDays(weekData) {
         const total = weekData.total || 0;
         if (total === 0) return 0;
 
-        const normalized = normalizeActiveDays(weekData.activeDays);
-        const activeDaysLen = normalized.length;
-
-        // If activeDays exists and looks reasonable, use it
-        if (activeDaysLen > 0) {
-            const avgPerDay = total / activeDaysLen;
-            if (avgPerDay <= 10) return activeDaysLen; // Legit data
+        // Primary: bitmask integer
+        if (typeof weekData.activeDays === 'number' && weekData.activeDays > 0) {
+            const count = popcount(weekData.activeDays);
+            if (count > 0 && total / count <= 10) return count;
         }
 
         // Fallback: estimate from total classes / number of subjects
