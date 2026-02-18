@@ -429,28 +429,37 @@
     // =============================================
 
     /**
-     * Count set bits in a bitmask (popcount).
-     * activeDays is stored as integer bitmask: bit 0=Mon, bit 6=Sun.
-     * Example: Mon+Tue+Wed = 0b111 = 7 → popcount = 3
+     * Count active days from bitmask (bit 0=Mon, bit 6=Sun).
+     * Backward compatible: converts old array/object formats to count.
      */
-    function popcount(n) {
-        let count = 0;
-        while (n) { count += n & 1; n >>>= 1; }
-        return count;
+    function countActiveDaysBitmask(activeDays) {
+        if (typeof activeDays === 'number') {
+            // Bitmask: count set bits (Brian Kernighan)
+            let n = activeDays, count = 0;
+            while (n) { n &= n - 1; count++; }
+            return count;
+        }
+        // Legacy: array or firebase object → count entries
+        if (Array.isArray(activeDays)) return activeDays.length;
+        if (activeDays && typeof activeDays === 'object') return Object.keys(activeDays).length;
+        return 0;
     }
 
     /**
-     * Robust active-days counter.
-     * Reads bitmask if number, estimates from subjects if legacy data.
+     * Robust active-days estimator.
+     * Uses bitmask activeDays if present AND reasonable.
+     * Falls back to subjects-count estimation for legacy data.
      */
     function getEstimatedActiveDays(weekData) {
         const total = weekData.total || 0;
         if (total === 0) return 0;
 
-        // Primary: bitmask integer
-        if (typeof weekData.activeDays === 'number' && weekData.activeDays > 0) {
-            const count = popcount(weekData.activeDays);
-            if (count > 0 && total / count <= 10) return count;
+        const activeDaysCount = countActiveDaysBitmask(weekData.activeDays);
+
+        // If activeDays exists and looks reasonable, use it
+        if (activeDaysCount > 0) {
+            const avgPerDay = total / activeDaysCount;
+            if (avgPerDay <= 10) return activeDaysCount;
         }
 
         // Fallback: estimate from total classes / number of subjects
