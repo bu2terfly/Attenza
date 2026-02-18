@@ -3915,13 +3915,14 @@
     .ai-widget-wrapper {
         position: relative;
         width: 100%;
-        padding: 14px 0 18px;
+        padding: 12px 16px;
         display: flex;
         flex-direction: column;
         gap: 12px;
         cursor: pointer;
         z-index: 1;
         grid-column: span 4;
+        overflow: hidden;
     }
 
     /* --- THE AURA --- */
@@ -4125,15 +4126,27 @@
         color: #1e293b;
         padding: 8px 12px;
         border-radius: 10px;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         font-weight: 600;
         white-space: nowrap;
         display: flex;
         align-items: center;
         gap: 6px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
         cursor: pointer;
         transition: all 0.2s ease;
-        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .query-pill:hover {
+        transform: translateY(-2px);
+        border-color: #8fd3f4;
+        color: #0d9488;
+        box-shadow: 0 4px 12px rgba(132, 250, 176, 0.25);
+    }
+
+    .query-pill:hover svg {
+        color: #0d9488;
     }
 
     .query-pill:active {
@@ -4144,7 +4157,8 @@
         width: 14px;
         height: 14px;
         flex-shrink: 0;
-        stroke: #64748b;
+        color: #94a3b8;
+        transition: color 0.2s;
     }
 
     @keyframes ai-fadeIn {
@@ -4163,14 +4177,29 @@
     .active-query-dock {
         display: none;
         position: relative;
+        width: 100%;
         margin-top: 10px;
-        animation: ai-fadeIn 0.3s ease;
+        animation: ai-fadeIn 0.3s ease forwards;
+    }
+
+    .active-query-dock::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(to right, transparent, #f5f3ef);
+        pointer-events: none;
     }
 
     .active-scroll-track {
+        display: block;
+        width: 100%;
         overflow-x: auto;
+        padding-bottom: 4px;
         scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
     }
 
     .active-scroll-track::-webkit-scrollbar {
@@ -4178,58 +4207,55 @@
     }
 
     .active-content-wrapper {
-        position: relative;
-        display: inline-flex;
+        display: flex;
         flex-direction: column;
-        min-width: 100%;
+        width: fit-content;
     }
 
     .active-content-row {
         display: flex;
         align-items: center;
-        gap: 8px;
+        height: 30px;
+        margin-bottom: 2px;
         width: fit-content;
-        transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .active-input-area {
         display: flex;
         align-items: center;
-        gap: 4px;
-        width: 0;
+        width: 0px;
         opacity: 0;
         overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         flex-shrink: 0;
     }
 
-    #ai-input {
-        flex: 1;
+    .active-input-area input {
+        flex-grow: 1;
         min-width: 0;
-        padding: 8px 2px;
-        border: none;
-        border-bottom: 1.5px solid #cbd5e1;
-        border-radius: 0;
-        font-size: 0.75rem;
-        font-weight: 500;
         background: transparent;
-        color: #1e293b;
+        border: none;
         outline: none;
-        font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
-        transition: border-color 0.2s;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #1e293b;
+        padding: 0;
+        caret-color: #0d9488;
     }
 
-    #ai-input:focus {
-        border-bottom-color: #0d9488;
+    .active-input-area input::placeholder {
+        color: #64748b;
+        opacity: 0.5;
+        font-weight: 500;
     }
 
-    #ai-input.input-error {
-        border-bottom-color: #ef4444;
-        animation: ai-shake 0.4s ease;
-    }
-
-    #ai-input.input-error::placeholder {
+    .active-input-area input.input-error::placeholder {
         color: #ef4444;
+        opacity: 0.8;
+    }
+
+    .active-input-area input.input-error {
+        animation: ai-shake 0.4s ease;
     }
 
     @keyframes ai-shake {
@@ -4249,70 +4275,79 @@
     }
 
     .send-btn {
-        width: 32px;
-        height: 32px;
-        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0 4px;
+        margin-left: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: none;
-        border-radius: 50%;
-        background: transparent;
-        cursor: pointer;
-        padding: 0;
         opacity: 0;
-        transform: scale(0.5);
+        transform: scale(0.8) translateX(-5px);
         pointer-events: none;
-        transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        flex-shrink: 0;
     }
 
     .send-btn.visible {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1) translateX(0);
         pointer-events: auto;
     }
 
     .send-btn svg {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
         fill: none;
     }
 
     .active-pill {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 8px 12px;
-        border-radius: 10px;
         background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.04);
+        color: #0d9488;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 8px;
         font-size: 0.7rem;
-        font-weight: 600;
-        color: #1e293b;
-        white-space: nowrap;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 5px rgba(13, 148, 136, 0.1);
+        border: 1px solid rgba(13, 148, 136, 0.25);
         cursor: pointer;
         transition: all 0.2s ease;
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 
-    .active-pill:active {
-        transform: scale(0.96);
+    .active-pill:hover {
+        border-color: #ef4444;
+        background: #fef2f2;
+        color: #ef4444;
     }
 
     .active-pill svg {
-        width: 12px;
-        height: 12px;
-        stroke: #ef4444;
+        width: 13px;
+        height: 13px;
+        color: #94a3b8;
+        transition: color 0.2s ease;
         flex-shrink: 0;
+    }
+
+    .active-pill:hover svg {
+        color: #ef4444;
+    }
+
+    .active-pill span {
+        white-space: nowrap;
     }
 
     .gradient-strip {
         height: 2px;
-        margin-top: 4px;
-        border-radius: 1px;
-        width: 100%;
-        background: linear-gradient(90deg, #84fab0, #8fd3f4);
-        transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        width: 0px;
+        background-image: linear-gradient(90deg, #38bdf8 0%, #38bdf8 30%, #84fab0 40%, #38bdf8 60%, #38bdf8 100%);
+        border-radius: 2px;
     }
 
     /* --- LINE REVEAL ANIMATION --- */
