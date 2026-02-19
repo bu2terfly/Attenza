@@ -3266,8 +3266,8 @@
 
     /* Notification Panel Header */
     #notificationOverlay .notif-header {
-        padding: 24px 24px 24px 24px;
-        background: #f5f3ef;
+        padding: 24px 24px 30px 24px;
+        background: #ffffff;
         display: flex;
         align-items: center;
         justify-content: space-between;
