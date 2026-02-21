@@ -447,7 +447,7 @@
         }
 
         .progress-wrapper {
-            margin-top: 24px;
+            margin-top: 20px;
         }
 
         .step-text {
@@ -522,7 +522,7 @@
             gap: 16px;
             margin-bottom: 20px;
             align-items: flex-start;
-            padding: 16px 20px 0;
+            padding: 18px 20px 0;
         }
 
         .s-profile-img {
@@ -611,7 +611,7 @@
 
         .search-container .search-icon-s {
             position: absolute;
-            left: 38px;
+            left: 28px;
             top: 50%;
             transform: translateY(-50%);
             color: #18181b;
@@ -623,7 +623,7 @@
 
         .fake-placeholder-layer {
             position: absolute;
-            left: 72px;
+            left: 52px;
             top: 50%;
             transform: translateY(-50%);
             pointer-events: none;
@@ -1119,8 +1119,8 @@
                 <div class="s-profile-card">
                     <img id="setupProfileImage" src="/Image/avatar.jpg" class="s-profile-img" alt="profile">
                     <div class="s-profile-info">
-                        <h2 id="setupProfileName" class="s-profile-name">Student Name</h2>
-                        <p id="setupProfileEmail" class="s-profile-email">email@example.com</p>
+                        <h2 id="setupProfileName" class="s-profile-name">Fetching...</h2>
+                        <p id="setupProfileEmail" class="s-profile-email">Fetching...</p>
                         <div class="s-profile-pills">
                             <span id="setupPillRoll" class="s-pill">Roll -</span>
                             <span id="setupPillClass" class="s-pill">Class</span>
@@ -1309,9 +1309,8 @@
             profileNameEl.textContent = profile.name || (currentUser && currentUser.displayName) || "Student";
             profileEmailEl.textContent = profile.email || (currentUser && currentUser.email) || "—";
 
-            // --- NEW LOGIC FOR META PILL ---
-            // Format: "Course 1st Sem • Section , Roll - Number"
-            const course = profile.course_or_class || "";
+            // Build meta pill: try course_or_class, fallback to semester or class
+            const course = profile.course_or_class || profile.semester || profile.class_name || profile.class || "";
             const section = profile.section ? ` • ${profile.section}` : "";
             const rollPart = profile.rollNumber ? ` , Roll - ${profile.rollNumber}` : "";
 
@@ -1324,7 +1323,7 @@
 
             profileMetaTextEl.textContent = metaString;
 
-            menuCollegeLabel.textContent = profile.college || "College";
+            menuCollegeLabel.textContent = profile.college || profile.collegeName || profile.institution || "College";
             profileImageEl.src = getDefaultDp();
 
             // Logic to change subject card text if setup is done
@@ -1466,12 +1465,7 @@
             uid: null,
             profile: null,
             collegeId: null,
-            fetchedSubjects: [
-                "Financial Accounting", "Business Law", "Micro Economics",
-                "Communicative English", "Business Stats", "Cost Accounting",
-                "Marketing Management", "Corporate Law", "Indian Economy",
-                "IT in Business", "Entrepreneurship", "Auditing"
-            ],
+            fetchedSubjects: [], // No defaults — user creates their own or we fetch from Firestore
             selectedSubjects: new Set(),
             customSubjects: new Set(),
             step2Data: {},
@@ -1510,10 +1504,12 @@
             const emailEl = document.getElementById('setupProfileEmail');
             const rollEl = document.getElementById('setupPillRoll');
             const classEl = document.getElementById('setupPillClass');
-            if (nameEl) nameEl.textContent = profile.name || 'Student';
+            if (nameEl) nameEl.textContent = profile.name || (profile.displayName) || 'Student';
             if (emailEl) emailEl.textContent = profile.email || '';
             if (rollEl) rollEl.textContent = profile.rollNumber ? `Roll - ${profile.rollNumber}` : 'Roll -';
-            if (classEl) classEl.textContent = profile.course_or_class || profile.class || 'Class';
+            // Try all possible class/course field names
+            const classVal = profile.course_or_class || profile.semester || profile.class_name || profile.class || profile.stream || '';
+            if (classEl) classEl.textContent = classVal || 'Class';
         }
 
         // ── Back button ──
@@ -1561,7 +1557,9 @@
                     const cached = JSON.parse(raw);
                     if (cached && cached.data) {
                         S.profile = cached.data;
-                        S.collegeId = (cached.data.college || '').toLowerCase().replace(/\s+/g, '-');
+                        // Try all possible field names for college identifier used to fetch Firestore subjects
+                        const collegeRaw = cached.data.college || cached.data.collegeName || cached.data.institution || '';
+                        S.collegeId = collegeRaw.toLowerCase().replace(/\s+/g, '-');
                         setupApplyProfile(cached.data);
                     }
                 }
@@ -1767,10 +1765,11 @@
         function sUpdateStep2Action() {
             if (S.currentView !== 'step2') return;
             const values = Object.values(S.step2Data || {});
-            const validEntries = values.filter(d => d.touched && d.total > 0 && d.attended <= d.total).length;
+            // Count subjects where total > 0 (attended=0 is valid — means no classes attended yet)
+            const validOrSkipped = values.filter(d => d.touched && d.total > 0 && d.attended <= d.total).length;
             const anyInput = values.some(d => d.touched);
             if (anyInput) {
-                sStatusText.innerText = validEntries > 0 ? `${validEntries} subject${validEntries !== 1 ? 's' : ''} updated` : 'Entering data...';
+                sStatusText.innerText = validOrSkipped > 0 ? `${validOrSkipped} subject${validOrSkipped !== 1 ? 's' : ''} updated` : 'Entering data...';
                 sActionBtn.innerText = 'Continue';
             } else {
                 sStatusText.innerText = 'No past records?';
