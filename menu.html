@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en">(valid — means they skipped all those classes). The action bar
 
 <head>
     <meta charset="utf-8" />
@@ -446,8 +446,20 @@
             margin-bottom: 0;
         }
 
+        /* Setup page specific: nav buttons match the header background (#f5f3ef) */
+        #view-setup .nav-btn {
+            background: #f5f3ef;
+            border-color: #444444;
+            color: #444444;
+        }
+
+        #view-setup .nav-btn:active {
+            background-color: #444444;
+            color: #ffffff;
+        }
+
         .progress-wrapper {
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
         .step-text {
@@ -522,7 +534,7 @@
             gap: 16px;
             margin-bottom: 20px;
             align-items: flex-start;
-            padding: 18px 20px 0;
+            padding: 16px 20px 0;
         }
 
         .s-profile-img {
@@ -611,7 +623,7 @@
 
         .search-container .search-icon-s {
             position: absolute;
-            left: 28px;
+            left: 38px;
             top: 50%;
             transform: translateY(-50%);
             color: #18181b;
@@ -623,7 +635,7 @@
 
         .fake-placeholder-layer {
             position: absolute;
-            left: 52px;
+            left: 72px;
             top: 50%;
             transform: translateY(-50%);
             pointer-events: none;
@@ -1323,7 +1335,7 @@
 
             profileMetaTextEl.textContent = metaString;
 
-            menuCollegeLabel.textContent = profile.college || profile.collegeName || profile.institution || "College";
+            menuCollegeLabel.textContent = profile.collegeId || profile.college || profile.collegeName || profile.institution || "College";
             profileImageEl.src = getDefaultDp();
 
             // Logic to change subject card text if setup is done
@@ -1558,7 +1570,7 @@
                     if (cached && cached.data) {
                         S.profile = cached.data;
                         // Try all possible field names for college identifier used to fetch Firestore subjects
-                        const collegeRaw = cached.data.college || cached.data.collegeName || cached.data.institution || '';
+                        const collegeRaw = cached.data.collegeId || cached.data.college || cached.data.collegeName || cached.data.institution || '';
                         S.collegeId = collegeRaw.toLowerCase().replace(/\s+/g, '-');
                         setupApplyProfile(cached.data);
                     }
