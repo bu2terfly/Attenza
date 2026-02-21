@@ -14,7 +14,7 @@
     <style>
         /* --- VARIABLES --- */
         :root {
-            --bg-body: #F9F8F6;
+            --bg-body: #f5f3ef;
             --bg-white: #ffffff;
             --bg-gray-light: #f9fafb;
             --bg-card: #ffffff;
@@ -83,11 +83,12 @@
 
         /* --- HEADER SECTION --- */
         .container-top {
-            padding: 24px 20px 0px 20px;
+            padding: 16px 20px 16px 20px;
             flex-shrink: 0;
             z-index: 102;
             position: relative;
-            background-color: var(--bg-body);
+            background-color: #ffffff;
+            border-bottom: 2px solid #e0e0e0;
         }
 
         /* SCROLL SECTION */
@@ -108,31 +109,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
 
         .header-title {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text-main);
         }
 
         .nav-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #E5E7EB;
-            color: var(--text-main);
+            width: 38px;
+            height: 38px;
+            border-radius: 15px;
+            background: #ffffff;
+            border: 2.5px solid #444444;
+            color: #444444;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background 0.2s;
-            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
         }
 
         .nav-btn:active {
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: #444444;
+            color: #ffffff;
             transform: scale(0.95);
         }
 
@@ -419,6 +421,582 @@
             font-size: 10px;
             color: #d1d5db;
         }
+
+        /* =============================================
+           SETUP VIEW STYLES
+           ============================================= */
+        .app-view.setup-active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .persistent-header {
+            padding: 16px 20px 16px 20px;
+            background-color: #ffffff;
+            border-bottom: 2px solid #e0e0e0;
+            z-index: 20;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .setup-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .progress-wrapper {
+            margin-top: 14px;
+        }
+
+        .step-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--brand-purple);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 5px;
+            background: #E4E4E7;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--brand-purple);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 33%;
+        }
+
+        .content-stage {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .step-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding-bottom: 140px;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            overscroll-behavior: contain;
+        }
+
+        .step-panel.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .step-panel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .px-default {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .px-grid {
+            padding-left: 12px;
+            padding-right: 8px;
+        }
+
+        .s-profile-card {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+            padding: 16px 20px 0;
+        }
+
+        .s-profile-img {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-xl);
+            object-fit: cover;
+            border: 1px solid white;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+
+        .s-profile-info {
+            height: 56px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1px 0;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .s-profile-name {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 10px;
+        }
+
+        .s-profile-email {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .s-profile-pills {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .s-pill {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(110, 98, 229, 0.1);
+            border: 1px solid rgba(110, 98, 229, 0.1);
+            color: var(--brand-purple-text);
+        }
+
+        .context-header {
+            margin-bottom: 16px;
+            padding: 0 20px;
+        }
+
+        .context-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .context-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .search-container .search-icon-s {
+            position: absolute;
+            left: 38px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #18181b;
+            font-size: 22px;
+            pointer-events: none;
+            z-index: 5;
+            transition: color 0.3s;
+        }
+
+        .fake-placeholder-layer {
+            position: absolute;
+            left: 72px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 500;
+            color: #D4D4D8;
+            z-index: 1;
+        }
+
+        .blinking-cursor {
+            color: var(--text-main);
+            font-weight: 300;
+            margin-right: -1.5px;
+            animation: cursorBlink 1s step-end infinite;
+        }
+
+        @keyframes cursorBlink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .search-container .search-input-s {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            background-color: transparent;
+            padding: 10px 12px 10px 34px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            border-bottom: 2px solid #18181b;
+            border-radius: 0;
+            transition: border-color 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-container .search-input-s:focus {
+            border-bottom-color: var(--brand-purple);
+            outline: none;
+        }
+
+        .search-container .search-input-s:focus~.search-icon-s {
+            color: var(--brand-purple);
+        }
+
+        .search-container .search-input-s:focus+.fake-placeholder-layer,
+        .search-container .search-input-s:not(:placeholder-shown)+.fake-placeholder-layer {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .pill-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-content: flex-start;
+            width: 100%;
+        }
+
+        .subject-pill-s {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 11px;
+            background: var(--bg-white);
+            border: 1px solid #e4e4e7;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .pill-text-s {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .pill-icon-s {
+            font-size: 16px;
+            color: var(--text-light);
+        }
+
+        .subject-pill-s.active {
+            background: var(--brand-purple-light);
+            border-color: var(--brand-purple);
+        }
+
+        .subject-pill-s.active .pill-text-s,
+        .subject-pill-s.active .pill-icon-s {
+            color: var(--brand-purple);
+        }
+
+        .subject-pill-s.create-mode {
+            border: 1px dashed var(--text-muted);
+            background: transparent;
+        }
+
+        .missing-footer {
+            width: 100%;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-light);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .scale-pop {
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.95);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Step 2 Styles */
+        .s-page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #09090b;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .s-page-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .tip-banner {
+            background-color: #F5F3FF;
+            border: 1px dashed #DDD6FE;
+            border-radius: 12px;
+            padding: 8px 12px;
+            display: flex;
+            gap: 12px;
+            align-items: start;
+            margin-bottom: 24px;
+        }
+
+        .tip-banner .tip-icon {
+            color: #6366F1;
+            font-size: 20px;
+            margin-top: 1px;
+        }
+
+        .tip-banner p {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #4B5563;
+        }
+
+        .tip-banner b {
+            color: #4F46E5;
+            font-weight: 600;
+        }
+
+        .card-list-s {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .subject-card-s {
+            background: var(--bg-card);
+            border: 1.6px solid var(--border-light);
+            border-radius: 14px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+
+        .subject-card-s:focus-within {
+            border-color: var(--brand-purple);
+            box-shadow: 0 4px 12px rgba(110, 98, 229, 0.08);
+        }
+
+        .card-content-s {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .s-subject-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: normal;
+            line-height: 1.3;
+        }
+
+        .pct-badge {
+            align-self: flex-start;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #F3F4F6;
+            color: #9CA3AF;
+        }
+
+        .pct-badge.active {
+            background: var(--brand-subtle);
+            color: var(--brand-purple);
+        }
+
+        .pct-badge.error {
+            background: #FEF2F2;
+            color: #ef4444;
+        }
+
+        .input-cluster {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .num-input {
+            width: 48px;
+            height: 38px;
+            background: #F9F8F6;
+            border: 1.6px solid #E4E4E7;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #09090b;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .num-input:focus {
+            border-color: var(--brand-purple);
+            box-shadow: 0 0 0 3px rgba(110, 98, 229, 0.15);
+            outline: none;
+        }
+
+        .num-input.error {
+            border-color: #ef4444;
+            background: #FEF2F2;
+            color: #ef4444;
+        }
+
+        .input-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Action bars */
+        .fixed-layer {
+            position: fixed;
+            bottom: calc(30px + env(safe-area-inset-bottom, 20px));
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            transform: translateY(120px);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .fixed-layer.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .action-bar {
+            background-color: #0F0F11;
+            color: white;
+            padding: 6px 6px 6px 24px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+            min-width: 260px;
+            justify-content: space-between;
+        }
+
+        .btn-continue-pill {
+            background-color: #ffffff;
+            color: #0F0F11;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .selection-count {
+            font-size: 16px;
+        }
+
+        .fab-content {
+            background-color: #000;
+            padding: 6px 6px 6px 24px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.3);
+            width: 72%;
+            max-width: 340px;
+            pointer-events: auto;
+        }
+
+        .status-msg {
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: -6px;
+            color: #fff;
+        }
+
+        .btn-primary-setup {
+            background-color: #fff;
+            color: #000;
+            padding: 14px 20px;
+            border-radius: 100px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+            border: none;
+        }
     </style>
 </head>
 
@@ -517,6 +1095,89 @@
         </div>
     </div>
 
+    <!-- ===== SETUP VIEW (embedded, no navigation) ===== -->
+    <div id="view-setup" class="app-view" style="opacity:0;pointer-events:none;z-index:0;">
+        <div class="persistent-header">
+            <div class="setup-nav-header">
+                <button class="nav-btn" id="setupBackBtn">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <button class="nav-btn" style="border-color:#6E62E5;color:#6E62E5;">
+                    <span class="material-symbols-rounded">help</span>
+                </button>
+            </div>
+            <div class="progress-wrapper">
+                <div class="step-text" id="setupStepText">Step 1 of 2</div>
+                <div class="progress-track">
+                    <div id="setupProgressFill" class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-stage">
+            <!-- Step 1: Choose Subjects -->
+            <div id="setup-step1-panel" class="step-panel active">
+                <div class="s-profile-card">
+                    <img id="setupProfileImage" src="/Image/avatar.jpg" class="s-profile-img" alt="profile">
+                    <div class="s-profile-info">
+                        <h2 id="setupProfileName" class="s-profile-name">Student Name</h2>
+                        <p id="setupProfileEmail" class="s-profile-email">email@example.com</p>
+                        <div class="s-profile-pills">
+                            <span id="setupPillRoll" class="s-pill">Roll -</span>
+                            <span id="setupPillClass" class="s-pill">Class</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="context-header">
+                    <h1 class="context-title">Choose your subjects</h1>
+                    <p class="context-sub">Select or create the subjects for your current class session</p>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="setupSubjectInput" placeholder=" " class="search-input-s"
+                        oninput="setupHandleSearch()">
+                    <div class="fake-placeholder-layer">
+                        <span class="blinking-cursor">|</span>Type subject name to create
+                    </div>
+                    <span class="material-symbols-rounded search-icon-s">search</span>
+                </div>
+
+                <div id="setupGridContainer" class="pill-grid px-grid"></div>
+                <div class="missing-footer px-default">Missing subject? Create to add</div>
+            </div>
+
+            <!-- Step 2: Past Attendance -->
+            <div id="setup-step2-panel" class="step-panel">
+                <div style="padding: 16px 20px 0;">
+                    <h1 class="s-page-title">Add past attendance</h1>
+                    <p class="s-page-subtitle">If you've attended classes already for this session, add those records
+                        here</p>
+                    <div class="tip-banner">
+                        <span class="material-symbols-rounded tip-icon">lightbulb</span>
+                        <p>You can find past records on your <b>college portal</b>, check with your <b>HOD</b>, or enter
+                            a rough estimate.</p>
+                    </div>
+                    <div id="setupCardsList" class="card-list-s"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Action Bars (fixed, shown only during setup) -->
+    <div id="setupActionBar" class="fixed-layer">
+        <div class="action-bar">
+            <span class="selection-count" id="setupCountText">0 selected</span>
+            <button class="btn-continue-pill" onclick="setupCompleteStep1()">Continue</button>
+        </div>
+    </div>
+
+    <div id="setupFabContainer" class="fixed-layer">
+        <div class="fab-content">
+            <span class="status-msg" id="setupStatusText">No past records?</span>
+            <button class="btn-primary-setup" id="setupActionBtn" onclick="setupFinish()">Skip step</button>
+        </div>
+    </div>
     <script type="module">
         // --- FIREBASE IMPORTS ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -668,7 +1329,8 @@
             profileImageEl.src = getDefaultDp();
 
             // Logic to change subject card text if setup is done
-            if (setupStatus || (profile.selectedSubjects && profile.selectedSubjects.length > 0) || (profile.subjectCount && Number(profile.subjectCount) > 0)) {
+            if (setupStatus || (profile.selectedSubjects && profile.selectedSubjects.length > 0) || (profile.subjectCount &&
+                Number(profile.subjectCount) > 0)) {
                 subjectCardTitle.textContent = "Your Subjects";
                 subjectCardSubtitle.textContent = "Manage subjects to track attendance";
             } else {
@@ -704,9 +1366,29 @@
         }
 
         function openSetupPage() {
-            postToParent({ type: "NAVIGATE", to: "setup" });
-            // Full navigation fallback if not in iframe
-            // window.location.assign("setup.html");
+            // Switch views in-page for smoother UX
+            const menuView = document.getElementById('view-menu');
+            const setupView = document.getElementById('view-setup');
+            menuView.style.opacity = '0';
+            menuView.style.pointerEvents = 'none';
+            menuView.style.zIndex = '0';
+            setupView.style.opacity = '1';
+            setupView.style.pointerEvents = 'auto';
+            setupView.style.zIndex = '20';
+            // Ensure step 1 panel is active
+            const panel1 = document.getElementById('setup-step1-panel');
+            const panel2 = document.getElementById('setup-step2-panel');
+            if (panel1) panel1.classList.add('active');
+            if (panel2) panel2.classList.remove('active');
+            // Load data: profile from menu state + subjects from Firebase
+            if (currentProfile && typeof window.setupApplyProfile === 'function') {
+                window.setupApplyProfile(currentProfile);
+            }
+            if (typeof window.sLoadData === 'function') {
+                window.sLoadData();
+            } else if (typeof window.setupRenderGrid === 'function') {
+                window.setupRenderGrid('');
+            }
         }
 
         // Profile edit button
@@ -756,6 +1438,441 @@
             }
         })();
 
+    </script>
+
+    <!-- ===== SETUP JS (module with extra Firestore imports) ===== -->
+    <script type="module">
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import {
+            getFirestore, collection, doc, getDoc, getDocs, setDoc,
+            writeBatch, runTransaction, serverTimestamp, query, where
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const sFirebaseConfig = {
+            apiKey: "AIzaSyDbFEWKJylJJgNw0KIyFsDxlDKPwJII73o",
+            authDomain: "attenza-app.firebaseapp.com",
+            projectId: "attenza-app",
+            storageBucket: "attenza-app.firebasestorage.app",
+            messagingSenderId: "435010148378",
+            appId: "1:435010148378:web:e5540806fd0ef90b16d9a3"
+        };
+
+        const app2 = getApps().length > 0 ? getApps()[0] : initializeApp(sFirebaseConfig, 'setup-instance');
+        const sAuth = getAuth(app2);
+        const sDb = getFirestore(app2);
+
+        // ── State ──
+        const S = {
+            uid: null,
+            profile: null,
+            collegeId: null,
+            fetchedSubjects: [
+                "Financial Accounting", "Business Law", "Micro Economics",
+                "Communicative English", "Business Stats", "Cost Accounting",
+                "Marketing Management", "Corporate Law", "Indian Economy",
+                "IT in Business", "Entrepreneurship", "Auditing"
+            ],
+            selectedSubjects: new Set(),
+            customSubjects: new Set(),
+            step2Data: {},
+            existingSubjectsMap: {},
+            currentView: 'step1'
+        };
+
+        // ── Canvas for text measurement ──
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.font = "600 13px Inter, sans-serif";
+
+        // ── DOM refs ──
+        const sGrid = document.getElementById('setupGridContainer');
+        const sInput = document.getElementById('setupSubjectInput');
+        const sActionBar = document.getElementById('setupActionBar');
+        const sCountText = document.getElementById('setupCountText');
+        const sListContainer = document.getElementById('setupCardsList');
+        const sActionBtn = document.getElementById('setupActionBtn');
+        const sStatusText = document.getElementById('setupStatusText');
+        const sFabContainer = document.getElementById('setupFabContainer');
+        const sProgressFill = document.getElementById('setupProgressFill');
+        const sStepText = document.getElementById('setupStepText');
+        const setupBackBtn = document.getElementById('setupBackBtn');
+
+        // ── Helpers ──
+        function sSlugify(name) {
+            return encodeURIComponent(name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, ''));
+        }
+
+        function sShowToast(msg) { alert(msg); }
+
+        function setupApplyProfile(profile) {
+            if (!profile) return;
+            const nameEl = document.getElementById('setupProfileName');
+            const emailEl = document.getElementById('setupProfileEmail');
+            const rollEl = document.getElementById('setupPillRoll');
+            const classEl = document.getElementById('setupPillClass');
+            if (nameEl) nameEl.textContent = profile.name || 'Student';
+            if (emailEl) emailEl.textContent = profile.email || '';
+            if (rollEl) rollEl.textContent = profile.rollNumber ? `Roll - ${profile.rollNumber}` : 'Roll -';
+            if (classEl) classEl.textContent = profile.course_or_class || profile.class || 'Class';
+        }
+
+        // ── Back button ──
+        if (setupBackBtn) {
+            setupBackBtn.addEventListener('click', () => {
+                if (S.currentView === 'step2') {
+                    sNavigateTo('step1');
+                } else {
+                    // Return to menu view
+                    const menuView = document.getElementById('view-menu');
+                    const setupView = document.getElementById('view-setup');
+                    setupView.style.opacity = '0';
+                    setupView.style.pointerEvents = 'none';
+                    setupView.style.zIndex = '0';
+                    menuView.style.opacity = '1';
+                    menuView.style.pointerEvents = 'auto';
+                    menuView.style.zIndex = '10';
+                    sActionBar.classList.remove('visible');
+                    sFabContainer.classList.remove('visible');
+                }
+            });
+        }
+
+        // ── Auth ──
+        onAuthStateChanged(sAuth, async (user) => {
+            if (!user) return;
+            S.uid = user.uid;
+        });
+
+        // ── Load data when setup opens ──
+        async function sLoadData() {
+            if (!S.uid) return;
+            // Reset state for fresh load
+            S.selectedSubjects = new Set();
+            S.customSubjects = new Set();
+            S.step2Data = {};
+            S.existingSubjectsMap = {};
+            S.currentView = 'step1';
+
+            // Try shared cache first
+            try {
+                const SHARED_KEY = 'attenza_profile_v2';
+                const raw = localStorage.getItem(SHARED_KEY);
+                if (raw) {
+                    const cached = JSON.parse(raw);
+                    if (cached && cached.data) {
+                        S.profile = cached.data;
+                        S.collegeId = (cached.data.college || '').toLowerCase().replace(/\s+/g, '-');
+                        setupApplyProfile(cached.data);
+                    }
+                }
+            } catch (e) { }
+
+            await sLoadCollegeSubjects(S.collegeId);
+            await sLoadUserSubjects();
+            setupRenderGrid('');
+            setupUpdateStep1Action();
+        }
+
+        async function sLoadCollegeSubjects(collegeId) {
+            if (!collegeId) return;
+            try {
+                const colRef = collection(sDb, 'colleges', collegeId, 'subjects');
+                const snaps = await getDocs(colRef);
+                if (snaps && !snaps.empty) {
+                    const arr = [];
+                    snaps.forEach(s => { const d = s.data(); if (d && d.name) arr.push(d.name); });
+                    if (arr.length) { S.fetchedSubjects = Array.from(new Set([...arr])); return; }
+                }
+            } catch (err) { console.warn('Could not load college subjects:', err); }
+        }
+
+        async function sLoadUserSubjects() {
+            if (!S.uid) return;
+            try {
+                const subjectsRef = collection(sDb, 'users', S.uid, 'subjects');
+                const snaps = await getDocs(subjectsRef);
+                if (snaps && !snaps.empty) {
+                    snaps.forEach(s => {
+                        const d = s.data() || {};
+                        S.existingSubjectsMap[s.id] = d;
+                        const name = d.name;
+                        if (name) {
+                            S.selectedSubjects.add(name);
+                            const id = sSlugify(name);
+                            const past = d.pastAttendance || { total: 0, attended: 0 };
+                            S.step2Data[id] = { total: past.total || 0, attended: past.attended || 0, touched: !!(past.total || past.attended) };
+                        }
+                    });
+                }
+            } catch (err) { console.warn("Failed to read user subjects", err); }
+        }
+
+        // ── Grid ──
+        function setupRenderGrid(queryStr = '') {
+            if (!sGrid) return;
+            const containerWidth = Math.max(120, sGrid.getBoundingClientRect().width);
+            sGrid.innerHTML = '';
+            const q = (queryStr || '').toLowerCase().trim();
+            let allSubjects = new Set([...S.fetchedSubjects, ...S.customSubjects, ...Object.values(S.existingSubjectsMap).map(s => s.name)]);
+            let filteredList = Array.from(allSubjects).filter(sub => sub && sub.toLowerCase().includes(q));
+            let allItems = filteredList.map(name => ({ name, width: ctx.measureText(name).width + 70, isSelected: S.selectedSubjects.has(name) }));
+            let selected = allItems.filter(i => i.isSelected);
+            let unselected = allItems.filter(i => !i.isSelected);
+            let pool = [...selected, ...unselected];
+            const packed = sPackItemsDense(pool, containerWidth);
+            packed.forEach(item => sGrid.appendChild(sCreatePill(item.name, false)));
+            if (q.length > 0 && !filteredList.some(s => s.toLowerCase() === q)) {
+                sGrid.appendChild(sCreatePill(queryStr.trim(), true));
+            }
+            setupUpdateStep1Action();
+        }
+
+        function sPackItemsDense(items, containerWidth) {
+            let packedRows = [];
+            let pool = [...items];
+            const GAP = 8;
+            const availableSpace = containerWidth - 16;
+            while (pool.length > 0) {
+                let row = [];
+                let firstItem = pool.shift();
+                row.push(firstItem);
+                let remainingSpace = availableSpace - firstItem.width;
+                while (remainingSpace > 0 && pool.length > 0) {
+                    let bestMatchIndex = -1, bestMatchSize = 0;
+                    for (let i = 0; i < pool.length; i++) {
+                        let totalW = pool[i].width + GAP;
+                        if (totalW <= remainingSpace && totalW > bestMatchSize) { bestMatchSize = totalW; bestMatchIndex = i; }
+                    }
+                    if (bestMatchIndex !== -1) {
+                        let matched = pool.splice(bestMatchIndex, 1)[0];
+                        row.push(matched); remainingSpace -= (matched.width + GAP);
+                    } else break;
+                }
+                packedRows.push(row);
+            }
+            return packedRows.flat();
+        }
+
+        function sCreatePill(name, isCreationMode) {
+            const el = document.createElement('div');
+            el.className = `subject-pill-s scale-pop ${S.selectedSubjects.has(name) ? 'active' : ''} ${isCreationMode ? 'create-mode' : ''}`;
+            el.innerHTML = `<span class="pill-text-s">${isCreationMode ? 'Create "' + name + '"' : name}</span>
+                            <span class="material-symbols-rounded pill-icon-s">${S.selectedSubjects.has(name) ? 'check' : 'add'}</span>`;
+            el.onclick = () => {
+                if (isCreationMode) {
+                    S.customSubjects.add(name);
+                    S.selectedSubjects.add(name);
+                    const id = sSlugify(name);
+                    S.step2Data[id] = S.step2Data[id] || { total: 0, attended: 0, touched: false };
+                    sInput.value = '';
+                } else {
+                    if (S.selectedSubjects.has(name)) { S.selectedSubjects.delete(name); }
+                    else {
+                        S.selectedSubjects.add(name);
+                        const id = sSlugify(name);
+                        S.step2Data[id] = S.step2Data[id] || { total: 0, attended: 0, touched: false };
+                    }
+                }
+                setupRenderGrid(sInput.value);
+                setupUpdateStep1Action();
+            };
+            return el;
+        }
+
+        function setupUpdateStep1Action() {
+            if (!sActionBar || !sCountText) return;
+            const count = S.selectedSubjects.size;
+            sCountText.innerText = `${count} selected`;
+            if (count > 0 && S.currentView !== 'step2') { sActionBar.classList.add('visible'); }
+            else { sActionBar.classList.remove('visible'); }
+        }
+
+        // ── Navigation ──
+        function sNavigateTo(viewId) {
+            S.currentView = viewId;
+            const panel1 = document.getElementById('setup-step1-panel');
+            const panel2 = document.getElementById('setup-step2-panel');
+            if (viewId === 'step1') {
+                panel1.classList.add('active'); panel2.classList.remove('active');
+                if (sStepText) sStepText.innerText = 'Step 1 of 2';
+                if (sProgressFill) sProgressFill.style.width = '50%';
+                sActionBar.classList.toggle('visible', S.selectedSubjects.size > 0);
+                sFabContainer.classList.remove('visible');
+            } else {
+                panel1.classList.remove('active'); panel2.classList.add('active');
+                if (sStepText) sStepText.innerText = 'Step 2 of 2';
+                if (sProgressFill) sProgressFill.style.width = '100%';
+                sActionBar.classList.remove('visible');
+                sFabContainer.classList.add('visible');
+                sInitStep2();
+            }
+        }
+
+        function sInitStep2() {
+            if (!sListContainer) return;
+            sListContainer.innerHTML = '';
+            const subjectsArr = Array.from(S.selectedSubjects);
+            if (subjectsArr.length === 0) { sUpdateStep2Action(); return; }
+            subjectsArr.forEach(sub => {
+                const id = sSlugify(sub);
+                if (!S.step2Data[id]) S.step2Data[id] = { total: 0, attended: 0, touched: false };
+                const existing = S.step2Data[id];
+                const card = document.createElement('div');
+                card.className = 'subject-card-s';
+                card.innerHTML = `
+                    <div class="card-content-s">
+                        <span class="s-subject-title">${sub}</span>
+                        <span class="pct-badge" id="sbadge-${id}">${existing.total > 0 ? Math.round((existing.attended / existing.total) * 100) + '%' : '0%'}</span>
+                    </div>
+                    <div class="input-cluster">
+                        <div class="input-wrapper">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" class="num-input" id="stotal-${id}" placeholder="0"
+                                value="${existing.total || ''}" oninput="window.sUpdateCalc('${id}')" onclick="this.select()">
+                            <span class="input-label">Total<br>classes</span>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" class="num-input" id="sattended-${id}" placeholder="0"
+                                value="${existing.attended || ''}" oninput="window.sUpdateCalc('${id}')" onclick="this.select()">
+                            <span class="input-label">Attended<br>classes</span>
+                        </div>
+                    </div>`;
+                sListContainer.appendChild(card);
+                window.sUpdateCalc(id);
+            });
+            sUpdateStep2Action();
+        }
+
+        window.sUpdateCalc = function (id) {
+            const totalEl = document.getElementById(`stotal-${id}`);
+            const attendedEl = document.getElementById(`sattended-${id}`);
+            const badge = document.getElementById(`sbadge-${id}`);
+            if (!totalEl || !attendedEl || !badge) return;
+            totalEl.value = totalEl.value.replace(/[^0-9]/g, '');
+            attendedEl.value = attendedEl.value.replace(/[^0-9]/g, '');
+            const total = parseInt(totalEl.value) || 0;
+            const attended = parseInt(attendedEl.value) || 0;
+            S.step2Data[id].touched = (totalEl.value !== '' || attendedEl.value !== '');
+            S.step2Data[id].total = total;
+            S.step2Data[id].attended = attended;
+            if (attended > total && total > 0) {
+                attendedEl.classList.add('error'); badge.className = 'pct-badge error'; badge.innerText = 'Error';
+            } else {
+                attendedEl.classList.remove('error');
+                if (total > 0) { badge.className = 'pct-badge active'; badge.innerText = `${Math.round((attended / total) * 100)}%`; }
+                else { badge.className = 'pct-badge'; badge.innerText = '0%'; }
+            }
+            sUpdateStep2Action();
+        };
+
+        function sUpdateStep2Action() {
+            if (S.currentView !== 'step2') return;
+            const values = Object.values(S.step2Data || {});
+            const validEntries = values.filter(d => d.touched && d.total > 0 && d.attended <= d.total).length;
+            const anyInput = values.some(d => d.touched);
+            if (anyInput) {
+                sStatusText.innerText = validEntries > 0 ? `${validEntries} subject${validEntries !== 1 ? 's' : ''} updated` : 'Entering data...';
+                sActionBtn.innerText = 'Continue';
+            } else {
+                sStatusText.innerText = 'No past records?';
+                sActionBtn.innerText = 'Skip step';
+            }
+        }
+
+        // ── Global handlers for HTML onclick attributes ──
+        window.setupHandleSearch = function () { setupRenderGrid(sInput ? sInput.value : ''); };
+
+        window.setupCompleteStep1 = function () {
+            if (S.selectedSubjects.size === 0) { sShowToast('Please select at least one subject to continue.'); return; }
+            sNavigateTo('step2');
+        };
+
+        window.setupFinish = async function () {
+            let hasErrors = false;
+            Object.values(S.step2Data).forEach(d => { if (d.attended > d.total) hasErrors = true; });
+            if (hasErrors) { sShowToast('One or more subjects have attended > total. Fix before continuing.'); return; }
+            if (!S.uid) { sShowToast('Not authenticated. Please re-open the menu.'); return; }
+            try {
+                const batch = writeBatch(sDb);
+                const selected = Array.from(S.selectedSubjects);
+                let pastTotalSum = 0, pastAttendedSum = 0;
+                selected.forEach(name => {
+                    const id = sSlugify(name);
+                    const subjectRef = doc(sDb, 'users', S.uid, 'subjects', id);
+                    const past = S.step2Data[id] || { total: 0, attended: 0 };
+                    if (past.total) { pastTotalSum += past.total; pastAttendedSum += past.attended; }
+                    const isCustom = S.customSubjects.has(name);
+                    batch.set(subjectRef, { name, isCustom, pastAttendance: { total: past.total || 0, attended: past.attended || 0 }, updatedAt: serverTimestamp() }, { merge: true });
+                });
+                await batch.commit();
+
+                const cachedSubjects = selected.map(name => {
+                    const id = sSlugify(name);
+                    const past = S.step2Data[id] || { total: 0, attended: 0 };
+                    return { name, id, isCustom: S.customSubjects.has(name), pastAttendance: { total: past.total || 0, attended: past.attended || 0 } };
+                });
+
+                const userRef = doc(sDb, 'users', S.uid);
+                await setDoc(userRef, { subjectsSetup: true, cachedSubjects, updatedAt: serverTimestamp() }, { merge: true });
+
+                const summaryRef = doc(sDb, 'users', S.uid, 'metadata', 'summary');
+                await runTransaction(sDb, async (tx) => {
+                    const snap = await tx.get(summaryRef);
+                    const existing = snap.exists() ? snap.data() : {};
+                    tx.set(summaryRef, { ...existing, pastTotalClasses: pastTotalSum, pastAttendedClasses: pastAttendedSum, updatedAt: serverTimestamp() }, { merge: true });
+                });
+
+                // Update local shared cache
+                try {
+                    const SHARED_KEY = 'attenza_profile_v2';
+                    const raw = localStorage.getItem(SHARED_KEY);
+                    if (raw) {
+                        const cached = JSON.parse(raw);
+                        if (cached && cached.data) {
+                            cached.data.subjectsSetup = true;
+                            cached.data.cachedSubjects = cachedSubjects;
+                            localStorage.setItem(SHARED_KEY, JSON.stringify(cached));
+                        }
+                    }
+                } catch (e) { }
+
+                // Return to menu view + notify parent to refresh dashboard
+                const menuView = document.getElementById('view-menu');
+                const setupView = document.getElementById('view-setup');
+                setupView.style.opacity = '0';
+                setupView.style.pointerEvents = 'none';
+                setupView.style.zIndex = '0';
+                menuView.style.opacity = '1';
+                menuView.style.pointerEvents = 'auto';
+                menuView.style.zIndex = '10';
+                sActionBar.classList.remove('visible');
+                sFabContainer.classList.remove('visible');
+
+                // Tell parent the dashboard needs refreshing
+                try {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({ type: 'SETUP_COMPLETE' }, '*');
+                    }
+                } catch (e) { }
+
+                sShowToast('Subjects saved! Refresh the dashboard to see changes.');
+            } catch (err) {
+                console.error("Saving failed:", err);
+                sShowToast("Failed to save. Check internet connection and try again.");
+            }
+        };
+
+        // Load data once auth is ready (handle setup being opened before auth fires)
+        onAuthStateChanged(sAuth, async (user) => {
+            if (!user) return;
+            S.uid = user.uid;
+        });
+
+        // Expose for openSetupPage to call
+        window.setupRenderGrid = setupRenderGrid;
+        window.setupApplyProfile = setupApplyProfile;
+        window.setupUpdateStep1Action = setupUpdateStep1Action;
+        window.sLoadData = sLoadData;
     </script>
 </body>
 
