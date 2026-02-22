@@ -23,6 +23,8 @@
         background: #ffffff;
         padding: 23px 16px 6px;
         border-bottom: 2px solid #e0e0e0;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -742,7 +744,7 @@
     }
 
 
-    /* Subject Card Colors */
+    /* Subject Card Colors (legacy kept for safety) */
     .subject-card.lavender {
         background-color: #a2a8eb;
     }
@@ -2049,77 +2051,91 @@
         margin-bottom: 4px;
     }
 
-    /* Subject cards for periodical section */
+    /* ========= REDESIGNED SUBJECT CARDS (Periodical Section) ========= */
     .card.subject-card {
-        aspect-ratio: 1.2 / 1;
-        padding: 12px 16px 14px;
+        padding: 14px 14px 6px 14px;
         position: relative;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start;
-        min-height: 120px;
-    }
-
-    .subject-header {
-        display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        gap: 8px;
-        max-height: 48px;
+        min-height: 140px;
         overflow: hidden;
-        margin-bottom: 4px;
+        border: none;
     }
 
-    .card.subject-card .subject-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #111827;
-        line-height: 1.2;
-        flex: 1;
-        word-break: break-word;
-        white-space: normal;
-        transition: font-size 0.1s ease-out;
-    }
-
-    .card.subject-card .subject-icon {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        flex-shrink: 0;
-        width: auto;
-        height: auto;
-        background: none;
-        margin-bottom: 0;
-    }
-
-    .card.subject-card .subject-icon svg {
-        width: 22px;
-        height: 22px;
-    }
-
-    .subject-meta-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-        margin-top: 4px;
-        flex-grow: 1;
-    }
-
-    .subject-meta {
-        font-size: 12px;
-        color: #374151;
-        margin: 0;
-        line-height: 1.4;
-    }
-
-    .card.subject-card .subject-percentage {
-        position: absolute;
-        right: 16px;
-        bottom: 14px;
-        font-size: 22px;
+    .subject-name-large {
+        font-size: 18px;
         font-weight: 700;
         color: #111827;
+        line-height: 1.2;
+        width: 100%;
+        margin-bottom: 14px;
+        z-index: 2;
+    }
+
+    .subject-stats-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        z-index: 2;
+    }
+
+    .stat-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: rgba(17, 24, 39, 0.75);
+        font-weight: 500;
+        line-height: 1;
+    }
+
+    .stat-glass-box {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .subject-bottom-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 16px;
+        width: 100%;
+    }
+
+    .subject-icon-left {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.85;
+        z-index: 2;
+    }
+
+    .subject-icon-left svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .subject-percentage-large {
+        font-size: 28px;
+        font-weight: 700;
+        color: #ffffff;
+        line-height: 0.75;
+        transform: translateY(6px);
+        margin-right: -4px;
         z-index: 1;
+        margin-bottom: 6px;
+        letter-spacing: -1px;
     }
 
     .card.subject-card.purple {
@@ -3266,8 +3282,8 @@
 
     /* Notification Panel Header */
     #notificationOverlay .notif-header {
-        padding: 24px 24px 24px 24px;
-        background: #ffffff;
+        padding: 24px 24px 16px 24px;
+        background: #f5f3ef;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -3285,7 +3301,7 @@
         order: 1;
         width: 38px;
         height: 38px;
-        background: #ffffff;
+        background: #f5f3ef;
         border: 2.5px solid #444444;
         border-radius: 15px;
         display: flex;
@@ -3313,7 +3329,7 @@
         max-width: 640px;
         margin: 0 auto;
         background: #f5f3ef;
-        border-top: 2px solid #e0e0e0;
+        border-top: 1px solid rgba(0, 0, 0, 0.04);
         min-height: 300px;
     }
 
