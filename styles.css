@@ -2126,21 +2126,18 @@
         height: 24px;
     }
 
-    .subject-percentage-large {  
-        font-size: 28px; 
-        font-weight: 800;  
-        line-height: 0.75;  
-        transform: translateY(6px); 
-        margin-right: -4px; 
+    .subject-percentage-large {
+        font-size: 28px;
+        font-weight: 700;
+        color: rgba(17, 24, 39, 0.75);
+        line-height: 0.75;
+        transform: translateY(6px);
+        margin-right: -4px;
         z-index: 1;
         margin-bottom: 6px;
         letter-spacing: -1px;
+    }
 
-            /* CLEAN PREMIUM ENGRAVED EFFECT */
-        color: rgba(0, 0, 0, 0.35); /* Pulls a clean, dark tone dynamically */
-        mix-blend-mode: multiply; /* Forces the text to inherit and deepen the exact card color */
-        text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5); /* Crisp, subtle edge highlight */
-    }  
 
 
     .card.subject-card.purple {
