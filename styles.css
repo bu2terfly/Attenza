@@ -2094,8 +2094,8 @@
     }
 
     .stat-glass-box {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(4px);
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(3px);
         -webkit-backdrop-filter: blur(4px);
         padding: 1px 6px;
         border-radius: 6px;
@@ -2129,7 +2129,7 @@
     .subject-percentage-large {
         font-size: 28px;
         font-weight: 700;
-        color: #ffffff;
+        color: #111827;
         line-height: 0.75;
         transform: translateY(6px);
         margin-right: -4px;
