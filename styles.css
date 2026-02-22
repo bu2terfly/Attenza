@@ -23,8 +23,6 @@
         background: #ffffff;
         padding: 23px 16px 6px;
         border-bottom: 2px solid #e0e0e0;
-        border-bottom-left-radius: 20px;
-        border-bottom-right-radius: 20px;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -3931,7 +3929,7 @@
     .ai-widget-wrapper {
         position: relative;
         width: 100%;
-        padding: 12px 0;
+        padding: 12px 24px;
         display: flex;
         flex-direction: column;
         gap: 12px;
@@ -3964,7 +3962,6 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 16px;
     }
 
     .ai-badge-rect {
@@ -4004,7 +4001,7 @@
         font-size: 0.95rem;
         line-height: 1.6;
         color: #1e293b;
-        font-weight: 500;
+        font-weight: 600;
         margin: 0;
         display: inline;
     }
@@ -4109,7 +4106,7 @@
 
     /* --- DEFAULT QUERY DOCK --- */
     .query-dock {
-        margin-top: 10px;
+        margin-top: 8px;
         position: relative;
         display: block;
         animation: ai-fadeIn 0.3s ease;
@@ -4175,8 +4172,8 @@
     }
 
     .query-pill svg {
-        width: 14px;
-        height: 14px;
+        width: 10px;
+        height: 10px;
         flex-shrink: 0;
         color: #94a3b8;
         transition: color 0.2s;
