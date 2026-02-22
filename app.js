@@ -917,13 +917,23 @@ function createBentoCard(name, total, present, percent) {
     const article = document.createElement('article');
     article.className = 'card subject-card span-2';
 
+    // Acronym logic for long subject names
+    let displaySubjectName = name;
+    let subjectAcronym = '';
+    if (name.length > 15) { // Arbitrary threshold for "long"
+        subjectAcronym = name.split(' ').map(word => word[0]).join('').toUpperCase();
+        if (subjectAcronym.length > 0) {
+            displaySubjectName = subjectAcronym;
+        }
+    }
+
     const styles = [
         {
-            color: 'lavender',
+            color: 'purple', // Changed from lavender
             icon: `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="#323544" stroke-linejoin="round" d="m17 13 3.4641-2V7L17 5l-3.4641 2v4M17 13l-3.4641-2M17 13v4l-7.00001 4M17 13V9m0 4-7.00001 4m3.53591-6L10.5 12.7348M9.99999 21l-3.4641-2.1318M9.99999 21v-4m-3.4641 2v-.1318m0 0V15L10.5 12.7348m-3.96411 6.1334L3.5 17V5m0 0L7 3l3.5 2m-7 0 2.99999 2M10.5 5v7.7348M10.5 5 6.49999 7M17 9l3.5-2M17 9l-3.5-2M9.99999 17l-3.5-2m0 .5V7" /></svg>`
         },
         {
-            color: 'orange',
+            color: 'subject-2', // Changed from orange
             icon: `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#323544" viewBox="0 0 24 24"><path d="M20 14h-2.722L11 20.278a5.511 5.511 0 0 1-.9.722H20a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1ZM9 3H4a1 1 0 0 0-1 1v13.5a3.5 3.5 0 1 0 7 0V4a1 1 0 0 0-1-1ZM6.5 18.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2ZM19.132 7.9 15.6 4.368a1 1 0 0 0-1.414 0L12 6.55v9.9l7.132-7.132a1 1 0 0 0 0-1.418Z" /></svg>`
         },
         {
@@ -943,15 +953,21 @@ function createBentoCard(name, total, present, percent) {
     const iconSvg = style.icon;
 
     article.innerHTML = `
-    <div class="subject-header">  
-      <span class="subject-name">${name}</span>  
-      <span class="subject-icon" aria-hidden="true">${iconSvg}</span>  
-    </div>  
-    <div class="subject-meta-group">  
-      <div class="subject-meta">Total classes - ${total}</div>  
-      <div class="subject-meta">Attended - ${present}</div>  
-    </div>  
-    <div class="subject-percentage">${percent}%</div> 
+    <div class="subject-name-large" title="${name}">${displaySubjectName}</div>
+    <div class="subject-stats-wrapper">
+      <div class="stat-row">
+        <span class="stat-label">Total classes -</span>
+        <span class="stat-glass-box">${total}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Attended -</span>
+        <span class="stat-glass-box">${present}</span>
+      </div>
+    </div>
+    <div class="subject-bottom-row">
+      <span class="subject-icon-left" aria-hidden="true">${iconSvg}</span>
+      <div class="subject-percentage-large">${percent}%</div>
+    </div>
   `;
     return article;
 }
