@@ -2064,12 +2064,12 @@
     }
 
     .subject-name-large {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 700;
         color: #111827;
         line-height: 1.2;
         width: 100%;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
         z-index: 2;
     }
 
@@ -2109,7 +2109,7 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        margin-top: 16px;
+        margin-top: 12px;
         width: 100%;
     }
 
