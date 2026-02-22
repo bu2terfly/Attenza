@@ -3931,7 +3931,7 @@
     .ai-widget-wrapper {
         position: relative;
         width: 100%;
-        padding: 12px 16px;
+        padding: 12px 0;
         display: flex;
         flex-direction: column;
         gap: 12px;
@@ -3939,6 +3939,7 @@
         z-index: 1;
         grid-column: span 4;
         overflow: hidden;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     /* --- THE AURA --- */
@@ -3963,6 +3964,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 0 16px;
     }
 
     .ai-badge-rect {
@@ -4130,6 +4132,9 @@
         overflow-x: auto;
         padding-bottom: 2px;
         scrollbar-width: none;
+        overscroll-behavior-x: contain;
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
     }
 
     .scroll-track::-webkit-scrollbar {
@@ -4177,6 +4182,19 @@
         transition: color 0.2s;
     }
 
+    .query-pill-icon {
+        font-size: 15px;
+        line-height: 1;
+        flex-shrink: 0;
+        color: #94a3b8;
+        transition: color 0.2s;
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+
+    .query-pill:hover .query-pill-icon {
+        color: #0d9488;
+    }
+
     @keyframes ai-fadeIn {
         from {
             opacity: 0;
@@ -4216,6 +4234,8 @@
         padding-bottom: 4px;
         scrollbar-width: none;
         scroll-behavior: smooth;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
     }
 
     .active-scroll-track::-webkit-scrollbar {
