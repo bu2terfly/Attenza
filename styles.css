@@ -956,212 +956,7 @@
         }
     }
 
-    /* ---------- AI BOARD (BOTTOM SHEET) ---------- */
-
-    .ai-board-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 900;
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
-        pointer-events: none;
-    }
-
-    .ai-board {
-        pointer-events: auto;
-        width: min(600px, 100%);
-        height: 80vh;
-        margin: 0 auto;
-        border-radius: 24px 24px 0 0;
-        padding: 20px 20px 16px;
-
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 0 24px 40px rgba(15, 23, 42, 0.25);
-
-        backdrop-filter: blur(24px) saturate(140%);
-        -webkit-backdrop-filter: blur(24px) saturate(140%);
-
-        display: flex;
-        flex-direction: column;
-        transform: translateY(100%);
-        opacity: 0;
-        transition: transform 0.28s ease-out, opacity 0.28s ease-out;
-    }
-
-    .ai-board.visible {
-        transform: translateY(0);
-        opacity: 1;
-    }
-
-    .ai-board-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-    }
-
-    .ai-title {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        background: linear-gradient(120deg, #8b5cf6, #fda4af);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-
-    .ai-close-btn {
-        border: none;
-        outline: none;
-        background: rgba(255, 255, 255, 0.85);
-        border-radius: 999px;
-        width: 32px;
-        height: 32px;
-        font-size: 20px;
-        font-weight: 500;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
-        transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
-    }
-
-    .ai-close-btn:hover {
-        background: rgba(255, 255, 255, 0.95);
-        transform: translateY(-1px);
-    }
-
-    .ai-close-btn:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
-    }
-
-    .ai-board-body {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        font-size: 14px;
-        overflow-y: auto;
-    }
-
-    .ai-user-card-wrapper {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .ai-user-card {
-        max-width: 80%;
-        padding: 12px 16px;
-        border-radius: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.85);
-        background: rgba(255, 255, 255, 0.96);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-        line-height: 1.4;
-    }
-
-    .ai-status-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: #1f2933;
-    }
-
-    .ai-status-text {
-        font-weight: 500;
-        letter-spacing: 0.02em;
-    }
-
-    .ai-response {
-        font-size: 14px;
-        line-height: 1.5;
-        color: #020617;
-        padding-top: 10px;
-        white-space: pre-wrap;
-    }
-
-    .ai-copy-btn {
-        margin-top: 6px;
-        align-self: flex-start;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.6);
-        background: rgba(255, 255, 255, 0.9);
-        font-size: 12px;
-        color: #0f172a;
-        cursor: pointer;
-        transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
-    }
-
-    .ai-copy-btn:hover {
-        background: #ffffff;
-        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
-        transform: translateY(-1px);
-    }
-
-    .ai-copy-btn:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 5px rgba(15, 23, 42, 0.25);
-    }
-
-    /* BOARD LOADER */
-
-    .ai-status-loader {
-        transform: rotate(80deg);
-        max-width: 30px;
-        max-height: 30px;
-    }
-
-    .ai-status-loader .stripe {
-        display: inline-block;
-        width: 3px;
-        height: 14px;
-        animation: aiStatusLoaderAnim 1.2s ease-in-out infinite;
-    }
-
-    .ai-status-loader .stripe:nth-child(1) {
-        background-color: #8b5cf6;
-        animation-delay: 0.15s;
-        margin-bottom: -5px;
-    }
-
-    .ai-status-loader .stripe:nth-child(2) {
-        background-color: #fda4af;
-        animation-delay: 0.3s;
-        margin-bottom: 5px;
-    }
-
-    .ai-status-loader .stripe:nth-child(3) {
-        background-color: #c4b5fd;
-        animation-delay: 0.45s;
-        margin-bottom: -7px;
-    }
-
-    .ai-status-loader .stripe:nth-child(4) {
-        background-color: #f9a8d4;
-        animation-delay: 0.6s;
-        margin-bottom: 7px;
-    }
-
-    @keyframes aiStatusLoaderAnim {
-        20% {
-            transform: scale(1, 2.2);
-        }
-
-        40% {
-            transform: scale(1);
-        }
-    }
+    
 
 
     /* ---------------- PERIODICAL RECORDS SECTION STYLES ---------------- */
@@ -1885,7 +1680,7 @@
 
     /* Half circle */
     .half-shell {
-        margin-top: 4px;
+        margin-top: 2px;
         width: 105%;
         max-width: 360px;
         aspect-ratio: 2 / 1;
@@ -1893,7 +1688,7 @@
         display: flex;
         justify-content: center;
         align-items: flex-end;
-        margin-bottom: -8px;
+        margin-bottom: 0px;
     }
 
     .half-shell svg {
@@ -4142,7 +3937,7 @@
         flex-shrink: 0;
         background: #ffffff;
         color: #1e293b;
-        padding: 10px 14px;
+        padding: 9px 12px;
         border-radius: 10px;
         font-size: 0.75rem;
         font-weight: 600;
@@ -4345,7 +4140,7 @@
         color: #0d9488;
         height: 28px;
         padding: 0 10px;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 0.7rem;
         font-weight: 700;
         display: inline-flex;
