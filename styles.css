@@ -1680,7 +1680,7 @@
 
     /* Half circle */
     .half-shell {
-        margin-top: 2px;
+        margin-top: -6px;
         width: 105%;
         max-width: 360px;
         aspect-ratio: 2 / 1;
@@ -1688,7 +1688,7 @@
         display: flex;
         justify-content: center;
         align-items: flex-end;
-        margin-bottom: 0px;
+        margin-bottom: -12x;
     }
 
     .half-shell svg {
