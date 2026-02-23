@@ -4172,8 +4172,8 @@
     }
 
     .query-pill svg {
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
         flex-shrink: 0;
         color: #94a3b8;
         transition: color 0.2s;
@@ -4181,14 +4181,13 @@
 
     .query-pill .query-pill-icon {
         font-size: 18px;
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
         line-height: 1;
         flex-shrink: 0;
         color: #94a3b8;
         transition: color 0.2s;
         font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 10;
-        overflow: hidden;
         display: inline-flex;
         align-items: center;
         justify-content: center;
