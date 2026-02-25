@@ -3870,8 +3870,8 @@
     }
 
     .nav-icon {
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
         fill: currentColor;
         stroke: currentColor;
         stroke-width: 0.5px;
@@ -3882,7 +3882,7 @@
         font-size: 15px;
         font-weight: 600;
         letter-spacing: -0.3px;
-        padding-left: 0;
+        padding-left: 4px;
         max-width: 0;
         opacity: 0;
         overflow: hidden;
