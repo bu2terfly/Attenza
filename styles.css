@@ -3882,7 +3882,7 @@
         font-size: 15px;
         font-weight: 600;
         letter-spacing: -0.3px;
-        padding-left: 4px;
+        padding-left: 0;
         max-width: 0;
         opacity: 0;
         overflow: hidden;
@@ -3892,10 +3892,11 @@
 
     .nav-item.active {
         background-color: var(--active-bg);
-        width: 128px;
+        width: 136px;
         color: var(--active-text);
         box-shadow: var(--active-shadow);
         padding-right: 10px;
+        gap: 6px;
         border: var(--active-border);
     }
 
@@ -3927,14 +3928,26 @@
         position: absolute;
         top: -2px;
         right: -2px;
-        width: 9px;
-        height: 9px;
-        background: #E53935;
+        width: 7px;
+        height: 7px;
+        background: rgb(255, 0, 0);
         border-radius: 50%;
-        border: 1.5px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
         display: block;
-        animation: nav-dot-pulse 1.8s ease-in-out infinite;
         transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-updates-dot::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 1px;
+        height: 1px;
+        background-color: rgb(255, 0, 0);
+        border-radius: 50%;
+        animation: nav-dot-ripple 1.5s infinite ease-out;
     }
 
     .nav-updates-dot.hidden {
@@ -3943,15 +3956,17 @@
         pointer-events: none;
     }
 
-    @keyframes nav-dot-pulse {
-
-        0%,
-        100% {
-            box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.55);
+    @keyframes nav-dot-ripple {
+        0% {
+            background-color: rgba(255, 0, 0, 1);
+            width: 1px;
+            height: 1px;
         }
 
-        50% {
-            box-shadow: 0 0 0 5px rgba(229, 57, 53, 0);
+        100% {
+            background-color: rgba(255, 0, 0, 0);
+            width: 20px;
+            height: 20px;
         }
     }
 
