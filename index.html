@@ -819,28 +819,43 @@
 
     <nav class="noise-nav" id="noiseNav">
         <div class="nav-item active" id="btnDashboard" onclick="switchTab('dashboard')">
-            <svg class="nav-icon" viewBox="0 0 25 24">
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M5.52344 3.25C4.2808 3.25 3.27344 4.25736 3.27344 5.5V18.5C3.27344 19.7426 4.2808 20.75 5.52344 20.75H18.5234C19.7661 20.75 20.7734 19.7426 20.7734 18.5V5.5C20.7734 4.25736 19.7661 3.25 18.5234 3.25H5.52344ZM4.77344 5.5C4.77344 5.08579 5.10922 4.75 5.52344 4.75H18.5234C18.9377 4.75 19.2734 5.08579 19.2734 5.5V8.58301L4.77344 8.58301V5.5ZM4.77344 10.083V18.5C4.77344 18.9142 5.10922 19.25 5.52344 19.25H8.60645L8.60645 10.083H4.77344ZM10.1064 10.083V13.916H19.2734V10.083L10.1064 10.083ZM10.1064 15.416H19.2734V18.5C19.2734 18.9142 18.9377 19.25 18.5234 19.25H10.1064V15.416Z" />
+            <svg class="nav-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <g>
+                    <path
+                        d="M2 12.204c0-2.289 0-3.433.52-4.381c.518-.949 1.467-1.537 3.364-2.715l2-1.241C9.889 2.622 10.892 2 12 2c1.108 0 2.11.622 4.116 1.867l2 1.241c1.897 1.178 2.846 1.766 3.365 2.715c.519.948.519 2.092.519 4.38v1.522c0 3.9 0 5.851-1.172 7.063C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.212C2 19.576 2 17.626 2 13.725v-1.521Z"
+                        opacity=".5" />
+                    <path d="M11.25 18a.75.75 0 0 0 1.5 0v-3a.75.75 0 0 0-1.5 0v3Z" />
+                </g>
             </svg>
-            <span class="nav-text">Dashboard</span>
+            <span class="nav-text">Home</span>
         </div>
 
         <div class="nav-item" id="btnSearch" onclick="switchTab('search')">
-            <svg class="nav-icon" viewBox="0 0 24 25">
-                <path
-                    d="M11.2498 5.75037C10.8356 5.75037 10.4998 6.08615 10.4998 6.50037C10.4998 6.91458 10.8356 7.25037 11.2498 7.25037C13.874 7.25037 16.0011 9.37718 16.0011 12.0004C16.0011 12.4146 16.3369 12.7504 16.7511 12.7504C17.1653 12.7504 17.5011 12.4146 17.5011 12.0004C17.5011 8.54842 14.7021 5.75037 11.2498 5.75037Z" />
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M2 11.9989C2 6.89126 6.14154 2.75098 11.25 2.75098C16.3585 2.75098 20.5 6.89126 20.5 11.9989C20.5 14.2836 19.6714 16.3747 18.2983 17.9883L21.7791 21.4695C22.072 21.7624 22.072 22.2372 21.7791 22.5301C21.4862 22.823 21.0113 22.823 20.7184 22.5301L17.2372 19.0486C15.6237 20.4197 13.5334 21.2469 11.25 21.2469C6.14154 21.2469 2 17.1066 2 11.9989ZM11.25 4.25098C6.96962 4.25098 3.5 7.72003 3.5 11.9989C3.5 16.2779 6.96962 19.7469 11.25 19.7469C15.5304 19.7469 19 16.2779 19 11.9989C19 7.72003 15.5304 4.25098 11.25 4.25098Z" />
+            <svg class="nav-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none">
+                    <path fill="currentColor" fill-opacity=".25"
+                        d="M20 12c0-2.8 0-4.2-.545-5.27a5 5 0 0 0-2.185-2.185C16.2 4 14.8 4 12 4c-2.8 0-4.2 0-5.27.545A5 5 0 0 0 4.545 6.73C4 7.8 4 9.2 4 12v6c0 .943 0 1.414.293 1.707C4.586 20 5.057 20 6 20h6c2.8 0 4.2 0 5.27-.545a5 5 0 0 0 2.185-2.185C20 16.2 20 14.8 20 12" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M8.5 8.5h7m-7 3h5" />
+                    <circle cx="16.5" cy="15.5" r="2" stroke="currentColor" />
+                    <path stroke="currentColor" stroke-linecap="round" d="m19 18l1.5 1.5" />
+                </g>
             </svg>
-            <span class="nav-text">Roll search</span>
+            <span class="nav-text">Help &amp; Info</span>
         </div>
 
         <div class="nav-item" id="btnUpdates" onclick="switchTab('updates')">
-            <svg class="nav-icon" viewBox="0 0 24 25">
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M6.6767 3.09336C6.75061 2.74731 7.05632 2.5 7.41016 2.5H14.6891C14.9457 2.5 15.1845 2.6312 15.3221 2.8478C15.4597 3.0644 15.477 3.33632 15.368 3.56863L13.1876 8.21482L18.8398 8.21482C19.1127 8.21482 19.3641 8.36309 19.4962 8.60195C19.6282 8.84081 19.6201 9.13255 19.4749 9.36368L11.4461 22.1489C11.2619 22.4422 10.9008 22.5712 10.5724 22.4611C10.244 22.3509 10.0338 22.0302 10.0637 21.6852L10.6842 14.5352H5.16016C4.93376 14.5352 4.71947 14.4329 4.57707 14.2569C4.43468 14.0809 4.37942 13.8499 4.4267 13.6285L6.6767 3.09336ZM8.0169 4L6.08725 13.0352H11.5021C11.7123 13.0352 11.9128 13.1234 12.0549 13.2783C12.1969 13.4332 12.2675 13.6406 12.2493 13.85L11.8264 18.7226L17.4832 9.71482L12.0071 9.71482C11.7505 9.71482 11.5117 9.58362 11.3741 9.36702C11.2365 9.15042 11.2192 8.8785 11.3282 8.64619L13.5086 4H8.0169Z" />
-            </svg>
+            <div class="nav-bell-wrapper">
+                <svg class="nav-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <g>
+                        <path
+                            d="M18.75 9v.704c0 .845.24 1.671.692 2.374l1.108 1.723c1.011 1.574.239 3.713-1.52 4.21a25.794 25.794 0 0 1-14.06 0c-1.759-.497-2.531-2.636-1.52-4.21l1.108-1.723a4.393 4.393 0 0 0 .693-2.374V9c0-3.866 3.022-7 6.749-7s6.75 3.134 6.75 7Z"
+                            opacity=".5" />
+                        <path
+                            d="M12.75 6a.75.75 0 0 0-1.5 0v4a.75.75 0 0 0 1.5 0V6ZM7.243 18.545a5.002 5.002 0 0 0 9.513 0c-3.145.59-6.367.59-9.513 0Z" />
+                    </g>
+                </svg>
+                <span class="nav-updates-dot" id="navUpdatesDot"></span>
+            </div>
             <span class="nav-text">Updates</span>
         </div>
     </nav>
@@ -1102,6 +1117,17 @@
             }
         }
 
+        // --- UPDATES RED DOT LOGIC ---
+        const navUpdatesDot = document.getElementById('navUpdatesDot');
+
+        // Show dot on cold start; hide if user has already seen updates this session
+        (function initUpdatesDot() {
+            const seen = sessionStorage.getItem('attenza_updates_seen');
+            if (seen && navUpdatesDot) {
+                navUpdatesDot.classList.add('hidden');
+            }
+        })();
+
         // --- TAB SWITCHING LOGIC ---
         window.switchTab = function (tab) {
             // 1. Reset Nav Visuals
@@ -1128,6 +1154,9 @@
             } else if (tab === 'updates') {
                 body.classList.remove('search-mode');
                 resetSearch();
+                // Hide red dot once user clicks Updates
+                if (navUpdatesDot) navUpdatesDot.classList.add('hidden');
+                sessionStorage.setItem('attenza_updates_seen', '1');
                 // Open the notification panel - keep Updates tab active
                 if (typeof openNotificationPanel === 'function') {
                     openNotificationPanel();
