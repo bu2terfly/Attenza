@@ -142,6 +142,25 @@
             font-weight: 600;
         }
 
+        .nav-btn-back {
+            border: none;
+            background: transparent;
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            padding: 4px;
+        }
+
+        .nav-btn-back:active {
+            background: transparent;
+            color: #444444;
+        }
+
+        .nav-btn-back .material-symbols-rounded {
+            font-size: 28px;
+            font-weight: 400;
+        }
+
         /* --- NEW CENTERED PROFILE DESIGN --- */
         .profile-section {
             display: flex;
@@ -1015,10 +1034,10 @@
     <div id="view-menu" class="app-view">
         <div class="container-top">
             <div class="header-row">
-                <h1 class="header-title">Menu</h1>
-                <button class="nav-btn" onclick="closeMenu()" aria-label="Close Menu">
-                    <span class="material-symbols-rounded">close</span>
+                <button class="nav-btn nav-btn-back" onclick="closeMenu()" aria-label="Close Menu">
+                    <span class="material-symbols-rounded">keyboard_double_arrow_left</span>
                 </button>
+                <h1 class="header-title">Menu</h1>
             </div>
         </div>
 
@@ -1112,8 +1131,8 @@
                 <button class="nav-btn" id="setupBackBtn">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
-                <button class="nav-btn" style="border-color:#444444;color:#444444;">
-                    <span class="material-symbols-rounded">question_mark</span>
+                <button class="nav-btn" style="border:none;background:transparent;color:#444444;">
+                    <span class="material-symbols-rounded">support_agent</span>
                 </button>
             </div>
             <div class="progress-wrapper">
