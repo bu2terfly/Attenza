@@ -282,6 +282,12 @@ async function applyUISummaryData(data) {
     });
 
     updateSubjectCards(summaryStatsForCards);
+
+    // Hide "Recovery Plan" pill when overall attendance is at or above 75%
+    const recoveryPill = document.getElementById('recovery-pill');
+    if (recoveryPill) {
+        recoveryPill.style.display = percentage >= 75 ? 'none' : '';
+    }
 }
 
 function updateRingUI(percent) {
@@ -1621,7 +1627,7 @@ async function dwrSaveRecord(subjectName, status, remarks) {
 window.openMenu = function () {
     const menu = document.getElementById("menuOverlay");
     if (menu) {
-        menu.style.left = "0";
+        menu.style.right = "0";
         document.body.classList.add('menu-open');
     }
 }
@@ -2618,7 +2624,7 @@ window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'CLOSE_MENU') {
         const menu = document.getElementById("menuOverlay");
         if (menu) {
-            menu.style.left = "-100vw";
+            menu.style.right = "-100%";
         }
         document.body.classList.remove('menu-open');
     }
