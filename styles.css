@@ -33,39 +33,40 @@
         margin: 0 auto;
     }
 
-    /* Login-style wordmark */
+    /* Login-style wordmark — exact match to login.html */
     .nav-logo {
-        font-size: 28px;
+        font-size: 30px;
         font-weight: 800;
         color: #3a3336;
         letter-spacing: -0.02em;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         line-height: 1;
     }
 
     .nav-logo span {
-        color: #7C6EFF;
+        color: #918BFF;
     }
 
-    /* 2-line burger button — both lines identical */
+    /* 2-line burger button — pseudo-element approach, pixel-perfect */
     .menu-btn-home {
-        width: 32px;
+        width: 28px;
         height: 13px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         cursor: pointer;
         flex-shrink: 0;
+        position: relative;
     }
 
-    .menu-btn-home span {
+    .menu-btn-home::before,
+    .menu-btn-home::after {
+        content: '';
         display: block;
         width: 100%;
         height: 2.5px;
         background: #353839;
         border-radius: 2.5px;
-        font-size: 0;
-        line-height: 0;
-        flex-shrink: 0;
     }
 
     /* Main content wrapper (preserved from original) */
@@ -3102,27 +3103,25 @@
         order: 1;
         width: 38px;
         height: 38px;
-        background: #f5f3ef;
-        border: 2.5px solid #444444;
-        border-radius: 15px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         color: #444444;
-        transition: all 0.2s;
+        transition: color 0.2s;
+        padding: 4px;
     }
 
     #notificationOverlay .notif-close-btn:active {
-        transform: scale(0.95);
-        background: #444444;
-        color: #fff;
+        color: #111111;
     }
 
-    #notificationOverlay .notif-close-btn svg {
-        width: 22px;
-        height: 22px;
-        stroke-width: 2.5px;
+    #notificationOverlay .notif-close-btn .material-symbols-rounded {
+        font-size: 28px;
+        font-weight: 400;
     }
 
     /* Feed Container */
