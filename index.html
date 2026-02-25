@@ -95,75 +95,9 @@
     <div id="main-content" style="display: none;">
         <div class="header" id="header">
             <div class="top-bar">
-                <div class="left-section">
-                    <button class="icon-btn" aria-label="Menu" onclick="openMenu()">
-                        <div class="menu-mini"><span></span></div>
-                    </button>
-                    <div class="brand-container">
-                        <span class="brand-name">ATTENZA</span>
-                        <span class="tagline">a student driven attendance tracker</span>
-                    </div>
-                </div>
-
-                <button class="icon-btn notif-rev" aria-label="Notifications" onclick="switchTab('updates')">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path
-                            d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"
-                            stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" stroke="currentColor">
-                        </path>
-                    </svg>
-                    <div class="notif-dot"></div>
-                </button>
-            </div>
-
-            <div class="expand-section">
-                <div class="expand-arrow" id="expandArrow">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </div>
-
-                <div class="expanded-content" id="expandedContent">
-                    <div class="content-inner">
-                        <div class="info-section">
-                            <h3>About ATTENZA</h3>
-                            <p>A student-driven attendance tracker designed exclusively for Dispur College students.
-                                View
-                                your attendance data anytime, anywhere - something our teacher-driven system doesn't
-                                allow.
-                            </p>
-                        </div>
-
-                        <div class="info-section">
-                            <h3>Key Features</h3>
-                            <div class="features">
-                                <div class="feature-card">
-                                    <h4>📊 Real-time Data</h4>
-                                    <p>Check your attendance percentage instantly</p>
-                                </div>
-                                <div class="feature-card">
-                                    <h4>📅 Subject-wise View</h4>
-                                    <p>Track attendance for each subject separately</p>
-                                </div>
-                                <div class="feature-card">
-                                    <h4>🔔 Smart Alerts</h4>
-                                    <p>Get notified when attendance falls below threshold</p>
-                                </div>
-                                <div class="feature-card">
-                                    <h4>📱 Mobile Friendly</h4>
-                                    <p>Access from any device, anytime</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="info-section">
-                            <h3>How to Use</h3>
-                            <p>1. Log in with your college ID<br>
-                                2. View your dashboard with attendance summary<br>
-                                3. Click on any subject to see detailed records<br>
-                                4. Set alerts for attendance warnings</p>
-                        </div>
-                    </div>
+                <div class="nav-logo">Attend<span>mark</span></div>
+                <div class="menu-btn-home" id="menuBtnHome" onclick="openMenu()">
+                    <span></span><span></span>
                 </div>
             </div>
         </div>
@@ -649,12 +583,12 @@
         <div id="menuOverlay" style="
       position: fixed;
       top: 0;
-      left: -100%;
+      right: -100%;
       width: 100vw;
       height: 100vh;
       z-index: 9999;
       background: transparent;
-      transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     ">
             <iframe src="menu.html" style="
           width: 100%;
@@ -841,7 +775,7 @@
                         clip-rule="evenodd" />
                 </g>
             </svg>
-            <span class="nav-text">Help desk</span>
+            <span class="nav-text">Help Desk</span>
         </div>
 
         <div class="nav-item" id="btnUpdates" onclick="switchTab('updates')">
