@@ -3963,7 +3963,7 @@
 
     /* --- DEFAULT QUERY DOCK --- */
     .query-dock {
-        margin-top: 8px;
+        margin-top: 6px;
         position: relative;
         display: block;
         animation: ai-fadeIn 0.3s ease;
@@ -4029,17 +4029,17 @@
     }
 
     .query-pill svg {
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
         flex-shrink: 0;
         color: #94a3b8;
         transition: color 0.2s;
     }
 
     .query-pill .query-pill-icon {
-        font-size: 10px;
-        width: 10px;
-        height: 10px;
+        font-size: 20px;
+        width: 12px;
+        height: 12px;
         line-height: 1;
         flex-shrink: 0;
         color: #94a3b8;
